@@ -4314,7 +4314,7 @@ async function load_resources() {
 
 
 	game_res=new PIXI.Loader();
-	game_res.add("m2_font", git_src+"fonts/Neucha/font.fnt");
+	game_res.add("m2_font", git_src+"/fonts/Neucha/font.fnt");
 
 
 
@@ -4344,12 +4344,12 @@ async function load_resources() {
 
 	//добавляем текстуры стикеров
 	for (var i=0;i<16;i++)
-		game_res.add("sticker_texture_"+i, git_src+"stickers/"+i+".png");
+		game_res.add("sticker_texture_"+i, git_src+"/stickers/"+i+".png");
 	
     //добавляем из листа загрузки
     for (var i = 0; i < load_list.length; i++)
         if (load_list[i].class === "sprite" || load_list[i].class === "image" )
-            game_res.add(load_list[i].name, git_src+"res/" + load_list[i].name + "." +  load_list[i].image_format);		
+            game_res.add(load_list[i].name, git_src+"/res/" + load_list[i].name + "." +  load_list[i].image_format);		
 
 
 	game_res.onProgress.add(progress);
