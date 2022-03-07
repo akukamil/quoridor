@@ -1,5 +1,5 @@
 var M_WIDTH=800, M_HEIGHT=450;
-var app, game_res, game, objects={}, state="",my_role="", LANG = 1, game_tick=0, my_turn=0, game_id=0, h_state=0, made_moves=0, game_platform="", hidden_state_start = 0, connected = 1;
+var app, game_res, game, objects={}, state="",my_role="", LANG = 0, game_tick=0, my_turn=0, game_id=0, h_state=0, made_moves=0, game_platform="", hidden_state_start = 0, connected = 1;
 var players="", pending_player="";
 var my_data={opp_id : ''},opp_data={};
 var some_process = {};
@@ -717,10 +717,10 @@ var online_game = {
 		this.opp_conf_play = 0;
 		
 		
-		if (state === 'b') {
-			
-			
-			
+		if (state === 'b') {			
+
+			//убираем кнопку стоп
+			objects.stop_button_cont.visible=false;			
 		}
 		
 
@@ -900,34 +900,34 @@ var bot_player = {
 		set_state({state : 'b'});	
 
 		//показываем кнопку стоп
-		objects.stop_bot_button.visible = true;
+		objects.stop_button_cont.visible = true;
 		
 		//отключаем таймер...........................
-		objects.timer.text  = 'Я хожу'
+		objects.timer.text  = ['Мой ход...','My move...'][LANG];
 	},
 	
 	stop : async function (result) {
 		
 		let res_array = [
-			['my_stop' ,DRAW, 'Вы отменили игру!'],
+			['my_stop' ,DRAW, ['Вы отменили игру!','You canceled the game']],
 			['both_finished',DRAW, 'Ничья'],
-			['my_finished_first',WIN , 'Вы выиграли!\nБыстрее соперника добрались до цели'],
-			['opp_finished_first',LOSE, 'Вы проиграли!\nСоперник оказался быстрее вас.'],
-			['my_closer_after_80',WIN , 'Вы выиграли!\nВы оказались ближе к цели.'],
-			['opp_closer_after_80',LOSE, 'Вы проиграли!\nСоперник оказался ближе к цели.'],
-			['both_closer_80',DRAW , 'Ничья\nОба на одинаковом расстоянии до цели']
+			['my_finished_first',WIN , ['Вы выиграли!\nБыстрее соперника добрались до цели','You have won!\nGot to the goal faster than the opponent']],
+			['opp_finished_first',LOSE, ['Вы проиграли!\nСоперник оказался быстрее вас.','You have lost!\nThe opponent was faster than you.']],
+			['my_closer_after_80',WIN , ['Вы выиграли!\nВы оказались ближе к цели.','You have won!\nYou were closer to the goal.']],
+			['opp_closer_after_80',LOSE, ['Вы проиграли!\nСоперник оказался ближе к цели.','You have lost!\nThe opponent was closer to the goal']],
+			['both_closer_80',DRAW , ['Ничья!\nОба на одинаковом расстоянии до цели','Draw!\nBoth at the same distance to the goal']]
 		];
 						
 		this.no_incoming_move = 1;
 		
 		let result_number = res_array.find( p => p[0] === result)[1];
-		let result_info = res_array.find( p => p[0] === result)[2];				
+		let result_info = res_array.find( p => p[0] === result)[2][LANG];				
 			
 		//выключаем элементы
 		objects.timer.visible = false;
 
 		//убираем кнопку стоп
-		objects.stop_bot_button.visible=false;
+		objects.stop_button_cont.visible=false;
 		
 		
 		//воспроизводим звук
@@ -936,7 +936,7 @@ var bot_player = {
 		else
 			game_res.resources.win.sound.play();		
 		
-		await big_message.show(result_info, 'Сыграйте с реальным соперником для получения рейтинга')
+		await big_message.show(result_info, ['Сыграйте с реальным соперником для получения рейтинга','Play online with other player to increase rating'][LANG])
 	
 	},
 	
@@ -2137,6 +2137,33 @@ var game = {
 				social_dialog.show();		
 	},
 	
+	giveup_down : function() {
+		
+		
+		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true) {
+			gres.bad_move.sound.play();
+			return;			
+		}
+		
+		//отправляем сопернику что мы сдались
+		firebase.database().ref("inbox/"+opp_data.uid).set({sender:my_data.uid,message:"GIVEUP",tm:Date.now()});
+		this.stop('my_giveup')
+		
+		
+	},
+	
+	stop_down : function() {
+		
+		
+		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true) {
+			gres.bad_move.sound.play();
+			return;			
+		}
+		
+		this.stop('my_stop')		
+		
+	},
+	
 	mouse_down : async function(e) {
 		
 		if (my_turn === 0) {
@@ -2144,8 +2171,13 @@ var game = {
 			return;
 		}
 		
-		if (objects.big_message_cont.visible === true)
-			return;
+		
+		
+		
+		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true || objects.req_cont.visible === true || objects.my_icon.ready === false) {
+			gres.bad_move.sound.play();
+			return;			
+		}
 		
 		//координаты указателя
 		let mx = e.data.global.x/app.stage.scale.x;
@@ -2476,6 +2508,7 @@ var game = {
 				
 		if (show===0) {
 			objects.move_opt_cont.visible=false;
+			objects.my_icon.alpha=1;
 			some_process.player_selected_processing = function(){};
 			return;			
 		}
@@ -2660,6 +2693,10 @@ var process_new_message = function(msg) {
 			//получение сообщение с ходом игорка
 			if (msg.message==="MOVE")
 				game.receive_move(msg.data);
+			
+			//получение сообщения о сдаче
+			if (msg.message==="GIVEUP")
+				game.stop("opp_giveup");
 		}
 	}
 
@@ -2754,9 +2791,11 @@ var req_dialog = {
 	},
 
 	accept: function() {
-
-		if (objects.req_cont.ready===false)
-			return;
+				
+		if (objects.req_cont.ready===false || objects.rules_cont.visible===true ) {
+			gres.bad_move.sound.play();
+			return;			
+		}
 		
 		//только когда бот сделал ход
 		if (state ==='b' && my_turn === 0)
@@ -2863,10 +2902,14 @@ var stickers={
 
 	show_panel: function() {
 
+		
+		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true || objects.stickers_cont.ready===false) {
+			gres.bad_move.sound.play();
+			return;			
+		}
 
-
-		if (objects.stickers_cont.ready===false)
-			return;
+	
+		
 		game_res.resources.click.sound.play();
 
 
@@ -2893,8 +2936,10 @@ var stickers={
 
 	send : async function(id) {
 
-		if (objects.stickers_cont.ready===false)
-			return;
+		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true || objects.stickers_cont.ready===false) {
+			gres.bad_move.sound.play();
+			return;			
+		}
 		
 		if (this.promise_resolve_send!==0)
 			this.promise_resolve_send("forced");
@@ -2960,12 +3005,12 @@ var main_menu = {
 
 		//просто добавляем контейнер с кнопками
 		objects.desktop.texture=gres.desktop.texture;
-		objects.desktop.visible = true;
-		anim2.add(objects.tile,{alpha: [0,0.3]}, true, 1,'linear');
+		//objects.desktop.visible = true;
+		anim2.add(objects.tile,{alpha: [0,1]}, true, 0.5,'linear');
 		
 		//anim2.add(objects.maze_logo_top,{alpha: [0,1]}, true, 1,'easeInOutCubic');
-		anim2.add(objects.maze_logo,{alpha: [0,1]}, true, 3,'linear');
-		anim2.add(objects.main_buttons_cont,{y:[450, objects.main_buttons_cont.sy],alpha: [0,1]}, true, 1,'linear');
+		anim2.add(objects.maze_logo,{alpha: [0,1],y:[-200, objects.maze_logo.sy]}, true, 1,'linear');
+		anim2.add(objects.main_buttons_cont,{y:[450, objects.main_buttons_cont.sy],alpha: [0,1]}, true, 0.75,'linear');
 		
 		some_process.maze_logo_move = this.process.bind(this);
 
@@ -2973,17 +3018,22 @@ var main_menu = {
 
 	close : async function() {
 
+	
 
-		
-		//anim2.add(objects.maze_logo_top,{alpha: [1,0]}, false, 1,'easeInOutCubic');
-		anim2.add(objects.maze_logo,{alpha: [1,0]}, false, 1,'linear');
-		anim2.add(objects.main_buttons_cont,{y:[ objects.main_buttons_cont.y, 450],alpha: [1,0]}, true, 1,'linear');
-		await anim2.add(objects.tile,{alpha: [0.3,0]}, false, 1,'linear');
+		anim2.add(objects.maze_logo,{alpha: [1,0]}, false, 0.5,'linear');
+		anim2.add(objects.main_buttons_cont,{y:[ objects.main_buttons_cont.y, 450],alpha: [1,0]}, true, 0.5,'linear');
+		await anim2.add(objects.tile,{alpha: [1,0]}, false, 0.5,'linear');
 		some_process.maze_logo_move = function(){};
 
 	},
 
 	play_button_down: async function () {
+
+		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.main_buttons_cont.ready === false) {
+			gres.bad_move.sound.play();
+			return;			
+		}
+
 
 		game_res.resources.click.sound.play();
 
@@ -2994,10 +3044,10 @@ var main_menu = {
 
 	lb_button_down: function () {
 
-		if (any_dialog_active===1) {
-			gres.locked.sound.play();
-			return
-		};
+		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.main_buttons_cont.ready === false) {
+			gres.bad_move.sound.play();
+			return;			
+		}
 
 		gres.click.sound.play();
 
@@ -3008,10 +3058,10 @@ var main_menu = {
 
 	rules_button_down: function () {
 
-		if (any_dialog_active===1) {
-			gres.locked.sound.play();
-			return
-		};
+		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.main_buttons_cont.ready === false) {
+			gres.bad_move.sound.play();
+			return;			
+		}
 
 		gres.click.sound.play();
 
@@ -3021,7 +3071,12 @@ var main_menu = {
 	},
 
 	rules_ok_down: function () {
-		any_dialog_active=0;		
+		
+		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.rules_cont.ready === false) {
+			gres.bad_move.sound.play();
+			return;			
+		}
+		
 		anim2.add(objects.rules_cont,{y:[objects.rules_cont.y,-450, ]}, false, 1,'easeInBack');
 	},
 	
@@ -3080,10 +3135,10 @@ var lb = {
 
 	back_button_down: function() {
 
-		if (any_dialog_active===1 || objects.lb_1_cont.ready===false) {
-			gres.locked.sound.play();
-			return
-		};
+		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.lb_cards_cont.ready === false) {
+			gres.bad_move.sound.play();
+			return;			
+		}
 
 
 		gres.click.sound.play();
@@ -3177,7 +3232,7 @@ var cards_menu = {
 	activate: function () {
 
 		objects.cards_cont.visible=true;
-		objects.back_button.visible=true;
+		objects.back_button_cont.visible=true;
 
 
 		objects.lobby_frame.visible = true;
@@ -3594,7 +3649,7 @@ var cards_menu = {
 		objects.mini_cards[0].avatar2.visible = false;
 		objects.mini_cards[0].rating_bcg.visible = false;
 
-		objects.mini_cards[0].bcg.tint=0x555555;
+		objects.mini_cards[0].bcg.tint=this.state_tint.bot;
 		objects.mini_cards[0].visible=true;
 		objects.mini_cards[0].uid="AI";
 		objects.mini_cards[0].name="Бот";
@@ -3663,7 +3718,7 @@ var cards_menu = {
 		gres.click.sound.play();
 
 		//показыаем кнопку приглашения
-		objects.invite_header6.text = ['Пригласить','Ask to play'][LANG];
+		
 
 	
 		anim2.add(objects.invite_cont,{y:[450, objects.invite_cont.sy]}, true, 0.6,'easeOutBack');
@@ -3677,7 +3732,13 @@ var cards_menu = {
 		invite_available=invite_available || cards_menu._opp_data.uid==="AI";
 
 		//показыаем кнопку приглашения только если это допустимо
-		objects.invite_button.visible=invite_available;
+		if (invite_available === true) {
+			objects.invite_button.visible = objects.invite_header6.visible = true;		
+			objects.invite_header6.text = ['Пригласить','Ask to play'][LANG];
+		} else {
+			objects.invite_button.visible = objects.invite_header6.visible = false;
+		}
+
 
 
 		//заполняем карточу приглашения данными
@@ -3690,8 +3751,8 @@ var cards_menu = {
 	close: function() {
 
 		objects.cards_cont.visible=false;
-		objects.back_button.visible=false;
-		objects.desktop.visible=false;
+		objects.back_button_cont.visible=false;
+		//objects.desktop.visible=false;
 
 		objects.lobby_frame.visible=false;
 		objects.header4.visible=false;
@@ -3765,7 +3826,7 @@ var cards_menu = {
 		pending_player="";
 		cards_menu._opp_data={};
 		this.hide_invite_dialog();
-		big_message.show("Соперник отказался от игры",'(((');
+		big_message.show(['Соперник отказался от игры','Opponent refused to play'][LANG],'(((');
 
 	},
 
@@ -4309,8 +4370,8 @@ async function load_resources() {
 	return;*/
 
 
-	let git_src="https://akukamil.github.io/quoridor"
-	//let git_src=""
+	//let git_src="https://akukamil.github.io/quoridor"
+	let git_src=""
 
 
 	game_res=new PIXI.Loader();
