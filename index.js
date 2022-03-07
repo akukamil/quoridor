@@ -936,7 +936,7 @@ var bot_player = {
 		else
 			game_res.resources.win.sound.play();		
 		
-		await big_message.show(result_info, ['Сыграйте с реальным соперником для получения рейтинга','Play online with other player to increase rating'][LANG])
+		await big_message.show(result_info, ['Играйте онлайн на рейтинг','Play online on rating'][LANG])
 	
 	},
 	
