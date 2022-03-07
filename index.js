@@ -4370,8 +4370,8 @@ async function load_resources() {
 	return;*/
 
 
-	//let git_src="https://akukamil.github.io/quoridor"
-	let git_src=""
+	let git_src="https://akukamil.github.io/quoridor"
+	//let git_src=""
 
 
 	game_res=new PIXI.Loader();
