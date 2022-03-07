@@ -2840,7 +2840,7 @@ var	show_ad = async function(){
 	if (game_platform==="YANDEX") {		
 		try {
 			await new Promise((resolve, reject) => {			
-				window.ysdk.adv.showFullscreenAdv({  callbacks: {onClose: function() {resolve}, onError: function() {resolve}}});			
+				window.ysdk.adv.showFullscreenAdv({  callbacks: {onClose: function() {resolve()}, onError: function() {reject()}}});			
 			});				
 			
 		} catch (e) {
