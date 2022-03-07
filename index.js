@@ -2837,14 +2837,26 @@ var req_dialog = {
 
 var	show_ad = async function(){
 		
-	if (game_platform==="YANDEX") {				
-		await new Promise((resolve, reject) => {			
-			window.ysdk.adv.showFullscreenAdv({  callbacks: {onClose: function() {resolve}, onError: function() {console.log("error yandex ad");resolve}}});			
-		});		
+	if (game_platform==="YANDEX") {		
+		try {
+			await new Promise((resolve, reject) => {			
+				window.ysdk.adv.showFullscreenAdv({  callbacks: {onClose: function() {resolve}, onError: function() {resolve}}});			
+			});				
+			
+		} catch (e) {
+			
+			console.error(e);
+		}
+
 	}
 	
-	if (game_platform==="VK")
-		await vkBridge.send("VKWebAppShowNativeAds", {ad_format:"interstitial"});
+	if (game_platform==="VK") {				
+		try {
+			await vkBridge.send("VKWebAppShowNativeAds", {ad_format:"interstitial"});			
+		} catch (e) {			
+			console.error(e);
+		}	
+	}
 	
 }
 
