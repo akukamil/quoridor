@@ -936,7 +936,7 @@ var bot_player = {
 		else
 			game_res.resources.win.sound.play();		
 		
-		await big_message.show(result_info, ['Играйте онлайн на рейтинг','Play online on rating'][LANG])
+		await big_message.show(result_info, ['Сыграйте с реальным соперником для получения рейтинга','Play online with other player to increase rating'][LANG])
 	
 	},
 	
@@ -2033,10 +2033,16 @@ var game = {
 		
 		if (my_role === 'master') {
 			my_turn = 1;			
-			objects.timer.x=80;			
+			objects.timer.x=80;		
+			message.add('Вы ходите голубой фишкой. Последний ход за соперником.');
+			objects.my_icon.texture = gres.blue_icon.texture;
+			objects.opp_icon.texture = gres.red_icon.texture;
 		} else {
 			my_turn = 0;			
-			objects.timer.x=720;			
+			objects.timer.x=720;
+			message.add('Вы ходите красной фишкой. Последний ход за Вами.')
+			objects.my_icon.texture = gres.red_icon.texture;
+			objects.opp_icon.texture = gres.blue_icon.texture;
 		}
 		
 				
@@ -2840,7 +2846,7 @@ var	show_ad = async function(){
 	if (game_platform==="YANDEX") {		
 		try {
 			await new Promise((resolve, reject) => {			
-				window.ysdk.adv.showFullscreenAdv({  callbacks: {onClose: function() {resolve()}, onError: function() {reject()}}});			
+				window.ysdk.adv.showFullscreenAdv({  callbacks: {onClose: function() {resolve}, onError: function() {resolve}}});			
 			});				
 			
 		} catch (e) {
@@ -2857,6 +2863,8 @@ var	show_ad = async function(){
 			console.error(e);
 		}	
 	}
+		
+		
 	
 }
 
