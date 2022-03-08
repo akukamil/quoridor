@@ -2894,8 +2894,8 @@ var social_dialog = {
 			return;
 		
 		gres.click.sound.play();
-		vkBridge.send('VKWebAppShowWallPostBox', {"message": `Мой рейтинг в игре Балда ${my_data.rating}. Сможешь победить меня?`,
-		"attachments": "https://vk.com/app8044184"});
+		vkBridge.send('VKWebAppShowWallPostBox', {"message": `Мой рейтинг в игре Quoridor ${my_data.rating}. Сможешь победить меня?`,
+		"attachments": "https://vk.com/app8095798"});
 		social_dialog.close();
 	},
 	
