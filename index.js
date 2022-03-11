@@ -3078,7 +3078,7 @@ var main_menu = {
 
 	rules_button_down: function () {
 
-		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.main_buttons_cont.ready === false) {
+		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.main_buttons_cont.ready === false ||  objects.rules_cont.ready === false) {
 			gres.bad_move.sound.play();
 			return;			
 		}
