@@ -3367,8 +3367,17 @@ var cards_menu = {
 		let num_of_cards = num_of_single + num_of_tables;
 		
 		//если карточек слишком много то убираем столы
-		if (num_of_cards > 14)
-			num_of_tables = num_of_tables - (num_of_cards - 14);
+		if (num_of_cards > 14) {
+			let num_of_tables_cut = num_of_tables - (num_of_cards - 14);			
+			
+			let num_of_tables_to_cut = num_of_tables - num_of_tables_cut;
+			
+			//удаляем столы которые не помещаются
+			let t_keys = Object.keys(tables);
+			for (let i = 0 ; i < num_of_tables_to_cut ; i++) {
+				delete tables[t_keys[i]];
+			}
+		}
 
 		
 		//убираем карточки пропавших игроков и обновляем карточки оставшихся
