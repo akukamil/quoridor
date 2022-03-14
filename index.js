@@ -839,6 +839,7 @@ var online_game = {
 		let result_info = result_row[2];				
 		let old_rating = my_data.rating;
 		my_data.rating = this.calc_new_rating (my_data.rating, result_number);
+		objects.my_card_rating.text = my_data.rating;
 		firebase.database().ref("players/"+my_data.uid+"/rating").set(my_data.rating);
 	
 						
@@ -2592,48 +2593,6 @@ var game = {
 		
 	}
 
-}
-
-var rating = {
-	
-	update : function (game_result_for_player) {
-		
-		if (game_result_for_player === 999)
-			return '';
-								
-		//обновляем мой рейтинг в базе и на карточке
-		let my_old_rating = my_data.rating;
-		let my_new_rating = this.calc_my_new_rating(game_result_for_player);
-		let my_rating_change = my_new_rating - my_old_rating;
-		let opp_new_rating = opp_data.rating - my_rating_change;
-		
-		
-		my_data.rating = my_new_rating;
-		objects.my_card_rating.text = my_data.rating;
-		my_data.games++;
-				
-		//записываем в базу свой новый рейтинг и оппонента
-		firebase.database().ref("players/"+my_data.uid+"/rating").set(my_data.rating);
-		firebase.database().ref("players/"+my_data.uid+"/games").set(my_data.games);			
-		firebase.database().ref("players/"+opp_data.uid+"/rating").set(opp_new_rating);		
-
-
-		return 'Рейтинг: ' + my_old_rating + ' > ' + my_new_rating;		
-		
-	},
-	
-	calc_my_new_rating : function(res)	{
-
-		var Ea = 1 / (1 + Math.pow(10, ((opp_data.rating-my_data.rating)/400)));
-		if (res===1)
-			return Math.round(my_data.rating + 16 * (1 - Ea));
-		if (res===0)
-			return Math.round(my_data.rating + 16 * (0.5 - Ea));
-		if (res===-1)
-			return Math.round(my_data.rating + 16 * (0 - Ea));
-	
-	}	
-	
 }
 
 var keep_alive = function() {
