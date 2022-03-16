@@ -4014,13 +4014,13 @@ var auth = function() {
 				if (local_uid===undefined || local_uid===null) {
 
 					//console.log("Создаем нового локального пользователя");
-
-					let rnd_names=["Бегемот","Жираф","Зебра","Тигр","Ослик","Мамонт","Волк","Лиса","Мышь","Сова","Слон","Енот","Кролик","Бизон","Пантера"];
+					let rnd_names=["Gamma","Жираф","Зебра","Тигр","Ослик","Мамонт","Волк","Лиса","Мышь","Сова","Hot","Енот","Кролик","Бизон","Super","ZigZag","Magik","Alpha","Beta","Foxy","Fazer","King","Kid","Rock"];
 					let rnd_num=Math.floor(Math.random()*rnd_names.length)
 					let rand_uid=Math.floor(Math.random() * 9999999);
 
-					my_data.name 		=	rnd_names[rnd_num]+rand_uid;
-					my_data.record 		= 	0;
+					let name_postfix = rand_uid.toString().substring(0, 3);
+					my_data.name 		=	rnd_names[rnd_num] + name_postfix;
+					my_data.rating 		= 	1400;
 					my_data.uid			=	"ls"+rand_uid;
 					my_data.pic_url		=	'https://avatars.dicebear.com/v2/male/'+irnd(10,10000)+'.svg';
 
