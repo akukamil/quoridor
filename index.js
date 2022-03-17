@@ -2047,6 +2047,11 @@ var game = {
 		}
 		
 				
+		//это то что могло остаться от игры с ботом
+		objects.move_opt_cont.visible=false;
+		objects.my_icon.alpha=1;
+		some_process.player_selected_processing = function(){};
+				
 		//инициируем все что связано с оппонентом
 		this.opponent.init(my_role);
 				
