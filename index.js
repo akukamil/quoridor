@@ -2780,7 +2780,7 @@ var req_dialog = {
 
 				
 		//отправляем информацию о согласии играть с идентификатором игры
-		game_id=~~(Math.random()*599);
+		game_id=~~(Math.random()*999);
 		firebase.database().ref("inbox/"+opp_data.uid).set({sender:my_data.uid,message:"ACCEPT",tm:Date.now(),game_id:game_id});
 
 		//заполняем карточку оппонента
