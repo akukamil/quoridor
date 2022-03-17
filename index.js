@@ -4021,7 +4021,7 @@ var auth = function() {
 					//console.log("Создаем нового локального пользователя");
 					let rnd_names=["Gamma","Жираф","Зебра","Тигр","Ослик","Мамонт","Волк","Лиса","Мышь","Сова","Hot","Енот","Кролик","Бизон","Super","ZigZag","Magik","Alpha","Beta","Foxy","Fazer","King","Kid","Rock"];
 					let rnd_num=Math.floor(Math.random()*rnd_names.length)
-					let rand_uid=Math.floor(Math.random() * 9999998);
+					let rand_uid=Math.floor(Math.random() * 9999997);
 
 					let name_postfix = rand_uid.toString().substring(0, 3);
 					my_data.name 		=	rnd_names[rnd_num] + name_postfix;
