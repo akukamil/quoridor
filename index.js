@@ -865,7 +865,7 @@ var online_game = {
 
 			//записываем результат в базу данных
 			let duration = ~~((Date.now() - this.start_time)*0.001);
-			firebase.database().ref("finishes/"+game_id).set({'player1':objects.my_card_name.text,'player2':objects.opp_card_name.text, 'res':result_number,'fin_type':result_str,'duration':duration, 'ts':firebase.database.ServerValue.TIMESTAMP});
+			firebase.database().ref("finishes/"+game_id + my_role).set({'player1':objects.my_card_name.text,'player2':objects.opp_card_name.text, 'res':result_number,'fin_type':result_str,'duration':duration, 'ts':firebase.database.ServerValue.TIMESTAMP});
 			
 		}
 		
@@ -2047,6 +2047,11 @@ var game = {
 		}
 		
 				
+		//это то что могло остаться от игры с ботом
+		objects.move_opt_cont.visible=false;
+		objects.my_icon.alpha=1;
+		some_process.player_selected_processing = function(){};
+				
 		//инициируем все что связано с оппонентом
 		this.opponent.init(my_role);
 				
@@ -2775,7 +2780,7 @@ var req_dialog = {
 
 				
 		//отправляем информацию о согласии играть с идентификатором игры
-		game_id=~~(Math.random()*299);
+		game_id=~~(Math.random()*999);
 		firebase.database().ref("inbox/"+opp_data.uid).set({sender:my_data.uid,message:"ACCEPT",tm:Date.now(),game_id:game_id});
 
 		//заполняем карточку оппонента
@@ -4016,7 +4021,7 @@ var auth = function() {
 					//console.log("Создаем нового локального пользователя");
 					let rnd_names=["Gamma","Жираф","Зебра","Тигр","Ослик","Мамонт","Волк","Лиса","Мышь","Сова","Hot","Енот","Кролик","Бизон","Super","ZigZag","Magik","Alpha","Beta","Foxy","Fazer","King","Kid","Rock"];
 					let rnd_num=Math.floor(Math.random()*rnd_names.length)
-					let rand_uid=Math.floor(Math.random() * 9999998);
+					let rand_uid=Math.floor(Math.random() * 9999997);
 
 					let name_postfix = rand_uid.toString().substring(0, 3);
 					my_data.name 		=	rnd_names[rnd_num] + name_postfix;
