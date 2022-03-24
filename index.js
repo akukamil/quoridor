@@ -2672,7 +2672,7 @@ var process_new_message = function(msg) {
 		}
 		if (msg.message==="INV_REM") {
 			//запрос игры обновляет данные оппонента поэтому отказ обрабатываем только от актуального запроса
-			if (msg.sender===opp_data.uid)
+			if (msg.sender === req_dialog._opp_data.uid)
 				req_dialog.hide(msg.sender);
 		}
 	}
