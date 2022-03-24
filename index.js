@@ -2670,6 +2670,7 @@ var process_new_message = function(msg) {
 		}
 	}
 
+
 	//приглашение поиграть
 	if(state==="o" || state==="b") {
 		if (msg.message==="INV") {
@@ -4431,5 +4432,4 @@ function main_loop() {
 
 	requestAnimationFrame(main_loop);
 }
-
 
