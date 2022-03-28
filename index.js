@@ -753,7 +753,7 @@ var online_game = {
 		this.disconnect_time = 0;
 		
 		if (t===undefined)
-			this.move_time_left=40;
+			this.move_time_left=45;
 		else
 			this.move_time_left=t;
 		objects.timer.tint=0xffffff;	
@@ -2371,7 +2371,7 @@ var game = {
 		
 		
 		my_turn = 0;
-		me_conf_play = 1;	
+		this.opponent.me_conf_play = 1;	
 		this.opponent.reset_timer();	
 
 		
