@@ -3956,16 +3956,8 @@ var auth = function() {
 						//console.log(`Получены данные игрока от яндекса:\nимя:${my_data.name}\nid:${my_data.uid}\npic_url:${my_data.pic_url}`);
 
 						//если личные данные не получены то берем первые несколько букв айди
-						if (my_data.name=="" || my_data.name=='') {
-							
-							let rnd_names=["Gamma","Жираф","Зебра","Тигр","Ослик","Мамонт","Волк","Лиса","Мышь","Сова","Hot","Енот","Кролик","Бизон","Super","ZigZag","Magik","Alpha","Beta","Foxy","Fazer","King","Kid","Rock"];
-							let rnd_num=Math.floor(Math.random()*rnd_names.length)
-							let rand_uid=Math.floor(Math.random() * 9999997);
-							let name_postfix = rand_uid.toString().substring(0, 3);
-							my_data.name 		=	rnd_names[rnd_num] + name_postfix;
-							//my_data.name=my_data.uid.substring(0,5);							
-						}
-
+						if (my_data.name=="" || my_data.name=='')
+							my_data.name=my_data.uid.substring(0,5);
 
 						help_obj.process_results();
 
