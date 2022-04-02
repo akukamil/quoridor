@@ -2828,7 +2828,15 @@ var	show_ad = async function(){
 		}	
 	}
 		
-		
+	if (game_platform==="CRAZYGAMES") {				
+		try {
+			const crazysdk = window.CrazyGames.CrazySDK.getInstance();
+			crazysdk.init();
+			crazysdk.requestAd('midgame');		
+		} catch (e) {			
+			console.error(e);
+		}	
+	}	
 	
 }
 
