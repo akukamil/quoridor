@@ -3936,7 +3936,7 @@ var auth = function() {
 					
 					let e_num1 = chars.indexOf(e_str[0]) + chars.indexOf(e_str[1]) + chars.indexOf(e_str[2]) +	chars.indexOf(e_str[3]);
 					e_num1 = Math.abs(e_num1) % (rnd_names.length - 1);					
-					let e_num2 = chars.indexOf(e_str[4]) + chars.indexOf(e_str[5]) + chars.indexOf(e_str[6]);					
+					let e_num2 = chars.indexOf(e_str[4]).toString() + chars.indexOf(e_str[5]).toString() + chars.indexOf(e_str[6]).toString();					
 					return rnd_names[e_num1] + e_num2;					
 					
 				} else {
