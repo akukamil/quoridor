@@ -3014,7 +3014,7 @@ var main_menu = {
 
 	play_button_down: async function () {
 
-		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.main_buttons_cont.ready === false) {
+		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.main_buttons_cont.ready === false ||  objects.id_cont.visible === true) {
 			gres.bad_move.sound.play();
 			return;			
 		}
