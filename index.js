@@ -753,7 +753,7 @@ var online_game = {
 		this.disconnect_time = 0;
 		
 		if (t===undefined)
-			this.move_time_left=45;
+			this.move_time_left=40;
 		else
 			this.move_time_left=t;
 		objects.timer.tint=0xffffff;	
@@ -2035,13 +2035,13 @@ var game = {
 		if (my_role === 'master') {
 			my_turn = 1;			
 			objects.timer.x=80;		
-			message.add('Вы ходите голубой фишкой. Последний ход за соперником.');
+			message.add(['Вы ходите голубой фишкой. Последний ход за соперником.','You go with a blue chip. The last move is for the opponent'][LANG]);
 			objects.my_icon.texture = gres.blue_icon.texture;
 			objects.opp_icon.texture = gres.red_icon.texture;
 		} else {
 			my_turn = 0;			
 			objects.timer.x=720;
-			message.add('Вы ходите красной фишкой. Последний ход за Вами.')
+			message.add(['Вы ходите красной фишкой. Последний ход за Вами.','You go with a red chip. The last move is yours'][LANG])
 			objects.my_icon.texture = gres.red_icon.texture;
 			objects.opp_icon.texture = gres.blue_icon.texture;
 		}
@@ -2083,7 +2083,7 @@ var game = {
 		//обозначаем какой сейчас ход
 		made_moves = 0;
 		objects.cur_move_text.visible = true;
-		objects.cur_move_text.text="Ход: "+made_moves;
+		objects.cur_move_text.text=['Ход: ','Move: '][LANG] + made_moves;
 				
 		//количество стен
 		this.wall_num = [10,10];
@@ -2371,7 +2371,7 @@ var game = {
 		
 		
 		my_turn = 0;
-		this.opponent.me_conf_play = 1;	
+		me_conf_play = 1;	
 		this.opponent.reset_timer();	
 
 		
@@ -2669,7 +2669,6 @@ var process_new_message = function(msg) {
 				game.stop("opp_giveup");
 		}
 	}
-
 
 	//приглашение поиграть
 	if(state==="o" || state==="b") {
@@ -3014,7 +3013,7 @@ var main_menu = {
 
 	play_button_down: async function () {
 
-		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.main_buttons_cont.ready === false ||  objects.id_cont.visible === true) {
+		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.main_buttons_cont.ready === false) {
 			gres.bad_move.sound.play();
 			return;			
 		}
@@ -3646,7 +3645,7 @@ var cards_menu = {
 		objects.mini_cards[0].bcg.tint=this.state_tint.bot;
 		objects.mini_cards[0].visible=true;
 		objects.mini_cards[0].uid="AI";
-		objects.mini_cards[0].name="Бот";
+		objects.mini_cards[0].name=['Бот','Bot'][LANG];
 		objects.mini_cards[0].name_text.text=['Бот','Bot'][LANG];
 		objects.mini_cards[0].rating_text.text='1400';
 		objects.mini_cards[0].rating=1400;
@@ -3916,6 +3915,18 @@ var auth = function() {
 				}
 
 
+				//-----------CRAZYGAMES------------------------------------
+				if (s.includes("crazygames")) {
+					console.log("обнаружена платформа crazygames")
+					Promise.all([
+						this.loadScript('https://sdk.crazygames.com/crazygames-sdk-v1.js')
+
+					]).then(function(){
+						help_obj.crazygames();
+					});
+					return;
+				}
+
 				//-----------ЛОКАЛЬНЫЙ СЕРВЕР--------------------------------
 				if (s.includes("192.168")) {
 					help_obj.debug();
@@ -3927,7 +3938,7 @@ var auth = function() {
 				help_obj.unknown();
 
 			},
-
+			
 			get_random_name : function(e_str) {
 				
 				let rnd_names = ['Gamma','Жираф','Зебра','Тигр','Ослик','Мамонт','Волк','Лиса','Мышь','Сова','Hot','Енот','Кролик','Бизон','Super','ZigZag','Magik','Alpha','Beta','Foxy','Fazer','King','Kid','Rock'];
@@ -3937,7 +3948,7 @@ var auth = function() {
 					let e_num1 = chars.indexOf(e_str[0]) + chars.indexOf(e_str[1]) + chars.indexOf(e_str[2]) +	chars.indexOf(e_str[3]);
 					e_num1 = Math.abs(e_num1) % (rnd_names.length - 1);					
 					let e_num2 = chars.indexOf(e_str[4]).toString()  + chars.indexOf(e_str[5]).toString()  + chars.indexOf(e_str[6]).toString() ;	
-					e_num2 = e_num2.substring(0, 3);		
+					e_num2 = e_num2.substring(0, 3);
 					return rnd_names[e_num1] + e_num2;					
 					
 				} else {
@@ -3947,8 +3958,29 @@ var auth = function() {
 					let name_postfix = rand_uid.toString().substring(0, 3);
 					let name =	rnd_names[rnd_num] + name_postfix;				
 					return name;
-				}							
+				}						
+			},	
+			
+			get_random_name2 : function(e_str) {
+				
+				let rnd_names = ['Crazy','Monkey','Sky','Mad','Doom','Hash'];
+				let chars = '+0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+				if (e_str !== undefined) {
+					
+					let e_num1 = chars.indexOf(e_str[0]) + chars.indexOf(e_str[1]) + chars.indexOf(e_str[2]) +	chars.indexOf(e_str[3]);
+					e_num1 = Math.abs(e_num1) % (rnd_names.length - 1);					
+					let e_num2 = chars.indexOf(e_str[4]).toString()  + chars.indexOf(e_str[5]).toString()  + chars.indexOf(e_str[6]).toString() ;	
+					e_num2 = e_num2.substring(0, 3);
+					return rnd_names[e_num1] + e_num2;					
+					
+				} else {
 
+					let rnd_num = irnd(0, rnd_names.length - 1);
+					let rand_uid = irnd(0, 999999)+ 100;
+					let name_postfix = rand_uid.toString().substring(0, 3);
+					let name =	rnd_names[rnd_num] + name_postfix;				
+					return name;
+				}						
 			},	
 
 			yandex: function() {
@@ -4016,6 +4048,69 @@ var auth = function() {
 
 			},
 
+			crazygames : async function() {
+				
+				game_platform="CRAZYGAMES";
+				
+				//ищем в локальном хранилище
+				let local_uid = null;
+				try {
+					local_uid = localStorage.getItem('uid');
+				} catch (e) {
+					console.log(e);
+				}
+
+				//здесь создаем нового игрока в локальном хранилище
+				if (local_uid===undefined || local_uid===null) {
+
+					//console.log("Создаем нового локального пользователя");
+					let rnd_names=["Crazy","Monkey","Sky","Mad","Doom","Hash"];
+					
+					//console.log("Создаем нового локального пользователя");
+					let rand_uid=Math.floor(Math.random() * 9999999);
+					my_data.rating 		= 	1400;
+					my_data.uid			=	"cg"+rand_uid;
+					my_data.name 		=	 help_obj.get_random_name2(my_data.uid);					
+					my_data.pic_url		=	'https://avatars.dicebear.com/v2/male/'+irnd(10,10000)+'.svg';
+
+
+					try {
+						localStorage.setItem('uid',my_data.uid);
+					} catch (e) {
+						console.log(e);
+					}
+					
+					help_obj.process_results();
+				}
+				else
+				{
+					//console.log(`Нашли айди в ЛХ (${local_uid}). Загружаем остальное из ФБ...`);
+					
+					my_data.uid = local_uid;	
+					
+					//запрашиваем мою информацию из бд или заносим в бд новые данные если игрока нет в бд
+					firebase.database().ref("players/"+my_data.uid).once('value').then((snapshot) => {		
+									
+						var data=snapshot.val();
+						
+						//если на сервере нет таких данных
+						if (data === null) {
+													
+							alert('error 4099');
+							
+						} else {						
+							
+							my_data.pic_url = data.pic_url;
+							my_data.name = data.name;
+							help_obj.process_results();
+						}
+
+					})	
+
+				}			
+	
+			},
+
 			debug: function() {
 
 				game_platform = "debug";
@@ -4049,6 +4144,7 @@ var auth = function() {
 					my_data.uid			=	"ls"+rand_uid;
 					my_data.name 		=	 help_obj.get_random_name(my_data.uid);					
 					my_data.pic_url		=	'https://avatars.dicebear.com/v2/male/'+irnd(10,10000)+'.svg';
+
 
 					try {
 						localStorage.setItem('uid',my_data.uid);
@@ -4183,8 +4279,6 @@ async function load_user_data() {
 	try {
 	
 	
-
-	
 		//анимация лупы
 		some_process.loup_anim=function() {
 			objects.id_loup.x=20*Math.sin(game_tick*8)+90;
@@ -4260,8 +4354,10 @@ async function load_user_data() {
 	
 }
 
-async function init_game_env() {
+async function init_game_env(lng) {
 	
+	if (lng === 1)
+		LANG = 1;
 	
 	//ждем когда загрузятся ресурсы
 	await load_resources();
@@ -4351,10 +4447,12 @@ async function init_game_env() {
     }
 	
 	
-	
 	//загружаем данные об игроке
 	load_user_data();
-			
+	
+	//добавляем описание так как текст слишком большой
+	objects.rules_txt.text=['Добро пожаловать в игру Quoridor ( Лабиринт ) !\n\nДанная игра позволит Вам проверить свои стратегические и тактические способности. Цель игры - быстрее соперника добраться до противоположной стороны доски. Каждый ход предлагает 2 варината действий - передвинуть фишку на одну клетку или поставить "стену". Старайтесь заблокировать соперника, но и сами не попасть в тупик. Побеждая других игроков, Вы зарабатываете рейтинговые баллы и продвигаетесь вверх по таблице лидеров.\n\nУдачной игры!','Welcome to the game Quoridor ( Maze)!\n\n This game will allow you to test your strategic and tactical abilities. The goal of the game is to get to the opposite side of the board faster than the opponent. Each move offers 2 options - move the chip one square or put a wall. Try to block the opponent, but do not get into a dead end yourself. By defeating other players, you earn ranking points and move up the leaderboard.\n\n Have a good game!'][LANG];
+	
 	//показыаем основное меню
 	main_menu.activate();
 		
@@ -4454,4 +4552,5 @@ function main_loop() {
 
 	requestAnimationFrame(main_loop);
 }
+
 
