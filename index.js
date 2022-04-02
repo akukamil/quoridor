@@ -3928,6 +3928,28 @@ var auth = function() {
 
 			},
 
+			get_random_name : function(e_str) {
+				
+				let rnd_names = ['Gamma','Жираф','Зебра','Тигр','Ослик','Мамонт','Волк','Лиса','Мышь','Сова','Hot','Енот','Кролик','Бизон','Super','ZigZag','Magik','Alpha','Beta','Foxy','Fazer','King','Kid','Rock'];
+				let chars = '+0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+				if (encode_str !== undefined) {
+					
+					let e_num1 = chars.indexOf(e_str[0]) + chars.indexOf(e_str[1]) + chars.indexOf(e_str[2]) +	chars.indexOf(e_str[3]);
+					e_num1 = Math.abs(e_num1) % (rnd_names.length - 1);					
+					let e_num2 = chars.indexOf(e_str[4]) + chars.indexOf(e_str[5]) + chars.indexOf(e_str[6]);					
+					return e_num1 + e_num2;					
+					
+				} else {
+
+					let rnd_num = irnd(0, rnd_names.length - 1);
+					let rand_uid = irnd(0, 999999)+ 100;
+					let name_postfix = rand_uid.toString().substring(0, 3);
+					let name =	rnd_names[rnd_num] + name_postfix;				
+					return name;
+				}							
+
+			},	
+
 			yandex: function() {
 
 				game_platform="YANDEX";
@@ -3955,9 +3977,10 @@ var auth = function() {
 
 						//console.log(`Получены данные игрока от яндекса:\nимя:${my_data.name}\nid:${my_data.uid}\npic_url:${my_data.pic_url}`);
 
-						//если личные данные не получены то берем первые несколько букв айди
+						//если нет данных то создаем их
 						if (my_data.name=="" || my_data.name=='')
-							my_data.name=my_data.uid.substring(0,5);
+							my_data.name = help_obj.get_random_name(my_data.uid);
+
 
 						help_obj.process_results();
 
@@ -4020,14 +4043,10 @@ var auth = function() {
 				if (local_uid===undefined || local_uid===null) {
 
 					//console.log("Создаем нового локального пользователя");
-					let rnd_names=["Gamma","Жираф","Зебра","Тигр","Ослик","Мамонт","Волк","Лиса","Мышь","Сова","Hot","Енот","Кролик","Бизон","Super","ZigZag","Magik","Alpha","Beta","Foxy","Fazer","King","Kid","Rock"];
-					let rnd_num=Math.floor(Math.random()*rnd_names.length)
-					let rand_uid=Math.floor(Math.random() * 9999997);
-
-					let name_postfix = rand_uid.toString().substring(0, 3);
-					my_data.name 		=	rnd_names[rnd_num] + name_postfix;
+					let rand_uid=Math.floor(Math.random() * 9999999);
 					my_data.rating 		= 	1400;
 					my_data.uid			=	"ls"+rand_uid;
+					my_data.name 		=	 help_obj.get_random_name(my_data.uid);					
 					my_data.pic_url		=	'https://avatars.dicebear.com/v2/male/'+irnd(10,10000)+'.svg';
 
 
