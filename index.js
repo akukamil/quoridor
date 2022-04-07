@@ -4060,6 +4060,11 @@ var auth = function() {
 				
 				game_platform="CRAZYGAMES";
 				
+				
+				//запускаем сдк
+				let crazysdk = window.CrazyGames.CrazySDK.getInstance();
+				crazysdk.init();
+				
 				//ищем в локальном хранилище
 				let local_uid = null;
 				try {
@@ -4320,6 +4325,11 @@ async function load_user_data() {
 		data===null ?
 			my_data.games = 0 :
 			my_data.games = data.games || 0;
+			
+			
+		//отключение от игры и удаление не нужного
+		firebase.database().ref("inbox/"+my_data.uid).onDisconnect().remove();
+		firebase.database().ref("states/"+my_data.uid).onDisconnect().remove();			
 
 		//устанавливаем рейтинг в попап
 		objects.id_rating.text=objects.my_card_rating.text=my_data.rating;
@@ -4336,9 +4346,7 @@ async function load_user_data() {
 		//устанавливаем мой статус в онлайн
 		set_state({state : 'o'});
 
-		//отключение от игры и удаление не нужного
-		firebase.database().ref("inbox/"+my_data.uid).onDisconnect().remove();
-		firebase.database().ref("states/"+my_data.uid).onDisconnect().remove();
+
 
 		//это событие когда меняется видимость приложения
 		document.addEventListener("visibilitychange", vis_change);
