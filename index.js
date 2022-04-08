@@ -856,7 +856,7 @@ var online_game = {
 		}
 		else 
 		{
-			if (platform === 'crazygames') {
+			if (game_platform === 'crazygames') {
 				let crazysdk = window.CrazyGames.CrazySDK.getInstance();				
 				crazysdk.happytime();
 			}
