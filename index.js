@@ -3980,7 +3980,7 @@ var auth = function() {
 			
 			get_random_name2 : function(e_str) {
 				
-				let rnd_names = ['Crazy','Monkey','Sky','Mad','Doom','Hash'];
+				let rnd_names = ['Crazy','Monkey','Sky','Mad','Doom','Hash','Sway','Ace','Thor'];
 				let chars = '+0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 				if (e_str !== undefined) {
 					
