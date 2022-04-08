@@ -830,7 +830,6 @@ var online_game = {
 			['my_no_connection',LOSE , 'Потеряна связь!\nИспользуйте надежное интернет соединение.']
 		];
 					
-		
 		clearTimeout(this.timer_id);		
 		
 		let result_row = res_array.find( p => p[0] === result);
@@ -850,10 +849,20 @@ var online_game = {
 		objects.game_buttons_cont.visible = false;
 		
 		//воспроизводим звук
-		if (result_number === DRAW || result_number === LOSE || result_number === NOSYNC )
-			game_res.resources.lose.sound.play();
-		else
-			game_res.resources.win.sound.play();
+		if (result_number === DRAW || result_number === LOSE || result_number === NOSYNC ) {
+			
+			game_res.resources.lose.sound.play();	
+			
+		}
+		else 
+		{
+			if (platform === 'crazygames') {
+				let crazysdk = window.CrazyGames.CrazySDK.getInstance();				
+				crazysdk.happytime();
+			}
+			game_res.resources.win.sound.play();			
+		}
+
 				
 
 		//если игра результативна то записываем дополнительные данные
@@ -4056,14 +4065,30 @@ var auth = function() {
 
 			},
 
+			get_cg_user_data : async function(event) {
+				
+				return new Promise(function(resolve, reject) {
+
+					let crazysdk = window.CrazyGames.CrazySDK.getInstance();
+					crazysdk.init();
+					
+					crazysdk.addEventListener('initialized', function(event) {	
+						my_data.country_code = event.userInfo.countryCode;	
+						resolve();					
+					});
+					
+				});
+				
+			},
+
 			crazygames : async function() {
 				
 				game_platform="CRAZYGAMES";
 				
 				
-				//запускаем сдк
-				let crazysdk = window.CrazyGames.CrazySDK.getInstance();
-				crazysdk.init();
+				//запускаем сдк				
+				await help_obj.get_cg_user_data();
+				
 				
 				//ищем в локальном хранилище
 				let local_uid = null;
@@ -4083,7 +4108,7 @@ var auth = function() {
 					let rand_uid=Math.floor(Math.random() * 9999999);
 					my_data.rating 		= 	1400;
 					my_data.uid			=	"cg"+rand_uid;
-					my_data.name 		=	 help_obj.get_random_name2(my_data.uid);					
+					my_data.name 		=	 help_obj.get_random_name2(my_data.uid)+' (' + my_data.country_code +')';					
 					my_data.pic_url		=	'https://avatars.dicebear.com/v2/male/'+irnd(10,10000)+'.svg';
 
 
@@ -4375,6 +4400,9 @@ async function init_game_env(lng) {
 	if (lng === 1)
 		LANG = 1;
 	
+	
+	
+	
 	//ждем когда загрузятся ресурсы
 	await load_resources();
 
@@ -4500,8 +4528,19 @@ async function load_resources() {
 	return;*/
 
 
+
+
 	let git_src="https://akukamil.github.io/quoridor"
 	//let git_src=""
+
+
+	//крейзигеймс! загружаем с сервера крейзигеймс
+	let s = window.location.href;
+	if (s.includes("crazygames") === true)
+		git_src = s.substring(0,s.indexOf("index.html")-1);		
+
+
+
 
 
 	game_res=new PIXI.Loader();
