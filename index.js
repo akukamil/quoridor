@@ -3,7 +3,7 @@ var app, game_res, game, objects={}, state="",my_role="", LANG = 0, game_tick=0,
 var players="", pending_player="";
 var my_data={opp_id : ''},opp_data={};
 var some_process = {};
-const V_WALL = 2, H_WALL = 1, ROW0 = 0, ROW8 = 8, MY_ID = 1, OPP_ID = 2, MAX_MOVES = 55, FIELD_MARGIN = 20;
+const V_WALL = 2, H_WALL = 1, ROW0 = 0, ROW8 = 8, MY_ID = 1, OPP_ID = 2, MAX_MOVES = 50, FIELD_MARGIN = 20;
 var WIN = 1, DRAW = 0, LOSE = -1, NOSYNC = 2;
 
 irnd = function (min,max) {	
