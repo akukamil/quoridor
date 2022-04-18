@@ -331,23 +331,24 @@ async function states_room(room) {
 		//добавляем инфу о последнем посещении
 		data[uids[i]].last_seen = '';
 				
-		let snapshot2 = await firebase.database().ref("players/" + uids[i] + "/tm").once('value');
+		let snapshot2 = await firebase.database().ref("players/" + uids[i]).once('value');
 		
 		
 		document.body.innerHTML = i +' / ' + uids.length;
 		let data2=snapshot2.val();
-		let last_seen = new Date(data2).toLocaleString();
+		let last_seen = new Date(data2.tm).toLocaleString();
 		let state = data[uids[i]].state;
+		let games = data2.games;
 		let hidden = data[uids[i]].hidden;
 		if (hidden === 1) state ='h';
 		
 		
-		_data.push([uids[i], data[uids[i]].name, data[uids[i]].opp_id, data[uids[i]].rating, last_seen, state])		
+		_data.push([uids[i], data[uids[i]].name, data[uids[i]].opp_id, data[uids[i]].rating, last_seen, games, state])		
 		
 	}	
 	
 	//это заголовки
-	let header = ['uid','name','opp_id','rating','last_seen','state'];
+	let header = ['uid','name','opp_id','rating','last_seen','games','state'];
 	
 	document.body.innerHTML = "";
 	my_table.create(_data, header, room, 'states');	
