@@ -4132,9 +4132,10 @@ var auth = function() {
 						var data=snapshot.val();
 						
 						//если на сервере нет таких данных
-						if (data === null) {
-													
-							alert('error 4099');
+						if (data === null) {													
+							my_data.rating 		= 	1400;
+							my_data.name 		=	 help_obj.get_random_name2(my_data.uid)+' (' + my_data.country_code +')';					
+							my_data.pic_url		=	'https://avatars.dicebear.com/v2/male/'+irnd(10,10000)+'.svg';
 							
 						} else {						
 							
