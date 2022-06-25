@@ -815,27 +815,29 @@ var online_game = {
 	stop : async function(result) {
 					
 		let res_array = [
-			['my_timeout',LOSE, 'Вы проиграли!\nУ вас закончилось время'],
-			['opp_timeout',WIN , 'Вы выиграли!\nУ соперника закончилось время'],
-			['my_giveup' ,LOSE, 'Вы сдались!'],
-			['opp_giveup' ,WIN , 'Вы выиграли!\nСоперник сдался'],
-			['both_finished',DRAW, 'Ничья'],
-			['my_finished_first',WIN , 'Вы выиграли!\nБыстрее соперника добрались до цели'],
-			['opp_finished_first',LOSE, 'Вы проиграли!\nСоперник оказался быстрее вас.'],
-			['my_closer_after_80',WIN , 'Вы выиграли!\nВы оказались ближе к цели.'],
-			['opp_closer_after_80',LOSE, 'Вы проиграли!\nСоперник оказался ближе к цели.'],
-			['both_closer_80',DRAW , 'Ничья\nОба на одинаковом расстоянии до цели'],
-			['my_no_sync',NOSYNC , 'Похоже вы не захотели начинать игру.'],
-			['opp_no_sync',NOSYNC , 'Похоже соперник не смог начать игру.'],
-			['my_no_connection',LOSE , 'Потеряна связь!\nИспользуйте надежное интернет соединение.']
+			['my_timeout',LOSE, ['Вы проиграли!\nУ вас закончилось время','You have lost!\nYou have run out of time']],
+			['opp_timeout',WIN , ['Вы выиграли!\nУ соперника закончилось время','You won!\nThe opponent has run out of time']],
+			['my_giveup' ,LOSE, ['Вы сдались!','You have given up!']],
+			['opp_giveup' ,WIN , ['Вы выиграли!\nСоперник сдался','You won!\nOpponent gave up']],
+			['both_finished',DRAW, ['Ничья','Draw']],
+			['my_finished_first',WIN , ['Вы выиграли!\nБыстрее соперника добрались до цели','You won!\nFaster than the opponent got to the goal']],
+			['opp_finished_first',LOSE, ['Вы проиграли!\nСоперник оказался быстрее вас.','You have lost!\nOpponent was faster than you']],
+			['my_closer_after_80',WIN , ['Вы выиграли!\nВы оказались ближе к цели.','You won!\nYou were closer to the goal']],
+			['opp_closer_after_80',LOSE, ['Вы проиграли!\nСоперник оказался ближе к цели.','You have lost!\nOpponent was closer to the goal']],
+			['both_closer_80',DRAW , ['Ничья\nОба на одинаковом расстоянии до цели','Draw\nBoth at the same distance to the goal']],
+			['my_no_sync',NOSYNC , ['Похоже вы не захотели начинать игру.','It looks like you did not want to start the game']],
+			['opp_no_sync',NOSYNC , ['Похоже соперник не смог начать игру.','It looks like the opponent could not start the game']],
+			['my_no_connection',LOSE , ['Потеряна связь!\nИспользуйте надежное интернет соединение.','Lost connection!\nUse a reliable internet connection']]
 		];
-					
+			
+		
+			
 		clearTimeout(this.timer_id);		
 		
 		let result_row = res_array.find( p => p[0] === result);
 		let result_str = result_row[0];
 		let result_number = result_row[1];
-		let result_info = result_row[2];				
+		let result_info = result_row[2][LANG];				
 		let old_rating = my_data.rating;
 		my_data.rating = this.calc_new_rating (my_data.rating, result_number);
 		objects.my_card_rating.text = my_data.rating;
