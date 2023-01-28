@@ -4796,7 +4796,7 @@ async function load_resources() {
 	//подпапка с ресурсами
 	let lang_pack = ['RUS','ENG'][LANG];
 
-	let git_src="https://akukamil.github.io/quoridor"
+	let git_src="https://akukamil.github.io/quoridor/"
 	//git_src=""
 
 
