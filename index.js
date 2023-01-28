@@ -4802,7 +4802,10 @@ async function load_resources() {
 
 	//крейзигеймс! загружаем с сервера крейзигеймс
 	let s = window.location.href;
-	//if (s.includes("crazygames") === true)
+	if (s.includes("crazygames") === true){
+		
+		await auth2.load_script("https://akukamil.github.io/quoridor/load_list.txt");
+	}
 	//	git_src = s.substring(0,s.indexOf("index.html")-1);		
 
 	game_res=new PIXI.Loader();
