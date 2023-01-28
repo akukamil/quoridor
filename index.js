@@ -32,6 +32,8 @@ class player_mini_card_class extends PIXI.Container {
 		this.bcg.pointerdown=function(){cards_menu.card_down(id)};
 		this.bcg.pointerover=function(){this.bcg.alpha=0.5;}.bind(this);
 		this.bcg.pointerout=function(){this.bcg.alpha=1;}.bind(this);
+		this.bcg.width=200;
+		this.bcg.height=100;
 
 		this.avatar=new PIXI.Sprite();
 		this.avatar.x=20;
@@ -77,7 +79,8 @@ class player_mini_card_class extends PIXI.Container {
 		
 		//
 		this.rating_bcg = new PIXI.Sprite(game_res.resources.rating_bcg.texture);
-
+		this.rating_bcg.width=200;
+		this.rating_bcg.height=100;
 		
 		this.name1="";
 		this.name2="";
@@ -124,6 +127,139 @@ class lb_player_card_class extends PIXI.Container{
 	}
 
 
+}
+
+class chat_record_class extends PIXI.Container {
+	
+	constructor() {
+		
+		super();
+		
+		this.tm=0;
+		this.msg_id=0;
+		this.msg_index=0;
+		
+		
+		this.msg_bcg = new PIXI.Sprite(gres.msg_bcg.texture);
+		this.msg_bcg.width=560;
+		this.msg_bcg.height=75;
+		this.msg_bcg.x=90;
+		//this.msg_bcg.tint=Math.random() * 0xffffff;
+		
+
+		this.name = new PIXI.BitmapText('Имя Фамил', {fontName: 'mfont',fontSize: 15});
+		this.name.anchor.set(0.5,0.5);
+		this.name.x=65;
+		this.name.y=55;
+		
+		
+		this.avatar = new PIXI.Sprite(PIXI.Texture.WHITE);
+		this.avatar.width = this.avatar.height = 40;
+		this.avatar.x=65;
+		this.avatar.y=5;
+		this.avatar.interactive=true;
+		this.avatar.pointerdown=feedback.response_message.bind(this,this);
+		this.avatar.anchor.set(0.5,0)
+				
+		
+		this.msg = new PIXI.BitmapText('Имя Фамил', {fontName: 'mfont',fontSize: 20,align: 'left'}); 
+		this.msg.x=140;
+		this.msg.y=37.5;
+		this.msg.maxWidth=400;
+		this.msg.anchor.set(0,0.5);
+		this.msg.tint = 0x333333;
+		
+		this.msg_tm = new PIXI.BitmapText('28.11.22 12:31', {fontName: 'mfont',fontSize: 14}); 
+		this.msg_tm.y=57;
+		this.msg_tm.tint=0x000000;
+		this.msg_tm.alpha=0.5;
+		this.msg_tm.anchor.set(1,0.5);
+		
+		this.visible = false;
+		this.addChild(this.msg_bcg,this.avatar, this.name, this.msg,this.msg_tm);
+		
+	}
+	
+	async update_avatar(uid, tar_sprite) {
+		
+		
+		let pic_url = '';
+		//если есть в кэше то =берем оттуда если нет то загружаем
+		if (cards_menu.uid_pic_url_cache[uid] !== undefined) {
+			
+			pic_url = cards_menu.uid_pic_url_cache[uid];
+			
+		} else {
+			
+			pic_url = await firebase.database().ref("players/" + uid + "/pic_url").once('value');		
+			pic_url = pic_url.val();			
+			cards_menu.uid_pic_url_cache[uid] = pic_url;
+		}
+		
+		
+		//сначала смотрим на загруженные аватарки в кэше
+		if (PIXI.utils.TextureCache[pic_url]===undefined || PIXI.utils.TextureCache[pic_url].width===1) {
+
+			//загружаем аватарку игрока
+			let loader=new PIXI.Loader();
+			loader.add("pic", pic_url,{loadType: PIXI.LoaderResource.LOAD_TYPE.IMAGE, timeout: 3000});
+			
+			let texture = await new Promise((resolve, reject) => {				
+				loader.load(function(l,r) {	resolve(l.resources.pic.texture)});
+			})
+			
+			if (texture === undefined || texture.width === 1) {
+				texture = PIXI.Texture.WHITE;
+				texture.tint = this.msg.tint;
+			}
+			
+			tar_sprite.texture = texture;
+			
+		}
+		else
+		{
+			//загружаем текустуру из кэша
+			//console.log(`Текстура взята из кэша ${pic_url}`)	
+			tar_sprite.texture =  PIXI.utils.TextureCache[pic_url];
+		}
+		
+	}
+	
+	async set(msg_data) {
+						
+		//получаем pic_url из фб
+		this.avatar.texture=PIXI.Texture.WHITE;
+		await this.update_avatar(msg_data.uid, this.avatar);
+
+
+
+		this.tm = msg_data.tm;
+			
+		this.msg_id = msg_data.msg_id;
+		this.msg_index=msg_data.msg_index;
+		
+		if (msg_data.name.length > 15) msg_data.name = msg_data.name.substring(0, 15);	
+		this.name.text=msg_data.name ;		
+		
+		this.msg.text=msg_data.msg;
+		
+		if (msg_data.msg.length<25) {
+			this.msg_bcg.texture = gres.msg_bcg_short.texture;			
+			this.msg_tm.x=400;
+		}
+		else {
+			
+			this.msg_bcg.texture = gres.msg_bcg.texture;	
+			this.msg_tm.x=630;
+		}
+
+		
+		this.visible = true;
+		
+		this.msg_tm.text = new Date(msg_data.tm).toLocaleString();
+		
+	}	
+	
 }
 
 class node_class {
@@ -268,6 +404,217 @@ class node_class {
 	
 }
 
+var sound = {
+	
+	on : 1,
+	
+	play : function(snd_res) {
+		
+		if (this.on === 0)
+			return;
+		
+		if (game_res.resources[snd_res]===undefined)
+			return;
+		
+		game_res.resources[snd_res].sound.play();	
+		
+	}
+	
+	
+}
+
+feedback = {
+		
+	rus_keys : [[50,176,80,215.07,'1'],[90,176,120,215.07,'2'],[130,176,160,215.07,'3'],[170,176,200,215.07,'4'],[210,176,240,215.07,'5'],[250,176,280,215.07,'6'],[290,176,320,215.07,'7'],[330,176,360,215.07,'8'],[370,176,400,215.07,'9'],[410,176,440,215.07,'0'],[491,176,541,215.07,'<'],[70,224.9,100,263.97,'Й'],[110,224.9,140,263.97,'Ц'],[150,224.9,180,263.97,'У'],[190,224.9,220,263.97,'К'],[230,224.9,260,263.97,'Е'],[270,224.9,300,263.97,'Н'],[310,224.9,340,263.97,'Г'],[350,224.9,380,263.97,'Ш'],[390,224.9,420,263.97,'Щ'],[430,224.9,460,263.97,'З'],[470,224.9,500,263.97,'Х'],[510,224.9,540,263.97,'Ъ'],[90,273.7,120,312.77,'Ф'],[130,273.7,160,312.77,'Ы'],[170,273.7,200,312.77,'В'],[210,273.7,240,312.77,'А'],[250,273.7,280,312.77,'П'],[290,273.7,320,312.77,'Р'],[330,273.7,360,312.77,'О'],[370,273.7,400,312.77,'Л'],[410,273.7,440,312.77,'Д'],[450,273.7,480,312.77,'Ж'],[490,273.7,520,312.77,'Э'],[70,322.6,100,361.67,'!'],[110,322.6,140,361.67,'Я'],[150,322.6,180,361.67,'Ч'],[190,322.6,220,361.67,'С'],[230,322.6,260,361.67,'М'],[270,322.6,300,361.67,'И'],[310,322.6,340,361.67,'Т'],[350,322.6,380,361.67,'Ь'],[390,322.6,420,361.67,'Б'],[430,322.6,460,361.67,'Ю'],[511,322.6,541,361.67,')'],[451,176,481,215.07,'?'],[30,371.4,180,410.47,'ЗАКРЫТЬ'],[190,371.4,420,410.47,'_'],[430,371.4,570,410.47,'ОТПРАВИТЬ'],[531,273.7,561,312.77,','],[471,322.6,501,361.67,'('],[30,273.7,80,312.77,'EN']],	
+	eng_keys : [[50,176,80,215.07,'1'],[90,176,120,215.07,'2'],[130,176,160,215.07,'3'],[170,176,200,215.07,'4'],[210,176,240,215.07,'5'],[250,176,280,215.07,'6'],[290,176,320,215.07,'7'],[330,176,360,215.07,'8'],[370,176,400,215.07,'9'],[410,176,440,215.07,'0'],[491,176,541,215.07,'<'],[110,224.9,140,263.97,'Q'],[150,224.9,180,263.97,'W'],[190,224.9,220,263.97,'E'],[230,224.9,260,263.97,'R'],[270,224.9,300,263.97,'T'],[310,224.9,340,263.97,'Y'],[350,224.9,380,263.97,'U'],[390,224.9,420,263.97,'I'],[430,224.9,460,263.97,'O'],[470,224.9,500,263.97,'P'],[130,273.7,160,312.77,'A'],[170,273.7,200,312.77,'S'],[210,273.7,240,312.77,'D'],[250,273.7,280,312.77,'F'],[290,273.7,320,312.77,'G'],[330,273.7,360,312.77,'H'],[370,273.7,400,312.77,'J'],[410,273.7,440,312.77,'K'],[450,273.7,480,312.77,'L'],[471,322.6,501,361.67,'('],[70,322.6,100,361.67,'!'],[150,322.6,180,361.67,'Z'],[190,322.6,220,361.67,'X'],[230,322.6,260,361.67,'C'],[270,322.6,300,361.67,'V'],[310,322.6,340,361.67,'B'],[350,322.6,380,361.67,'N'],[390,322.6,420,361.67,'M'],[511,322.6,541,361.67,')'],[451,176,481,215.07,'?'],[30,371.4,180,410.47,'CLOSE'],[190,371.4,420,410.47,'_'],[430,371.4,570,410.47,'SEND'],[531,273.7,561,312.77,','],[30,273.7,80,312.77,'RU']],
+	keyboard_layout : [],
+	lang : '',
+	p_resolve : 0,
+	MAX_SYMBOLS : 50,
+	uid:0,
+	
+	show : function(uid,max_symbols) {
+		
+		if (max_symbols)
+			this.MAX_SYMBOLS=max_symbols
+		else
+			this.MAX_SYMBOLS=50
+				
+		this.set_keyboard_layout(['RU','EN'][LANG]);
+				
+		this.uid = uid;
+		objects.feedback_msg.text ='';
+		objects.feedback_control.text = `0/${this.MAX_SYMBOLS}`
+				
+		anim2.add(objects.feedback_cont,{y:[-400, objects.feedback_cont.sy]}, true, 0.4,'easeOutBack');	
+		return new Promise(function(resolve, reject){					
+			feedback.p_resolve = resolve;	  		  
+		});
+		
+	},
+	
+	set_keyboard_layout(lang) {
+		
+		this.lang = lang;
+		
+		if (lang === 'RU') {
+			this.keyboard_layout = this.rus_keys;
+			objects.feedback_bcg.texture = gres.feedback_bcg_rus.texture;
+		} 
+		
+		if (lang === 'EN') {
+			this.keyboard_layout = this.eng_keys;
+			objects.feedback_bcg.texture = gres.feedback_bcg_eng.texture;
+		}
+		
+	},
+	
+	close : function() {
+			
+		anim2.add(objects.feedback_cont,{y:[objects.feedback_cont.y,450]}, false, 0.4,'easeInBack');		
+		
+	},
+	
+	response_message:function(s) {
+
+		
+		objects.feedback_msg.text = s.name.text.split(' ')[0]+', ';	
+		objects.feedback_control.text = `${objects.feedback_msg.text.length}/${feedback.MAX_SYMBOLS}`		
+		
+	},
+	
+	get_texture_for_key (key) {
+		
+		if (key === '<' || key === 'EN' || key === 'RU') return gres.hl_key1.texture;
+		if (key === 'ЗАКРЫТЬ' || key === 'ОТПРАВИТЬ' || key === 'SEND' || key === 'CLOSE') return gres.hl_key2.texture;
+		if (key === '_') return gres.hl_key3.texture;
+		return gres.hl_key0.texture;
+	},
+	
+	key_down : function(key) {
+		
+		
+		if (objects.feedback_cont.visible === false || objects.feedback_cont.ready === false) return;
+		
+		key = key.toUpperCase();
+		
+		if (key === 'ESCAPE') key = {'RU':'ЗАКРЫТЬ','EN':'CLOSE'}[this.lang];			
+		if (key === 'ENTER') key = {'RU':'ОТПРАВИТЬ','EN':'SEND'}[this.lang];	
+		if (key === 'BACKSPACE') key = '<';
+		if (key === ' ') key = '_';
+			
+		var result = this.keyboard_layout.find(k => {
+			return k[4] === key
+		})
+		
+		if (result === undefined) return;
+		this.pointerdown(null,result)
+		
+	},
+	
+	pointerdown : function(e, inp_key) {
+		
+		let key = -1;
+		let key_x = 0;
+		let key_y = 0;		
+		
+		if (e !== null) {
+			
+			let mx = e.data.global.x/app.stage.scale.x - objects.feedback_cont.x;
+			let my = e.data.global.y/app.stage.scale.y - objects.feedback_cont.y;;
+
+			let margin = 5;
+			for (let k of this.keyboard_layout) {			
+				if (mx > k[0] - margin && mx <k[2] + margin  && my > k[1] - margin && my < k[3] + margin) {
+					key = k[4];
+					key_x = k[0];
+					key_y = k[1];
+					break;
+				}
+			}			
+			
+		} else {
+			
+			key = inp_key[4];
+			key_x = inp_key[0];
+			key_y = inp_key[1];			
+		}
+		
+		
+		
+		//не нажата кнопка
+		if (key === -1) return;			
+				
+		//подсвечиваем клавишу
+		objects.hl_key.x = key_x - 10;
+		objects.hl_key.y = key_y - 10;		
+		objects.hl_key.texture = this.get_texture_for_key(key);
+		anim2.add(objects.hl_key,{alpha:[1, 0]}, false, 0.5,'linear');
+						
+		if (key === '<') {
+			objects.feedback_msg.text=objects.feedback_msg.text.slice(0, -1);
+			key ='';
+		}			
+		
+		
+		if (key === 'EN' || key === 'RU') {
+			this.set_keyboard_layout(key)
+			return;	
+		}	
+		
+		if (key === 'ЗАКРЫТЬ' || key === 'CLOSE') {
+			this.close();
+			this.p_resolve(['close','']);	
+			key ='';
+			sound.play('keypress');
+			return;	
+		}	
+		
+		if (key === 'ОТПРАВИТЬ' || key === 'SEND') {
+			
+			if (objects.feedback_msg.text === '') return;
+			
+			//если нашли ненормативную лексику то закрываем
+			let mats =/шлю[хш]|п[еи]д[аеор]|суч?ка|г[ао]ндо|х[ую][ейяе]л?|жоп|соси|дроч|чмо|говн|дерьм|трах|секс|сосат|выеб|пизд|срал|уеб[аико]щ?|ебень?|ебу[ч]|ху[йия]|еба[нл]|дроч|еба[тш]|педик|[ъы]еба|ебну|ебл[аои]|ебись|сра[кч]|манда|еб[лн]я|ублюд|пис[юя]/i;		
+			
+			let text_no_spaces = objects.feedback_msg.text.replace(/ /g,'');
+			if (text_no_spaces.match(mats)) {
+				sound.play('locked');
+				this.close();
+				this.p_resolve(['close','']);	
+				key ='';
+				return;
+			}
+			
+			this.close();
+			this.p_resolve(['sent',objects.feedback_msg.text]);	
+			key ='';
+			sound.play('keypress');
+			return;	
+		}	
+		
+		
+		
+		if (objects.feedback_msg.text.length >= this.MAX_SYMBOLS)  {
+			sound.play('locked');
+			return;			
+		}
+		
+		if (key === '_') {
+			objects.feedback_msg.text += ' ';	
+			key ='';
+		}			
+		
+
+		sound.play('keypress');
+		
+		objects.feedback_msg.text += key;	
+		objects.feedback_control.text = `${objects.feedback_msg.text.length}/${this.MAX_SYMBOLS}`		
+		
+	}
+	
+}
+
 var message =  {
 	
 	promise_resolve :0,
@@ -307,6 +654,14 @@ var anim2 = {
 	c5: (2 * Math.PI) / 4.5,
 		
 	slot: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+	
+	any_on : function() {
+		
+		for (let s of this.slot)
+			if (s !== null)
+				return true
+		return false;		
+	},
 	
 	linear: function(x) {
 		return x
@@ -371,13 +726,10 @@ var anim2 = {
 		return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 	},
 	
-	add : function(obj, params, vis_on_end, time, func, anim3_origin) {
+	add : function(obj, params, vis_on_end, time, func) {
 				
 		//если уже идет анимация данного спрайта то отменяем ее
 		anim2.kill_anim(obj);
-		if (anim3_origin === undefined)
-			anim3.kill_anim(obj);
-
 
 		let f=0;
 		//ищем свободный слот для анимации
@@ -437,9 +789,6 @@ var anim2 = {
 			
 		}
 
-		
-		
-
 	},	
 	
 	process: function () {
@@ -472,156 +821,6 @@ var anim2 = {
 		
 	}
 	
-}
-
-var anim3 = {
-			
-	slot: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
-	
-	kill_anim: function(obj) {
-		
-		for (var i=0;i<this.slot.length;i++)
-			if (this.slot[i]!==null)
-				if (this.slot[i].obj===obj)
-					this.slot[i]=null;		
-	},
-	
-	add : function (obj, params, schedule, func = 0, repeat = 0) {
-		
-		//anim3.add(objects.header0,['x','y'],[{time:0,val:[0,0]},{time:1,val:[110,110]},{time:2,val:[0,0]}],'easeInOutCubic');	
-		
-		
-		//если уже идет анимация данного спрайта то отменяем ее
-		anim3.kill_anim(obj);
-		
-		
-		//ищем свободный слот для анимации
-		let f=0;
-		for (var i = 0; i < this.slot.length; i++) {
-
-			if (this.slot[i] === null) {
-				
-				obj.ready = true;
-				
-				//если это точечная анимация то сразу устанавливаем первую точку
-				if (func === 0)
-					for (let i=0;i<params.length;i++)
-						obj[params[i]]=schedule[0].val[i]
-				
-				this.slot[i] = {
-					obj: obj,
-					params: params,
-					schedule: schedule,
-					func: func,
-					start_time : game_tick,
-					cur_point: 0,
-					next_point: 1,
-					repeat: repeat
-				};
-				f = 1;				
-				break;
-			}
-		}		
-		
-		if (f===1) {			
-			return new Promise(function(resolve, reject){					
-			  anim3.slot[i].p_resolve = resolve;	  		  
-			});				
-		} else {
-			
-			return new Promise(function(resolve, reject){					
-			  resolve();	  		  
-			});	
-		}
-	},
-	
-	process: function () {
-		
-		for (var i = 0; i < this.slot.length; i++)
-		{
-			if (this.slot[i] !== null) {
-				
-				let s=this.slot[i];
-				
-				//это точечная анимация
-				if (s.func === 0) {
-					
-					let time_passed = game_tick - s.start_time;
-					let next_point_time = s.schedule[s.next_point].time;
-					
-					//если пришло время следующей точки
-					if (time_passed > next_point_time) {
-						
-						//устанавливаем параметры точки
-						for (let i=0;i<s.params.length;i++)
-							s.obj[s.params[i]]=s.schedule[s.next_point].val[i];
-												
-						s.next_point++;		
-						
-						//начинаем опять отчет времени
-						s.start_time = game_tick;	
-						
-						//если следующая точка - не существует
-						if (s.next_point === s.schedule.length) {							
-
-							if (s.repeat === 1) {
-								s.start_time = game_tick
-								s.next_point = 1;
-							}
-							else {								
-								s.p_resolve('finished');
-								this.slot[i]=null;									
-							}
-						
-						}
-					}					
-				}
-				else
-				{
-					//это вариант с твинами между контрольными точками
-					
-					m_lable : if (s.obj.ready === true) {						
-						
-						//если больше нет контрольных точек то убираем слот или начинаем сначала
-						if (s.next_point === s.schedule.length) {
-							
-							if (s.repeat === 1) {
-								s.cur_point = 0;
-								s.next_point = 1;
-							}
-							else {
-								s.p_resolve('finished');
-								this.slot[i]=null;	
-								break m_lable;
-							}			
-						}					
-
-							
-						let p0 = s.schedule[s.cur_point];
-						let p1 = s.schedule[s.next_point];
-						let time = p1.time;
-						
-						//заполняем расписание для анимации №2
-						let cur_schedule={};							
-						for (let i = 0 ; i < s.params.length ; i++) {						
-							let p = s.params[i];
-							cur_schedule[p]=[p0.val[i],p1.val[i]]						
-						}					
-						
-						//активируем анимацию
-						anim2.add(s.obj,cur_schedule,true,time,s.func,1);	
-						
-						s.cur_point++;
-						s.next_point++;							
-							
-					
-					}		
-				}
-			}			
-		}		
-	}
-	
-
 }
 
 var big_message = {
@@ -720,7 +919,7 @@ var online_game = {
 		if (state === 'b') {			
 
 			//убираем кнопку стоп
-			objects.stop_button_cont.visible=false;			
+			objects.stop_bot_button.visible=false;			
 		}
 		
 
@@ -912,7 +1111,7 @@ var bot_player = {
 		set_state({state : 'b'});	
 
 		//показываем кнопку стоп
-		objects.stop_button_cont.visible = true;
+		objects.stop_bot_button.visible = true;
 		
 		//отключаем таймер...........................
 		objects.timer.text  = ['Мой ход...','My move...'][LANG];
@@ -939,7 +1138,7 @@ var bot_player = {
 		objects.timer.visible = false;
 
 		//убираем кнопку стоп
-		objects.stop_button_cont.visible=false;
+		objects.stop_bot_button.visible=false;
 		
 		
 		//воспроизводим звук
@@ -1237,24 +1436,28 @@ var ffunc = {
 				
 				let cell = field.f[r][c];
 				
-				if (cell.wall_type === V_WALL) {					
+				if (cell.wall_type === V_WALL) {	
+					
+					objects.walls[wall_iter].height=140;
+					objects.walls[wall_iter].width=40;
 					objects.walls[wall_iter].x = objects.field.x + FIELD_MARGIN + c * 50;
 					objects.walls[wall_iter].y = objects.field.y + FIELD_MARGIN + r * 50;
-					
-					
+										
 					if (r === 1)
 						objects.walls[wall_iter].texture=gres.v_wall_t.texture;
 					else if (r === 8)
 						objects.walls[wall_iter].texture=gres.v_wall_b.texture;
 					else
 						objects.walls[wall_iter].texture=gres.v_wall.texture;
-					
-					
+										
 					objects.walls[wall_iter].visible = true;
 					wall_iter++;
 				}
 				
-				if (cell.wall_type === H_WALL) {					
+				if (cell.wall_type === H_WALL) {		
+
+					objects.walls[wall_iter].height=40;
+					objects.walls[wall_iter].width=140;
 					objects.walls[wall_iter].x = objects.field.x + FIELD_MARGIN + c * 50;
 					objects.walls[wall_iter].y = objects.field.y + FIELD_MARGIN + r * 50;
 					
@@ -2038,7 +2241,11 @@ var game = {
 		if (state === 'b') {
 			this.opponent.silent_stop();
 		}
-						
+			
+
+		//если открыт чат то закрываем его
+		if (objects.chat_cont.visible===true)
+			chat.close();
 				
 		my_role=role;
 		this.opponent = opponent;
@@ -2718,7 +2925,7 @@ var req_dialog = {
 				
 				
 				//так как успешно получили данные о сопернике то показываем окно	
-				anim2.add(objects.req_cont,{y:[-260, objects.req_cont.sy]}, true, 1,'easeOutElastic');
+				anim2.add(objects.req_cont,{y:[-260, objects.req_cont.sy]}, true, 0.5,'easeOutElastic');
 
 				//Отображаем  имя и фамилию в окне приглашения
 				req_dialog._opp_data.name=player_data.name;
@@ -2787,7 +2994,7 @@ var req_dialog = {
 		//устанавливаем окончательные данные оппонента
 		opp_data=req_dialog._opp_data;
 
-		anim2.add(objects.req_cont,{y:[objects.req_cont.sy, -260]}, false, 1,'easeInBack');
+		anim2.add(objects.req_cont,{y:[objects.req_cont.sy, -260]}, false, 0.5,'easeInBack');
 
 				
 		//отправляем информацию о согласии играть с идентификатором игры
@@ -3069,7 +3276,7 @@ var main_menu = {
 		gres.click.sound.play();
 
 	
-		anim2.add(objects.rules_cont,{y:[-450, objects.rules_cont.sy]}, true, 1,'easeOutBack');
+		anim2.add(objects.rules_cont,{y:[-450, objects.rules_cont.sy]}, true, 0.5,'easeOutBack');
 
 	},
 
@@ -3080,7 +3287,23 @@ var main_menu = {
 			return;			
 		}
 		
-		anim2.add(objects.rules_cont,{y:[objects.rules_cont.y,-450, ]}, false, 1,'easeInBack');
+		anim2.add(objects.rules_cont,{y:[objects.rules_cont.y,-450, ]}, false, 0.5,'easeInBack');
+	},
+	
+	chat_button_down : async function() {
+		
+		if (anim2.any_on()===true) {
+			sound.play('locked');
+			return
+		};
+
+		sound.play('click');
+
+		await this.close();
+		
+		chat.activate();
+		
+		
 	},
 	
 	process : function () {
@@ -3094,6 +3317,197 @@ var main_menu = {
 
 }
 
+var chat = {
+	
+	MESSAGE_HEIGHT : 75,
+	last_record_end : 0,
+	drag : false,
+	data:[],
+	touch_y:0,
+	
+	activate : function() {
+		
+		//firebase.database().ref('chat').remove();
+		//return;
+		
+		objects.desktop.visible=true;
+		objects.desktop.pointerdown=this.down.bind(this);
+		objects.desktop.pointerup=this.up.bind(this);
+		objects.desktop.pointermove=this.move.bind(this);
+		objects.desktop.interactive=true;
+		
+		this.last_record_end = 0;
+		objects.chat_records_cont.y = objects.chat_records_cont.sy;
+		
+		for(let rec of objects.chat_records) {
+			rec.visible = false;			
+			rec.msg_id = -1;	
+			rec.tm=0;
+		}
+
+		objects.chat_enter_button.visible=true
+		
+		objects.chat_cont.visible = true;
+		//подписываемся на чат
+		//подписываемся на изменения состояний пользователей
+		firebase.database().ref('chat2').orderByChild('tm').limitToLast(20).once('value', snapshot => {chat.chat_load(snapshot.val());});		
+		firebase.database().ref('chat2').on('child_changed', snapshot => {chat.chat_updated(snapshot.val());});
+	},
+	
+	down : function(e) {
+		
+		this.drag=true;
+        this.touch_y = e.data.global.y / app.stage.scale.y;
+	},
+	
+	up : function(e) {
+		
+		this.drag=false;
+		
+	},
+	
+	move : function(e) {
+		
+		if (this.drag === true) {
+			
+			let cur_y = e.data.global.y / app.stage.scale.y;
+			let dy = this.touch_y - cur_y;
+			if (dy!==0){
+				
+				objects.chat_records_cont.y-=dy;
+				this.touch_y=cur_y;
+				this.wheel_event(0);
+			}
+			
+		}
+		
+	},
+				
+	get_oldest_record : function () {
+		
+		let oldest = objects.chat_records[0];
+		
+		for(let rec of objects.chat_records)
+			if (rec.tm < oldest.tm)
+				oldest = rec;			
+		return oldest;
+
+	},
+	
+	shuffle_array : function(array) {
+		for (let i = array.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[array[i], array[j]] = [array[j], array[i]];
+		}
+	},
+	
+	get_oldest_index : function () {
+		
+		let nums=Array.from(Array(50).keys());
+		this.shuffle_array(nums);
+		loop1:for (let num of nums){
+			
+			for(let rec of objects.chat_records)
+				if (rec.visible===true && rec.msg_index===num)
+					continue loop1;
+			return num;
+		}
+		
+		let oldest = {tm:9671801786406 ,visible:true};		
+		for(let rec of objects.chat_records)
+			if (rec.visible===true && rec.tm < oldest.tm)
+				oldest = rec;	
+		return oldest.msg_index;		
+		
+	},
+		
+	chat_load : async function(data) {
+		
+		if (data === null) return;
+		
+		//превращаем в массив
+		data = Object.keys(data).map((key) => data[key]);
+		
+		//сортируем сообщения от старых к новым
+		data.sort(function(a, b) {	return a.tm - b.tm;});
+			
+		//покаываем несколько последних сообщений
+		for (let c of data)
+			await this.chat_updated(c);	
+	},	
+		
+	chat_updated : async function(data) {		
+	
+		if(data===undefined) return;
+		
+		//если это сообщение уже есть в чате
+		var result = objects.chat_records.find(obj => {
+		  return obj.msg_id === data.msg_id;
+		})
+		
+		if (result !== undefined)		
+			return;
+		
+		let rec = objects.chat_records[data.msg_index];
+		
+		//сразу заносим айди чтобы проверять
+		rec.msg_id = data.msg_id;
+		
+		rec.y = this.last_record_end;
+		
+		await rec.set(data)		
+		
+		this.last_record_end += this.MESSAGE_HEIGHT;		
+		
+		
+		await anim2.add(objects.chat_records_cont,{y:[objects.chat_records_cont.y,objects.chat_records_cont.y-this.MESSAGE_HEIGHT]}, true, 0.05,'linear');		
+		
+	},
+	
+	wheel_event : function(delta) {
+		
+		objects.chat_records_cont.y-=delta*this.MESSAGE_HEIGHT;	
+		const chat_bottom = this.last_record_end;
+		const chat_top = this.last_record_end - objects.chat_records.filter(obj => obj.visible === true).length*this.MESSAGE_HEIGHT;
+		
+		if (objects.chat_records_cont.y+chat_bottom<450)
+			objects.chat_records_cont.y = 450-chat_bottom;
+		
+		if (objects.chat_records_cont.y+chat_top>0)
+			objects.chat_records_cont.y=-chat_top;
+		
+	},
+	
+	close : function() {
+		
+		objects.desktop.interactive=false;
+		objects.desktop.visible=false;
+		objects.chat_cont.visible = false;
+		firebase.database().ref('chat').off();
+		if (objects.feedback_cont.visible === true)
+			feedback.close();
+	},
+	
+	close_down : async function() {
+		
+		this.close();
+		main_menu.activate();
+		
+	},
+	
+	open_keyboard : async function() {
+		
+		//пишем отзыв и отправляем его		
+		let fb = await feedback.show(opp_data.uid,65);		
+		if (fb[0] === 'sent') {			
+			const msg_index=this.get_oldest_index();
+			await firebase.database().ref('chat2/'+msg_index).set({uid:my_data.uid,name:my_data.name,msg:fb[1], tm:firebase.database.ServerValue.TIMESTAMP, msg_id:irnd(0,9999999),rating:my_data.rating,msg_index:msg_index});
+		}		
+	}
+
+	
+}
+
 var lb = {
 
 	cards_pos: [[370,10],[380,70],[390,130],[380,190],[360,250],[330,310],[290,370]],
@@ -3102,7 +3516,7 @@ var lb = {
 
 		objects.desktop.visible=true;
 		objects.desktop.texture=game_res.resources.lb_bcg.texture;
-		objects.lb_header6.visible=true;
+
 		
 		anim2.add(objects.lb_1_cont,{x:[-150, objects.lb_1_cont.sx]}, true, 1,'easeOutBack');
 		anim2.add(objects.lb_2_cont,{x:[-150, objects.lb_2_cont.sx]}, true, 1,'easeOutBack');
@@ -3132,7 +3546,7 @@ var lb = {
 		objects.lb_3_cont.visible=false;
 		objects.lb_cards_cont.visible=false;
 		objects.lb_back_button.visible=false;
-		objects.lb_header6.visible=false;
+
 
 	},
 
@@ -3745,12 +4159,11 @@ var cards_menu = {
 
 		//показыаем кнопку приглашения только если это допустимо
 		if (invite_available === true) {
-			objects.invite_button.visible = objects.invite_header6.visible = true;		
-			objects.invite_header6.text = ['Пригласить','Ask to play'][LANG];
+			objects.invite_button.visible = true;		
+			objects.invite_button.texture = gres.invite_button.texture;	
 		} else {
-			objects.invite_button.visible = objects.invite_header6.visible = false;
+			objects.invite_button.visible = false;
 		}
-
 
 
 		//заполняем карточу приглашения данными
@@ -3824,7 +4237,7 @@ var cards_menu = {
 		else
 		{
 			gres.click.sound.play();
-			objects.invite_header6.text = ['Ждем ответ...','Await...'][LANG];
+			objects.invite_button.texture = gres.invite_button.texture;	;
 			firebase.database().ref("inbox/"+cards_menu._opp_data.uid).set({sender:my_data.uid,message:"INV",tm:Date.now()});
 			pending_player=cards_menu._opp_data.uid;
 		}
@@ -3877,400 +4290,180 @@ var cards_menu = {
 
 }
 
-var auth = function() {
-	
-	return new Promise((resolve, reject)=>{
-
-		let help_obj = {
-
-			loadScript : function(src) {
-			  return new Promise((resolve, reject) => {
-				const script = document.createElement('script')
-				script.type = 'text/javascript'
-				script.onload = resolve
-				script.onerror = reject
-				script.src = src
-				document.head.appendChild(script)
-			  })
-			},
-
-			vkbridge_events: function(e) {
-
-				if (e.detail.type === 'VKWebAppGetUserInfoResult') {
-
-					my_data.name 	= e.detail.data.first_name + ' ' + e.detail.data.last_name;
-					my_data.uid 	= "vk"+e.detail.data.id;
-					my_data.pic_url = e.detail.data.photo_100;
-
-					//console.log(`Получены данные игрока от VB MINIAPP:\nимя:${my_data.name}\nid:${my_data.uid}\npic_url:${my_data.pic_url}`);
-					help_obj.process_results();
-				}
-			},
-
-			init: function() {
-
-				let s = window.location.href;
-
-				//-----------ЯНДЕКС------------------------------------
-				if (s.includes("yandex")) {
-					Promise.all([
-						this.loadScript('https://yandex.ru/games/sdk/v2')
-					]).then(function(){
-						help_obj.yandex();
-					});
-					return;
-				}
-
-
-				//-----------ВКОНТАКТЕ------------------------------------
-				if (s.includes("vk.com")) {
-					Promise.all([
-						this.loadScript('https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js')
-
-					]).then(function(){
-						help_obj.vk()
-					});
-					return;
-				}
-
-
-				//-----------CRAZYGAMES------------------------------------
-				if (s.includes("crazygames")) {
-					console.log("обнаружена платформа crazygames")
-					Promise.all([
-						this.loadScript('https://sdk.crazygames.com/crazygames-sdk-v1.js')
-
-					]).then(function(){
-						help_obj.crazygames();
-					});
-					return;
-				}
-
-				//-----------ЛОКАЛЬНЫЙ СЕРВЕР--------------------------------
-				if (s.includes("192.168")) {
-					help_obj.debug();
-					return;
-				}
-
-
-				//-----------НЕИЗВЕСТНОЕ ОКРУЖЕНИЕ---------------------------
-				help_obj.unknown();
-
-			},
+auth2 = {
+		
+	load_script : function(src) {
+	  return new Promise((resolve, reject) => {
+		const script = document.createElement('script')
+		script.type = 'text/javascript'
+		script.onload = resolve
+		script.onerror = reject
+		script.src = src
+		document.head.appendChild(script)
+	  })
+	},
 			
-			get_random_name : function(e_str) {
-				
-				let rnd_names = ['Gamma','Жираф','Зебра','Тигр','Ослик','Мамонт','Волк','Лиса','Мышь','Сова','Hot','Енот','Кролик','Бизон','Super','ZigZag','Magik','Alpha','Beta','Foxy','Fazer','King','Kid','Rock'];
-				let chars = '+0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-				if (e_str !== undefined) {
-					
-					let e_num1 = chars.indexOf(e_str[0]) + chars.indexOf(e_str[1]) + chars.indexOf(e_str[2]) +	chars.indexOf(e_str[3]);
-					e_num1 = Math.abs(e_num1) % (rnd_names.length - 1);					
-					let e_num2 = chars.indexOf(e_str[4]).toString()  + chars.indexOf(e_str[5]).toString()  + chars.indexOf(e_str[6]).toString() ;	
-					e_num2 = e_num2.substring(0, 3);
-					return rnd_names[e_num1] + e_num2;					
-					
-				} else {
-
-					let rnd_num = irnd(0, rnd_names.length - 1);
-					let rand_uid = irnd(0, 999999)+ 100;
-					let name_postfix = rand_uid.toString().substring(0, 3);
-					let name =	rnd_names[rnd_num] + name_postfix;				
-					return name;
-				}						
-			},	
-			
-			get_random_name2 : function(e_str) {
-				
-				let rnd_names = ['Crazy','Monkey','Sky','Mad','Doom','Hash','Sway','Ace','Thor'];
-				let chars = '+0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-				if (e_str !== undefined) {
-					
-					let e_num1 = chars.indexOf(e_str[0]) + chars.indexOf(e_str[1]) + chars.indexOf(e_str[2]) +	chars.indexOf(e_str[3]);
-					e_num1 = Math.abs(e_num1) % (rnd_names.length - 1);					
-					let e_num2 = chars.indexOf(e_str[4]).toString()  + chars.indexOf(e_str[5]).toString()  + chars.indexOf(e_str[6]).toString() ;	
-					e_num2 = e_num2.substring(0, 3);
-					return rnd_names[e_num1] + e_num2;					
-					
-				} else {
-
-					let rnd_num = irnd(0, rnd_names.length - 1);
-					let rand_uid = irnd(0, 999999)+ 100;
-					let name_postfix = rand_uid.toString().substring(0, 3);
-					let name =	rnd_names[rnd_num] + name_postfix;				
-					return name;
-				}						
-			},	
-
-			yandex: function() {
-
-				game_platform="YANDEX";
-				if(typeof(YaGames)==='undefined')
-				{
-					help_obj.local();
-				}
-				else
-				{
-					//если sdk яндекса найден
-					YaGames.init({}).then(ysdk => {
-
-						//фиксируем SDK в глобальной переменной
-						window.ysdk=ysdk;
-
-						//запрашиваем данные игрока
-						return ysdk.getPlayer();
-
-
-					}).then((_player)=>{
-
-						my_data.name 	= _player.getName();
-						my_data.uid 	= _player.getUniqueID().replace(/\//g, "Z");
-						my_data.pic_url = _player.getPhoto('medium');
-
-						//console.log(`Получены данные игрока от яндекса:\nимя:${my_data.name}\nid:${my_data.uid}\npic_url:${my_data.pic_url}`);
-
-						//если нет данных то создаем их
-						if (my_data.name=="" || my_data.name=='')
-							my_data.name = help_obj.get_random_name(my_data.uid);
-
-
-						help_obj.process_results();
-
-					}).catch((err)=>{
-
-						//загружаем из локального хранилища если нет авторизации в яндексе
-						help_obj.local();
-
-					})
-				}
-			},
-
-			vk: async function() {
-
-				game_platform="VK";
-				
-				let e={};
-				try {
-					await vkBridge.send('VKWebAppInit');
-					e = await vkBridge.send('VKWebAppGetUserInfo');
-				} catch (error) {
-					alert(error.stack)
-				}		
-
-				
-				my_data.name 	= e.first_name + ' ' + e.last_name;
-				my_data.uid 	= "vk"+e.id;
-				my_data.pic_url = e.photo_100;
-
-				help_obj.process_results();		
-					
-
-			},
-
-			get_cg_user_data : async function(event) {
-				
-				return new Promise(function(resolve, reject) {
-
-					let crazysdk = window.CrazyGames.CrazySDK.getInstance();
-					crazysdk.init();
-					
-					crazysdk.addEventListener('initialized', function(event) {	
-						my_data.country_code = event.userInfo.countryCode;	
-						resolve();					
-					});
-					
-				});
-				
-			},
-
-			crazygames : async function() {
-				
-				game_platform="CRAZYGAMES";
-				
-				
-				//запускаем сдк				
-				await help_obj.get_cg_user_data();
-				
-				
-				//ищем в локальном хранилище
-				let local_uid = null;
-				try {
-					local_uid = localStorage.getItem('uid');
-				} catch (e) {
-					console.log(e);
-				}
-
-				//здесь создаем нового игрока в локальном хранилище
-				if (local_uid===undefined || local_uid===null) {
-
-					//console.log("Создаем нового локального пользователя");
-					let rnd_names=["Crazy","Monkey","Sky","Mad","Doom","Hash"];
-					
-					//console.log("Создаем нового локального пользователя");
-					let rand_uid=Math.floor(Math.random() * 9999999);
-					my_data.rating 		= 	1400;
-					my_data.uid			=	"cg"+rand_uid;
-					my_data.name 		=	 help_obj.get_random_name2(my_data.uid)+' (' + my_data.country_code +')';					
-					my_data.pic_url		=	'https://avatars.dicebear.com/v2/male/'+irnd(10,10000)+'.svg';
-
-
-					try {
-						localStorage.setItem('uid',my_data.uid);
-					} catch (e) {
-						console.log(e);
-					}
-					
-					help_obj.process_results();
-				}
-				else
-				{
-					//console.log(`Нашли айди в ЛХ (${local_uid}). Загружаем остальное из ФБ...`);
-					
-					my_data.uid = local_uid;	
-					
-					//запрашиваем мою информацию из бд или заносим в бд новые данные если игрока нет в бд
-					firebase.database().ref("players/"+my_data.uid).once('value').then((snapshot) => {		
-									
-						var data=snapshot.val();
-						
-						//если на сервере нет таких данных
-						if (data === null) {		
-							//айди есть но данных нет, тогда заново их заносим
-							my_data.rating 		= 	1400;
-							my_data.name 		=	 help_obj.get_random_name2(my_data.uid)+' (' + my_data.country_code +')';					
-							my_data.pic_url		=	'https://avatars.dicebear.com/v2/male/'+irnd(10,10000)+'.svg';
-							
-						} else {					
-							
-							my_data.pic_url = data.pic_url;
-							my_data.name = data.name;							
-						}
-						
-						help_obj.process_results();
-
-					})	
-
-				}			
+	get_random_char : function() {		
+		
+		const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+		return chars[irnd(0,chars.length-1)];
+		
+	},
 	
-			},
-
-			debug: function() {
-
-				game_platform = "debug";
-				let uid = prompt('Отладка. Введите ID', 100);
-
-				my_data.name = my_data.uid = "debug" + uid;
-				my_data.pic_url = "https://sun9-73.userapi.com/impf/c622324/v622324558/3cb82/RDsdJ1yXscg.jpg?size=223x339&quality=96&sign=fa6f8247608c200161d482326aa4723c&type=album";
-
-				help_obj.process_results();
-
-			},
-
-			local: function(repeat = 0) {
-
-				game_platform="YANDEX";
-
-				//ищем в локальном хранилище
-				let local_uid = null;
-				try {
-					local_uid = localStorage.getItem('uid');
-				} catch (e) {
-					console.log(e);
-				}
-
-				//здесь создаем нового игрока в локальном хранилище
-				if (local_uid===undefined || local_uid===null) {
-
-					//console.log("Создаем нового локального пользователя");
-					let rand_uid=Math.floor(Math.random() * 9999999);
-					my_data.rating 		= 	1400;
-					my_data.uid			=	"ls"+rand_uid;
-					my_data.name 		=	 help_obj.get_random_name(my_data.uid);					
-					my_data.pic_url		=	'https://avatars.dicebear.com/v2/male/'+irnd(10,10000)+'.svg';
-
-
-					try {
-						localStorage.setItem('uid',my_data.uid);
-					} catch (e) {
-						console.log(e);
-					}
+	get_random_uid_for_local : function(prefix) {
+		
+		let uid = prefix;
+		for ( let c = 0 ; c < 12 ; c++ )
+			uid += this.get_random_char();
+		
+		//сохраняем этот uid в локальном хранилище
+		try {
+			localStorage.setItem('poker_uid', uid);
+		} catch (e) {alert(e)}
 					
-					help_obj.process_results();
-				}
-				else
-				{
-					//console.log(`Нашли айди в ЛХ (${local_uid}). Загружаем остальное из ФБ...`);
+		return uid;
+		
+	},
+	
+	get_random_name : function(uid) {
+		
+		const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+		const rnd_names = ['Gamma','Chime','Dron','Perl','Onyx','Asti','Wolf','Roll','Lime','Cosy','Hot','Kent','Pony','Baker','Super','ZigZag','Magik','Alpha','Beta','Foxy','Fazer','King','Kid','Rock'];
+		
+		if (uid !== undefined) {
+			
+			let e_num1 = chars.indexOf(uid[3]) + chars.indexOf(uid[4]) + chars.indexOf(uid[5]) + chars.indexOf(uid[6]);
+			e_num1 = Math.abs(e_num1) % (rnd_names.length - 1);				
+			let name_postfix = chars.indexOf(uid[7]).toString() + chars.indexOf(uid[8]).toString() + chars.indexOf(uid[9]).toString() ;	
+			return rnd_names[e_num1] + name_postfix.substring(0, 3);					
+			
+		} else {
+
+			let rnd_num = irnd(0, rnd_names.length - 1);
+			let rand_uid = irnd(0, 999999)+ 100;
+			let name_postfix = rand_uid.toString().substring(0, 3);
+			let name =	rnd_names[rnd_num] + name_postfix;				
+			return name;
+		}	
+	},	
+	
+	get_country_code : async function() {
+		
+		let country_code = ''
+		try {
+			let resp1 = await fetch("https://ipinfo.io/json");
+			let resp2 = await resp1.json();			
+			country_code = resp2.country;			
+		} catch(e){}
+
+		return country_code;
+		
+	},
+	
+	search_in_local_storage : function() {
+		
+		//ищем в локальном хранилище
+		let local_uid = null;
+		
+		try {
+			local_uid = localStorage.getItem('poker_uid');
+		} catch (e) {alert(e)}
+				
+		if (local_uid !== null) return local_uid;
+		
+		return undefined;	
+		
+	},
+	
+	init : async function() {	
+				
+		if (game_platform === 'YANDEX') {			
+		
+			try {await this.load_script('https://yandex.ru/games/sdk/v2')} catch (e) {alert(e)};										
 					
-					my_data.uid = local_uid;	
-					
-					//запрашиваем мою информацию из бд или заносим в бд новые данные если игрока нет в бд
-					firebase.database().ref("players/"+my_data.uid).once('value').then((snapshot) => {		
-									
-						var data=snapshot.val();
-						
-						//если на сервере нет таких данных
-						if (data === null) {
-													
-							//если повтоно нету данных то выводим предупреждение
-							if (repeat === 1)
-								alert('Какая-то ошибка');
-							
-							//console.log(`Нашли данные в ЛХ но не нашли в ФБ, повторный локальный запрос...`);	
-
-							
-							//повторно запускаем локальный поиск						
-							localStorage.clear();
-							help_obj.local(1);	
-								
-							
-						} else {						
-							
-							my_data.pic_url = data.pic_url;
-							my_data.name = data.name;
-							help_obj.process_results();
-						}
-
-					})	
-
-				}
+			let _player;
+			
+			try {
+				window.ysdk = await YaGames.init({});			
+				_player = await window.ysdk.getPlayer();
+			} catch (e) { alert(e)};
+			
+			my_data.uid = _player.getUniqueID().replace(/[\/+=]/g, '');
+			my_data.name = _player.getName();
+			my_data.pic_url = _player.getPhoto('medium');
+			
+			if (my_data.pic_url === 'https://games-sdk.yandex.ru/games/api/sdk/v1/player/avatar/0/islands-retina-medium')
+				my_data.pic_url = 'https://avatars.dicebear.com/api/adventurer/' + my_data.uid + '.svg';
+			
+			if (my_data.name === '')
+				my_data.name = this.get_random_name(my_data.uid);
+			
+			//если английский яндекс до добавляем к имени страну
+			let country_code = await this.get_country_code();
+			my_data.name = my_data.name + ' (' + country_code + ')';			
 
 
-			},
-
-			unknown: function () {
-
-				game_platform="unknown";
-				alert("Неизвестная платформа! Кто Вы?")
-
-				//загружаем из локального хранилища
-				help_obj.local();
-			},
-
-			process_results: function() {
-
-
-				//отображаем итоговые данные
-				//console.log(`Итоговые данные:\nПлатформа:${game_platform}\nимя:${my_data.name}\nid:${my_data.uid}\npic_url:${my_data.pic_url}`);
-
-				//обновляем базовые данные в файербейс так могло что-то поменяться
-				firebase.database().ref("players/"+my_data.uid+"/name").set(my_data.name);
-				firebase.database().ref("players/"+my_data.uid+"/pic_url").set(my_data.pic_url);
-				firebase.database().ref("players/"+my_data.uid+"/tm").set(firebase.database.ServerValue.TIMESTAMP);
-
-				//вызываем коллбэк
-				resolve("ok");
-			},
-
-			process : function () {
-
-				objects.id_loup.x=20*Math.sin(game_tick*8)+90;
-				objects.id_loup.y=20*Math.cos(game_tick*8)+110;
-			}
+			
+			return;
 		}
+		
+		if (game_platform === 'VK') {
+			
+			try {await this.load_script('https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js')} catch (e) {alert(e)};
+			
+			let _player;
+			
+			try {
+				await vkBridge.send('VKWebAppInit');
+				_player = await vkBridge.send('VKWebAppGetUserInfo');				
+			} catch (e) {alert(e)};
 
-		help_obj.init();
+			
+			my_data.name 	= _player.first_name + ' ' + _player.last_name;
+			my_data.uid 	= "vk"+_player.id;
+			my_data.pic_url = _player.photo_100;
+			
+			return;
+			
+		}
+		
+		if (game_platform === 'GOOGLE_PLAY') {	
 
-	});	
+			let country_code = await this.get_country_code();
+			my_data.uid = this.search_in_local_storage() || this.get_random_uid_for_local('GP_');
+			my_data.name = this.get_random_name(my_data.uid) + ' (' + country_code + ')';
+			my_data.pic_url = 'https://avatars.dicebear.com/api/adventurer/' + my_data.uid + '.svg';	
+			return;
+		}
+		
+		if (game_platform === 'DEBUG') {		
+
+			my_data.name = my_data.uid = 'debug' + prompt('Отладка. Введите ID', 100);
+			my_data.pic_url = 'https://avatars.dicebear.com/api/adventurer/' + my_data.uid + '.svg';		
+			return;
+		}
+		
+		if (game_platform === 'CRAZYGAMES') {
+			
+			let country_code = await this.get_country_code();
+			try {await this.load_script('https://sdk.crazygames.com/crazygames-sdk-v1.js')} catch (e) {alert(e)};			
+			my_data.uid = this.search_in_local_storage() || this.get_random_uid_for_local('CG_');
+			my_data.name = this.get_random_name(my_data.uid) + ' (' + country_code + ')';
+			my_data.pic_url = 'https://avatars.dicebear.com/api/adventurer/' + my_data.uid + '.svg';	
+			let crazysdk = window.CrazyGames.CrazySDK.getInstance();
+			crazysdk.init();			
+			return;
+		}
+		
+		if (game_platform === 'UNKNOWN') {
+			
+			//если не нашли платформу
+			alert('Неизвестная платформа. Кто Вы?')
+			my_data.uid = this.search_in_local_storage() || this.get_random_uid_for_local('LS_');
+			my_data.name = this.get_random_name(my_data.uid);
+			my_data.pic_url = 'https://avatars.dicebear.com/api/adventurer/' + my_data.uid + '.svg';	
+		}
+	}
 	
 }
 
@@ -4329,7 +4522,7 @@ async function load_user_data() {
 		}
 	
 		//получаем данные об игроке из социальных сетей
-		await auth();
+		await auth2.init();
 			
 		//устанавлием имя на карточки
 		make_text(objects.id_name,my_data.name,150);
@@ -4401,19 +4594,22 @@ async function load_user_data() {
 }
 
 async function init_game_env(lng) {
+			
 	
-	if (lng === 1)
-		LANG = 1;
-	
-	
-	
-	
+	await define_platform_and_language();
+	console.log(game_platform, LANG);
+		
+		
+	//отображаем шкалу загрузки
+	document.body.innerHTML='<style>html,body {margin: 0;padding: 0;height: 100%;	}body {display: flex;align-items: center;justify-content: center;background-color: rgba(41,41,41,1);flex-direction: column	}#m_progress {	  background: #1a1a1a;	  justify-content: flex-start;	  border-radius: 5px;	  align-items: center;	  position: relative;	  padding: 0 5px;	  display: none;	  height: 50px;	  width: 70%;	}	#m_bar {	  box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;	  border-radius: 5px;	  background: rgb(119, 119, 119);	  height: 70%;	  width: 0%;	}	</style></div><div id="m_progress">  <div id="m_bar"></div></div>';
+		
+		
 	//ждем когда загрузятся ресурсы
 	await load_resources();
 
 	//убираем загрузочные данные
-	document.getElementById("m_bar").outerHTML = "";
-	document.getElementById("m_progress").outerHTML = "";
+	//document.getElementById("m_bar").outerHTML = "";
+	//document.getElementById("m_progress").outerHTML = "";
 
 	//короткое обращение к ресурсам
 	gres=game_res.resources;
@@ -4430,7 +4626,6 @@ async function init_game_env(lng) {
 			appId: "1:114845860106:web:fa020d476b1f1c28853af3"
 		});
 	}
-
 	
 	app = new PIXI.Application({width:M_WIDTH, height:M_HEIGHT,antialias:false});
 	document.body.appendChild(app.view);
@@ -4499,6 +4694,10 @@ async function init_game_env(lng) {
 	//загружаем данные об игроке
 	load_user_data();
 	
+	//нажатие клавиш на клавиатуре
+	window.addEventListener('keydown', function(event) { feedback.key_down(event.key)});
+	window.addEventListener("wheel", (event) => {chat.wheel_event(Math.sign(event.deltaY))});	
+	
 	//добавляем описание так как текст слишком большой
 	objects.rules_txt.text=['Добро пожаловать в игру Quoridor ( Лабиринт ) !\n\nДанная игра позволит Вам проверить свои стратегические и тактические способности. Цель игры - быстрее соперника добраться до противоположной стороны доски. Каждый ход предлагает 2 варината действий - передвинуть фишку на одну клетку или поставить "стену". Старайтесь заблокировать соперника, но и сами не попасть в тупик. Побеждая других игроков, Вы зарабатываете рейтинговые баллы и продвигаетесь вверх по таблице лидеров.\n\nУдачной игры!','Welcome to the game Quoridor ( Maze)!\n\n This game will allow you to test your strategic and tactical abilities. The goal of the game is to get to the opposite side of the board faster than the opponent. Each move offers 2 options - move the chip one square or put a wall. Try to block the opponent, but do not get into a dead end yourself. By defeating other players, you earn ranking points and move up the leaderboard.\n\n Have a good game!'][LANG];
 	
@@ -4522,21 +4721,83 @@ async function init_game_env(lng) {
 
 }
 
+language_dialog = {
+	
+	p_resolve : {},
+	
+	show : function() {
+				
+		return new Promise(function(resolve, reject){
+
+
+			document.body.innerHTML='<style>		html,		body {		margin: 0;		padding: 0;		height: 100%;	}		body {		display: flex;		align-items: center;		justify-content: center;		background-color: rgba(24,24,64,1);		flex-direction: column	}		.two_buttons_area {	  width: 70%;	  height: 50%;	  margin: 20px 20px 0px 20px;	  display: flex;	  flex-direction: row;	}		.button {		margin: 5px 5px 5px 5px;		width: 50%;		height: 100%;		color:white;		display: block;		background-color: rgba(44,55,100,1);		font-size: 10vw;		padding: 0px;	}  	#m_progress {	  background: rgba(11,255,255,0.1);	  justify-content: flex-start;	  border-radius: 100px;	  align-items: center;	  position: relative;	  padding: 0 5px;	  display: none;	  height: 50px;	  width: 70%;	}	#m_bar {	  box-shadow: 0 10px 40px -10px #fff;	  border-radius: 100px;	  background: #fff;	  height: 70%;	  width: 0%;	}	</style><div id ="two_buttons" class="two_buttons_area">	<button class="button" id ="but_ref1" onclick="language_dialog.p_resolve(0)">RUS</button>	<button class="button" id ="but_ref2"  onclick="language_dialog.p_resolve(1)">ENG</button></div><div id="m_progress">  <div id="m_bar"></div></div>';
+			
+			language_dialog.p_resolve = resolve;	
+						
+		})
+		
+	}
+	
+}
+
+async function define_platform_and_language() {
+	
+	let s = window.location.href;
+	
+	if (s.includes('yandex')) {
+		
+		game_platform = 'YANDEX';
+		
+		if (s.match(/yandex\.ru|yandex\.by|yandex\.kg|yandex\.kz|yandex\.tj|yandex\.ua|yandex\.uz/))
+			LANG = 0;
+		else 
+			LANG = 1;		
+		return;
+	}
+	
+	if (s.includes('vk.com')) {
+		game_platform = 'VK';	
+		LANG = 0;	
+		return;
+	}
+	
+	if (s.includes('google_play')) {
+			
+		game_platform = 'GOOGLE_PLAY';	
+		LANG = await language_dialog.show();
+		return;
+	}	
+	
+	if (s.includes('crazygames')) {
+			
+		game_platform = 'CRAZYGAMES';	
+		LANG = 1;
+		return;
+	}
+	
+	if (s.includes('192.168')) {
+			
+		game_platform = 'DEBUG';	
+		LANG = await language_dialog.show();
+		return;	
+	}	
+	
+	game_platform = 'UNKNOWN';	
+	LANG = await language_dialog.show();
+	
+	
+
+}
+
 async function load_resources() {
 
+	document.getElementById("m_progress").style.display = 'flex';
 
-	
-	//это нужно удалить потом
-	/*document.body.innerHTML = "Привет!\nДобавляем в игру некоторые улучшения))\nЗайдите через 40 минут.";
-	document.body.style.fontSize="24px";
-	document.body.style.color = "red";
-	return;*/
-
-
-
+	//подпапка с ресурсами
+	let lang_pack = ['RUS','ENG'][LANG];
 
 	let git_src="https://akukamil.github.io/quoridor"
-	//let git_src=""
+	//git_src=""
 
 
 	//крейзигеймс! загружаем с сервера крейзигеймс
@@ -4544,15 +4805,8 @@ async function load_resources() {
 	if (s.includes("crazygames") === true)
 		git_src = s.substring(0,s.indexOf("index.html")-1);		
 
-
-
-
-
 	game_res=new PIXI.Loader();
 	game_res.add("m2_font", git_src+"/fonts/Neucha/font.fnt");
-
-
-
 
 	game_res.add('click',git_src+'/sounds/click.mp3');
 	game_res.add('locked',git_src+'/sounds/locked.mp3');
@@ -4584,7 +4838,7 @@ async function load_resources() {
     //добавляем из листа загрузки
     for (var i = 0; i < load_list.length; i++)
         if (load_list[i].class === "sprite" || load_list[i].class === "image" )
-            game_res.add(load_list[i].name, git_src+"/res/" + load_list[i].name + "." +  load_list[i].image_format);		
+            game_res.add(load_list[i].name, git_src+'res/'+lang_pack+'/'+load_list[i].name+"."+load_list[i].image_format);		
 
 
 	game_res.onProgress.add(progress);
@@ -4592,9 +4846,11 @@ async function load_resources() {
 		document.getElementById("m_bar").style.width =  Math.round(loader.progress)+"%";
 	}
 	
-
 	
 	await new Promise((resolve, reject)=> game_res.load(resolve))
+	
+	//убираем элементы загрузки
+	document.getElementById("m_progress").outerHTML = "";	
 
 }
 
@@ -4603,7 +4859,6 @@ function main_loop() {
 
 	game_tick+=0.016666666;
 	anim2.process();
-	anim3.process();
 	
 	//обрабатываем минипроцессы
 	for (let key in some_process)
@@ -4612,5 +4867,3 @@ function main_loop() {
 
 	requestAnimationFrame(main_loop);
 }
-
-
