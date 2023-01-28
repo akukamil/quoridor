@@ -4237,7 +4237,7 @@ var cards_menu = {
 		else
 		{
 			gres.click.sound.play();
-			objects.invite_button.texture = gres.invite_button.texture;	;
+			objects.invite_button.texture = gres.invite_button_waiting.texture;
 			firebase.database().ref("inbox/"+cards_menu._opp_data.uid).set({sender:my_data.uid,message:"INV",tm:Date.now()});
 			pending_player=cards_menu._opp_data.uid;
 		}
