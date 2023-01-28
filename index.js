@@ -3183,7 +3183,7 @@ var stickers={
 			this.promise_resolve_recive("forced");
 
 		//воспроизводим соответствующий звук
-		//game_res.resources.receive_sticker.sound.play();
+		sound.play('receive_sticker');
 
 		objects.rec_sticker_area.texture=game_res.resources['sticker_texture_'+id].texture;
 	
