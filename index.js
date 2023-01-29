@@ -1,10 +1,10 @@
-var M_WIDTH=800, M_HEIGHT=450;
+const M_WIDTH=800, M_HEIGHT=450;
 var app, game_res, game, objects={}, state="",my_role="", LANG = 0, game_tick=0, my_turn=0, game_id=0, h_state=0, made_moves=0, game_platform="", hidden_state_start = 0, connected = 1;
 var players="", pending_player="";
 var my_data={opp_id : ''},opp_data={};
 var some_process = {};
 const V_WALL = 2, H_WALL = 1, ROW0 = 0, ROW8 = 8, MY_ID = 1, OPP_ID = 2, MAX_MOVES = 50, FIELD_MARGIN = 20;
-var WIN = 1, DRAW = 0, LOSE = -1, NOSYNC = 2;
+const WIN = 1, DRAW = 0, LOSE = -1, NOSYNC = 2;
 
 irnd = function (min,max) {	
 	//мин и макс включительно
@@ -2354,7 +2354,7 @@ var game = {
 		opp_data.uid = '';
 						
 		//показыаем рекламу		
-		await show_ad();
+		ad.show();
 		
 		//устанавливаем статус в базе данных а если мы не видны то установливаем только скрытое состояние
 		set_state({state : 'o'});		
@@ -3023,39 +3023,78 @@ var req_dialog = {
 
 }
 
-var	show_ad = async function(){
+var	ad = {
 		
-	if (game_platform==="YANDEX") {		
-		try {
-			await new Promise((resolve, reject) => {			
-				window.ysdk.adv.showFullscreenAdv({  callbacks: {onClose: function() {resolve()}, onError: function() {resolve()}}});			
-			});				
-			
-		} catch (e) {
-			
-			console.error(e);
+		
+	show : function() {
+		
+		if (game_platform==="YANDEX") {			
+			//показываем рекламу
+			window.ysdk.adv.showFullscreenAdv({
+			  callbacks: {
+				onClose: function() {}, 
+				onError: function() {}
+						}
+			})
 		}
-
-	}
-	
-	if (game_platform==="VK") {				
-		try {
-			await vkBridge.send("VKWebAppShowNativeAds", {ad_format:"interstitial"});			
-		} catch (e) {			
-			console.error(e);
-		}	
-	}
 		
-	if (game_platform==="CRAZYGAMES") {				
-		try {
-			const crazysdk = window.CrazyGames.CrazySDK.getInstance();
-			crazysdk.init();
-			crazysdk.requestAd('midgame');		
-		} catch (e) {			
-			console.error(e);
-		}	
-	}	
+		if (game_platform==="VK") {
+					 
+			vkBridge.send("VKWebAppShowNativeAds", {ad_format:"interstitial"})
+			.then(data => console.log(data.result))
+			.catch(error => console.log(error));	
+		}		
+
+		if (game_platform==="MY_GAMES") {
+					 
+			my_games_api.showAds({interstitial:true});
+		}			
+		
+		if (game_platform==='GOOGLE_PLAY') {
+			if (typeof Android !== 'undefined') {
+				Android.showAdFromJs();
+			}			
+		}
+		
+		
+	},
 	
+	show2 : async function() {
+		
+		
+		if (game_platform ==="YANDEX") {
+			
+			let res = await new Promise(function(resolve, reject){				
+				window.ysdk.adv.showRewardedVideo({
+						callbacks: {
+						  onOpen: () => {},
+						  onRewarded: () => {resolve('ok')},
+						  onClose: () => {resolve('err')}, 
+						  onError: (e) => {resolve('err')}
+					}
+				})
+			
+			})
+			return res;
+		}
+		
+		if (game_platform === "VK") {	
+
+			let res = '';
+			try {
+				res = await vkBridge.send("VKWebAppShowNativeAds", { ad_format: "reward" })
+			}
+			catch(error) {
+				res ='err';
+			}
+			
+			return res;				
+			
+		}	
+		
+		return 'err';
+		
+	}
 }
 
 var social_dialog = {
@@ -3499,7 +3538,7 @@ var chat = {
 	open_keyboard : async function() {
 		
 		//пишем отзыв и отправляем его	
-		sound.play('click');
+		sound.play('click');l
 		let fb = await feedback.show(opp_data.uid,65);		
 		if (fb[0] === 'sent') {			
 			const msg_index=this.get_oldest_index();
