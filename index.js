@@ -2704,7 +2704,7 @@ var game = {
 					else if (r === 8)
 						w_spr.texture=gres.v_wall_b.texture;
 					else
-						w_sprtexture=gres.v_wall.texture;					
+						w_spr.texture=gres.v_wall.texture;					
 				}
 				
 				if (wp[0] === H_WALL) {
