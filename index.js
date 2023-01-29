@@ -2785,7 +2785,7 @@ var game = {
 			
 			//обновляем кол-во стен
 			this.field.pos[OPP_ID].walls--;
-			objects.opp_walls.text = 'Стены: ' + this.field.pos[OPP_ID].walls;
+			objects.opp_walls.text = ['Стены: ','Walls: '][LANG] + this.field.pos[OPP_ID].walls;
 		}
 						
 		ffunc.draw(this.field); 
