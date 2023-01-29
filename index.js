@@ -3538,7 +3538,7 @@ var chat = {
 	open_keyboard : async function() {
 		
 		//пишем отзыв и отправляем его	
-		sound.play('click');l
+		sound.play('click');
 		let fb = await feedback.show(opp_data.uid,65);		
 		if (fb[0] === 'sent') {			
 			const msg_index=this.get_oldest_index();
