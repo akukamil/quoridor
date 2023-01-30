@@ -3051,9 +3051,9 @@ var	ad = {
 		}			
 		
 		if (game_platform==='GOOGLE_PLAY') {
-			if (typeof Android !== 'undefined') {
-				Android.showAdFromJs();
-			}			
+			//if (typeof Android !== 'undefined') {
+			//	Android.showAdFromJs();
+			//}			
 		}
 		
 		
