@@ -2829,7 +2829,6 @@ var keep_alive = function() {
 		return;		
 	}
 
-
 	firebase.database().ref("players/"+my_data.uid+"/tm").set(firebase.database.ServerValue.TIMESTAMP);
 	firebase.database().ref("inbox/"+my_data.uid).onDisconnect().remove();
 	firebase.database().ref("states/"+my_data.uid).onDisconnect().remove();
@@ -2998,7 +2997,7 @@ var req_dialog = {
 
 				
 		//отправляем информацию о согласии играть с идентификатором игры
-		game_id=~~(Math.random()*999);
+		game_id=~~(Math.random()*9999);
 		firebase.database().ref("inbox/"+opp_data.uid).set({sender:my_data.uid,message:"ACCEPT",tm:Date.now(),game_id:game_id});
 
 		//заполняем карточку оппонента
@@ -3024,8 +3023,7 @@ var req_dialog = {
 }
 
 var	ad = {
-		
-		
+			
 	show : function() {
 		
 		if (game_platform==="YANDEX") {			
@@ -3050,11 +3048,11 @@ var	ad = {
 			my_games_api.showAds({interstitial:true});
 		}			
 		
-		if (game_platform==='GOOGLE_PLAY') {
-			//if (typeof Android !== 'undefined') {
-			//	Android.showAdFromJs();
-			//}			
-		}
+		/*if (game_platform==='GOOGLE_PLAY') {
+			if (typeof Android !== 'undefined') {
+				Android.showAdFromJs();
+			}			
+		}*/
 		
 		
 	},
@@ -3692,7 +3690,6 @@ var cards_menu = {
 		objects.cards_cont.visible=true;
 		objects.back_button_cont.visible=true;
 
-
 		objects.lobby_frame.visible = true;
 
 		objects.header4.visible=true;
@@ -3703,7 +3700,6 @@ var cards_menu = {
 			objects.mini_cards[i].x=this.cards_pos[i][0];
 			objects.mini_cards[i].y=this.cards_pos[i][1];
 		}
-
 
 		//отключаем все карточки
 		this.card_i=1;
@@ -3769,22 +3765,23 @@ var cards_menu = {
 		//определяем столы
 		//console.log (`--------------------------------------------------`)
 		for (let uid in p_data) {
-			let opp_id = p_data[uid].opp_id;
-			let name1 = p_data[uid].name;
-			let rating = p_data[uid].rating;
-			let hid = p_data[uid].hidden;
+			const opp_id = p_data[uid].opp_id;
+			const name1 = p_data[uid].name;
+			const rating = p_data[uid].rating;
+			const hid = p_data[uid].hidden;
+			const game_id=p_data[uid].game_id;
 			
 			if (p_data[opp_id] !== undefined) {
 				
 				if (uid === p_data[opp_id].opp_id && tables[uid] === undefined) {
 					
-					tables[uid] = opp_id;					
+					tables[uid] = opp_id;		
+					tables[uid].game_id=game_id;					
 					//console.log(`${name1} (Hid:${hid}) (${rating}) vs ${p_data[opp_id].name} (Hid:${p_data[opp_id].hidden}) (${p_data[opp_id].rating}) `)	
 					delete p_data[opp_id];				
 				}
 				
-			} else 
-			{				
+			} else 	{				
 				//console.log(`${name1} (${rating}) - одиночка `)					
 			}			
 		}
@@ -4138,7 +4135,7 @@ var cards_menu = {
 	
 	show_table_dialog : function (card_id) {
 		
-		if (objects.td_cont.ready === false || objects.td_cont.visible === true || objects.big_message_cont.visible === true ||objects.req_cont.visible === true)	{
+		if (anim2.any_on() || objects.td_cont.ready === false || objects.td_cont.visible === true || objects.big_message_cont.visible === true ||objects.req_cont.visible === true)	{
 			gres.locked.sound.play();
 			return
 		};
@@ -4537,7 +4534,7 @@ function set_state(params) {
 	if (opp_data.uid!==undefined)
 		small_opp_id=opp_data.uid.substring(0,10);
 
-	firebase.database().ref("states/"+my_data.uid).set({state:state, name:my_data.name, rating : my_data.rating, hidden:h_state, opp_id : small_opp_id});
+	firebase.database().ref("states/"+my_data.uid).set({state:state, name:my_data.name, rating : my_data.rating, hidden:h_state, opp_id : small_opp_id, game_id:game_id});
 
 }
 
