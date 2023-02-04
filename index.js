@@ -1,5 +1,5 @@
 const M_WIDTH=800, M_HEIGHT=450;
-var app, game_res, game, objects={}, state="",my_role="", LANG = 0, game_tick=0, my_turn=0, game_id=0, h_state=0, made_moves=0, game_platform="", hidden_state_start = 0, connected = 1;
+var app, game_res, game, objects={}, state="",my_role="", LANG = 0, game_tick=0, my_turn=0,room_name='states', game_id=0, h_state=0, made_moves=0, game_platform="", hidden_state_start = 0, connected = 1;
 var players="", pending_player="";
 var my_data={opp_id : ''},opp_data={};
 var some_process = {};
@@ -907,6 +907,9 @@ var online_game = {
 		
 		
 		firebase.database().ref("inbox/"+opp_data.uid).set({sender:my_data.uid,message:"MOVE",tm:Date.now(),data:data});
+		
+		//также фиксируем данные стола
+		firebase.database().ref("tables/"+game_id).set({uid:my_data.uid,f_str:ffunc.get_minified_field(game.field),tm:firebase.database.ServerValue.TIMESTAMP});
 
 	},
 	
@@ -1042,7 +1045,10 @@ var online_game = {
 		objects.my_card_rating.text = my_data.rating;
 		firebase.database().ref("players/"+my_data.uid+"/rating").set(my_data.rating);
 	
-						
+		//также фиксируем данные стола
+		firebase.database().ref("tables/"+game_id).set({uid:my_data.uid,fin_flag:1,tm:firebase.database.ServerValue.TIMESTAMP});
+
+		
 		//убираем элементы
 		objects.timer.visible = false;
 		
@@ -1405,6 +1411,26 @@ var ffunc = {
 		//позиции игроков в отдельный массив
 		field.pos[MY_ID] = {r: 8, c: 4, walls: 10};
 		field.pos[OPP_ID] = {r: 0, c: 4, walls : 10};
+		
+	},
+	
+	get_minified_field(field){
+		
+		let data_str="";
+		for (let r = 0; r < 9; r++ )
+			for (let c = 0; c < 9; c++ )
+				data_str+=field.f[r][c].wall_type;
+
+		data_str+=field.pos['1'].r;
+		data_str+=field.pos['1'].c;
+		data_str+=field.pos['2'].r;
+		data_str+=field.pos['2'].c;
+		data_str+=",";
+		data_str+=field.pos['1'].walls;
+		data_str+=",";
+		data_str+=field.pos['2'].walls;
+		
+		return data_str;		
 		
 	},
 	
@@ -2220,8 +2246,6 @@ var ffunc = {
 
 	}
 
-
-	
 }
 
 var game = {
@@ -2229,7 +2253,7 @@ var game = {
 	opponent : {},
 	selected : null,
 	sel_cell :{},
-	sel_cell_wall_iter : [0,0],
+	wall_to_try : V_WALL,
 	field : {},
 	pending_wall : {},
 	pending_field :{},
@@ -2246,6 +2270,10 @@ var game = {
 		//если открыт чат то закрываем его
 		if (objects.chat_cont.visible===true)
 			chat.close();
+		
+		//если открыт просмотр игры
+		if (game_watching.on===true)
+			game_watching.close();
 				
 		my_role=role;
 		this.opponent = opponent;
@@ -2333,6 +2361,8 @@ var game = {
 		//включаем запрет входящих ходов - это также остановит расчет бота если он идет
 		this.opponent.no_incoming_move = 1;
 				
+		objects.move_buttons_cont.visible = false;
+				
 		//сначала завершаем все что связано с оппонентом
 		await this.opponent.stop(result);		
 						
@@ -2345,7 +2375,7 @@ var game = {
 		objects.opp_icon.visible = false;
 		objects.h_wall.visible = false;
 		objects.v_wall.visible = false;
-		objects.move_buttons_cont.visible = false;
+		
 		objects.cur_move_text.visible = false;
 		
 		//убираем ходы если они остались
@@ -2402,8 +2432,6 @@ var game = {
 		}
 		
 		
-		
-		
 		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true || objects.req_cont.visible === true || objects.my_icon.ready === false) {
 			gres.bad_move.sound.play();
 			return;			
@@ -2416,11 +2444,9 @@ var game = {
 		//координаты указателя на игровой доске
 		let _c = Math.floor(9*(mx-objects.field.x-FIELD_MARGIN)/450);
 		let _r = Math.floor(9*(my-objects.field.y-FIELD_MARGIN)/450);
-		let _id = _c + _r * 8;
 		let p = this.field.pos[MY_ID]; p ={r:p.r, c:p.c};
 		
 		let player_cell_selected = (p.r === _r && p.c === _c);
-
 		
 		//выбрана ячейка с игроком
 		if (player_cell_selected === true  && this.selected === null) {			
@@ -2443,9 +2469,6 @@ var game = {
 		//Если игрок уже выбран и клетка другая - проверяем и перемещаем
 		if (this.selected === 'me') {
 					
-
-
-			
 			//опять нажали на ту же ячейку
 			if (player_cell_selected === true) {
 				this.selected = null;				
@@ -2460,7 +2483,6 @@ var game = {
 				return;				
 			}
 
-			
 			gres.checker_tap.sound.play();			
 						
 			//убираем выделение
@@ -2491,8 +2513,9 @@ var game = {
 				return;
 			}
 			
-			this.sel_cell={r: _r, c: _c};			
-			let wall_ok = this.show_wall_opt(_id);
+			this.sel_cell={r: _r, c: _c};		
+			
+			let wall_ok = this.show_wall_opt();
 			if (wall_ok === 1) {
 				objects.move_buttons_cont.visible = true;				
 				some_process.wall_processing=this.wall_processing;	
@@ -2532,8 +2555,7 @@ var game = {
 		
 		//короткое обращение
 		let pw = this.pending_wall;
-		
-		
+			
 		
 		//создаем поле для проверки блокировки оппонента и игрока
 		let pf = JSON.parse(JSON.stringify(this.field));
@@ -2576,6 +2598,8 @@ var game = {
 				
 		//отправляем ход сопернику
 		this.opponent.send_move(data);					
+	
+		this.wall_to_try=V_WALL;
 	
 		if (my_role === 'slave') {			
 			made_moves++;
@@ -2634,7 +2658,7 @@ var game = {
 		
 		//воспроизводим звук
 		game_res.resources.cancel_wall.sound.play();
-		
+		this.wall_to_try=V_WALL;
 		this.stop_wall_processing();
 		
 	},
@@ -2648,90 +2672,64 @@ var game = {
 		some_process.wall_processing = function(){};
 	},
 			
-	show_wall_opt : function (id) {
+	show_wall_opt : function () {
 		
 		objects.h_wall.visible=false;
 		objects.v_wall.visible=false;
-		
-		gres.iter_wall.sound.play();
+				
 					
 		//тип стены
 		//c смещение
 		//r смещение
 		//следующая ячейка
-		let p = [[V_WALL,0,0,1],[H_WALL,0,0,2],[H_WALL,0,1,3],[V_WALL,0,1,4],[V_WALL,1,1,5],[H_WALL,1,1,6],[H_WALL,1,0,7],[V_WALL,1,0,0]]
 		
-		if (this.sel_cell_wall_iter[0] !== id) {
-			this.sel_cell_wall_iter[0] = id;
-			this.sel_cell_wall_iter[1] = 0;	
+		this.wall_to_try=3-this.wall_to_try;
+		let w_spr = {};
+		
+		const v_check = ffunc.check_new_wall(this.field, this.sel_cell.r, this.sel_cell.c, V_WALL);
+		const h_check = ffunc.check_new_wall(this.field, this.sel_cell.r, this.sel_cell.c, H_WALL);		
+		
+		//если не можем построить не одну стену
+		if(v_check===0 && h_check===0){
+			gres.locked.sound.play();
+			return 0;
+		} 
+		
+		gres.iter_wall.sound.play();
+		
+		if(this.wall_to_try===V_WALL && v_check===0) this.wall_to_try=H_WALL;
+		if(this.wall_to_try===H_WALL && h_check===0) this.wall_to_try=V_WALL;
+		
+		if (this.wall_to_try===V_WALL){
 			
-			//убираем кнопку подтверждения так как пока не понятно найдутся ли стены для данной ячейки
-			objects.move_buttons_cont.visible = false;
+			w_spr = objects.v_wall;
+			if (this.sel_cell.r === 1)
+				w_spr.texture=gres.v_wall_t.texture;
+			else if (this.sel_cell.r === 8)
+				w_spr.texture=gres.v_wall_b.texture;
+			else
+				w_spr.texture=gres.v_wall.texture;	
 		}
 		
-		let g_pos = this.sel_cell_wall_iter[1];
-		
-		for (let i = 0 ; i < 8 ; i++) {
+		if (this.wall_to_try===H_WALL){
 			
-			let wp = p[g_pos];			
-			
-			if (this.sel_cell_wall_iter[1] === g_pos) {
-								
-				let r = this.sel_cell.r + wp[1];								
-				let c = this.sel_cell.c + wp[2];
-
-								
-				this.sel_cell_wall_iter[1]++;
-				if (this.sel_cell_wall_iter[1] > 7)
-					this.sel_cell_wall_iter[1] = 0;	
-												
-				//если стену нельзя поставить выбираем следующую конфигурацию								
-				let check = ffunc.check_new_wall(this.field, r, c, wp[0])
-				if (check ===0) {
-					g_pos= p[g_pos][3];
-					continue;
-				}
-							
-				//если все проверки прошли то отображаем стену
-				let w_spr = {};
-				
-				if (wp[0] === V_WALL) {
-					
-					w_spr = objects.v_wall;
-					
-					if (r === 1)
-						w_spr.texture=gres.v_wall_t.texture;
-					else if (r === 8)
-						w_spr.texture=gres.v_wall_b.texture;
-					else
-						w_spr.texture=gres.v_wall.texture;					
-				}
-				
-				if (wp[0] === H_WALL) {
-					
-					w_spr = objects.h_wall;
-					
-					if (c === 1)
-						w_spr.texture=gres.h_wall_l.texture;
-					else if (c === 8)
-						w_spr.texture=gres.h_wall_r.texture;
-					else
-						w_spr.texture=gres.h_wall.texture;				
-				}
-				
-				
-				
-				w_spr.visible = true;
-				w_spr.y = r * 50 + objects.field.y + FIELD_MARGIN;				
-				w_spr.x = c * 50 + objects.field.x + FIELD_MARGIN;
-
-				this.pending_wall = {r: r, c: c, wall_type: wp[0], sprite: w_spr};
-				
-				return 1;
-			}			
+			w_spr = objects.h_wall;
+			if (this.sel_cell.c === 1)
+				w_spr.texture=gres.h_wall_l.texture;
+			else if (this.sel_cell.c === 8)
+				w_spr.texture=gres.h_wall_r.texture;
+			else
+				w_spr.texture=gres.h_wall.texture;	
 		}
+
+		w_spr.visible = true;
+		w_spr.y = this.sel_cell.r * 50 + objects.field.y + FIELD_MARGIN;				
+		w_spr.x = this.sel_cell.c * 50 + objects.field.x + FIELD_MARGIN;
 		
-		return 0;		
+		
+		this.pending_wall = {r: this.sel_cell.r, c: this.sel_cell.c, wall_type: this.wall_to_try, sprite: w_spr};
+			
+		return 1;		
 	},
 			
 	show_my_moves : function(show) {
@@ -2773,7 +2771,6 @@ var game = {
 			await this.update_player_pos(objects.opp_icon, data.r0, data.c0, data.r1, data.c1);			
 			ffunc.make_move(this.field, data.r0, data.c0, data.r1, data.c1)
 			gres.checker_tap.sound.play();
-
 		}
 		
 		if (data.type === 'wall') {
@@ -2790,8 +2787,6 @@ var game = {
 						
 		ffunc.draw(this.field); 
 				
-
-		
 		if (my_role === 'master') {			
 			made_moves++;
 			objects.cur_move_text.text=['Ход: ','Made moves: '][LANG] + made_moves;
@@ -2818,6 +2813,150 @@ var game = {
 
 }
 
+var game_watching={
+	
+	game_id:0,
+	field:{},
+	on:false,
+	anchor_uid:'',
+	
+	activate(card_data){
+		
+		this.on=true;
+		ffunc.init(this.field);	
+		objects.field.visible = true;	
+		objects.my_icon.visible = true;	
+		objects.opp_icon.visible = true;	
+		objects.stop_gw_button.visible = true;	
+		
+		this.anchor_uid=card_data.uid1;
+		
+		this.game_id=card_data.game_id;
+		
+		objects.my_icon.texture = gres.blue_icon.texture;
+		objects.opp_icon.texture = gres.red_icon.texture;
+		
+		//показываем карточки игроков		
+		objects.my_card_cont.visible = true;
+		objects.opp_card_cont.visible = true;	
+		
+		//фишки
+		objects.picon0.texture=gres.blue_icon.texture;
+		objects.picon1.texture=gres.red_icon.texture;
+		objects.picon0.visible=objects.picon1.visible=true;
+		
+		//аватарки
+		objects.opp_avatar.texture=card_data.avatar1.texture;
+		objects.opp_avatar.texture=card_data.avatar2.texture;
+		
+		//имена
+		make_text(objects.my_card_name,card_data.name1,150);
+		make_text(objects.opp_card_name,card_data.name2,150);
+		
+		//рейтинги
+		objects.my_card_rating.text=card_data.rating_text1.text;
+		objects.opp_card_rating.text=card_data.rating_text2.text;
+
+		
+		firebase.database().ref("tables/"+this.game_id).on('value',(snapshot) => {
+			game_watching.new_move(snapshot.val());
+		})
+		
+	},
+
+	get_inverted_board(board){
+		
+		
+	},
+	
+	stop_and_return(){
+		this.close();
+		cards_menu.activate();		
+	},
+	
+	async new_move(data){
+		
+		if(data===null || data===undefined)
+			return;
+		
+		if(data.fin_flag){
+			await big_message.show("This game is finished",")))");
+			this.stop_and_return();
+			return;
+		}
+		
+		
+		//обновляем доску
+		let data_str="";
+		let i=0;
+		
+		ffunc.init(this.field);	
+		for (let r = 0; r < 9; r++ ){
+			for (let c = 0; c < 9; c++ ){
+				const wall_type=+data.f_str[i];					
+				if (wall_type>0) {
+					
+					if(data.uid===this.anchor_uid){
+			
+						this.field.f[r][c].wall_type=wall_type;					
+					} else {
+						this.field.f[9-r][9-c].wall_type=wall_type;	
+					}						
+				}
+				i++;
+			}		
+		}
+
+
+		for (let r = 0; r < 9; r++ )
+			for (let c = 0; c < 9; c++ )		
+				this.field.f[r][c].player=0;
+		
+		const my_r=+data.f_str[i++];
+		const my_c=+data.f_str[i++];
+		
+		const opp_r=+data.f_str[i++];
+		const opp_c=+data.f_str[i++];
+		
+		const chunks = data.f_str.split(',');
+		const walls_num1=+chunks[1];
+		const walls_num2=+chunks[2];		
+		
+		
+		if(data.uid===this.anchor_uid){
+			this.field.f[my_r][my_c].player=MY_ID;
+			this.field.f[opp_r][opp_c].player=OPP_ID;	
+			objects.my_walls.text = ['Стены: ','Walls: '][LANG]+walls_num1;
+			objects.opp_walls.text = ['Стены: ','Walls: '][LANG]+walls_num2;
+			
+		} else {
+			this.field.f[8-my_r][8-my_c].player=OPP_ID;
+			this.field.f[8-opp_r][8-opp_c].player=MY_ID;			
+			objects.opp_walls.text = ['Стены: ','Walls: '][LANG]+walls_num1;
+			objects.my_walls.text = ['Стены: ','Walls: '][LANG]+walls_num2;
+		}
+
+		ffunc.draw(this.field); 
+		
+	},
+	
+	close(){
+		
+		objects.field.visible = false;	
+		objects.my_icon.visible = false;	
+		objects.opp_icon.visible = false;	
+		objects.my_card_cont.visible = false;
+		objects.stop_gw_button.visible = false;	
+		objects.opp_card_cont.visible = false;	
+		objects.walls.forEach(w=>{w.visible=false});
+		objects.picon0.visible=objects.picon1.visible=false;
+		firebase.database().ref("tables/"+this.game_id).off();
+		this.on=false;
+
+	}
+	
+}
+
 var keep_alive = function() {
 	
 	if (h_state === 1) {		
@@ -2825,14 +2964,13 @@ var keep_alive = function() {
 		//убираем из списка если прошло время с момента перехода в скрытое состояние		
 		let cur_ts = Date.now();	
 		let sec_passed = (cur_ts - hidden_state_start)/1000;		
-		if ( sec_passed > 100 )	firebase.database().ref("states/"+my_data.uid).remove();
+		if ( sec_passed > 100 )	firebase.database().ref(room_name+'/'+my_data.uid).remove();
 		return;		
 	}
 
-
 	firebase.database().ref("players/"+my_data.uid+"/tm").set(firebase.database.ServerValue.TIMESTAMP);
 	firebase.database().ref("inbox/"+my_data.uid).onDisconnect().remove();
-	firebase.database().ref("states/"+my_data.uid).onDisconnect().remove();
+	firebase.database().ref(room_name+'/'+my_data.uid).onDisconnect().remove();
 
 	set_state({});
 }
@@ -2998,7 +3136,7 @@ var req_dialog = {
 
 				
 		//отправляем информацию о согласии играть с идентификатором игры
-		game_id=~~(Math.random()*999);
+		game_id=~~(Math.random()*9999);
 		firebase.database().ref("inbox/"+opp_data.uid).set({sender:my_data.uid,message:"ACCEPT",tm:Date.now(),game_id:game_id});
 
 		//заполняем карточку оппонента
@@ -3024,8 +3162,7 @@ var req_dialog = {
 }
 
 var	ad = {
-		
-		
+			
 	show : function() {
 		
 		if (game_platform==="YANDEX") {			
@@ -3050,11 +3187,11 @@ var	ad = {
 			my_games_api.showAds({interstitial:true});
 		}			
 		
-		if (game_platform==='GOOGLE_PLAY') {
+		/*if (game_platform==='GOOGLE_PLAY') {
 			if (typeof Android !== 'undefined') {
 				Android.showAdFromJs();
 			}			
-		}
+		}*/
 		
 		
 	},
@@ -3692,7 +3829,6 @@ var cards_menu = {
 		objects.cards_cont.visible=true;
 		objects.back_button_cont.visible=true;
 
-
 		objects.lobby_frame.visible = true;
 
 		objects.header4.visible=true;
@@ -3703,7 +3839,6 @@ var cards_menu = {
 			objects.mini_cards[i].x=this.cards_pos[i][0];
 			objects.mini_cards[i].y=this.cards_pos[i][1];
 		}
-
 
 		//отключаем все карточки
 		this.card_i=1;
@@ -3717,7 +3852,12 @@ var cards_menu = {
 		objects.players_online.visible=true;
 
 		//подписываемся на изменения состояний пользователей
-		firebase.database().ref("states") .on('value', (snapshot) => {cards_menu.players_list_updated(snapshot.val());});
+		firebase.database().ref(room_name) .on('value', (snapshot) => {cards_menu.players_list_updated(snapshot.val());});
+
+
+		
+		//game_watching.activate();
+
 
 	},
 
@@ -3769,22 +3909,23 @@ var cards_menu = {
 		//определяем столы
 		//console.log (`--------------------------------------------------`)
 		for (let uid in p_data) {
-			let opp_id = p_data[uid].opp_id;
-			let name1 = p_data[uid].name;
-			let rating = p_data[uid].rating;
-			let hid = p_data[uid].hidden;
+			const opp_id = p_data[uid].opp_id;
+			const name1 = p_data[uid].name;
+			const rating = p_data[uid].rating;
+			const hid = p_data[uid].hidden;
+			const game_id=p_data[uid].game_id;
 			
 			if (p_data[opp_id] !== undefined) {
 				
 				if (uid === p_data[opp_id].opp_id && tables[uid] === undefined) {
 					
-					tables[uid] = opp_id;					
+					tables[uid] = opp_id;		
+					tables[uid].game_id=game_id;					
 					//console.log(`${name1} (Hid:${hid}) (${rating}) vs ${p_data[opp_id].name} (Hid:${p_data[opp_id].hidden}) (${p_data[opp_id].rating}) `)	
 					delete p_data[opp_id];				
 				}
 				
-			} else 
-			{				
+			} else 	{				
 				//console.log(`${name1} (${rating}) - одиночка `)					
 			}			
 		}
@@ -3828,8 +3969,6 @@ var cards_menu = {
 					this.update_existing_card({id:i, state:players[card_uid].state , rating:players[card_uid].rating});
 			}
 		}
-
-
 
 		
 		//определяем новых игроков которых нужно добавить
@@ -3887,12 +4026,14 @@ var cards_menu = {
 
 		//размещаем новые столы сколько свободно
 		for (let uid in tables) {			
-			let n1=players[uid].name
-			let n2=players[tables[uid]].name
+			const n1=players[uid].name
+			const n2=players[tables[uid]].name
 			
-			let r1= players[uid].rating
-			let r2= players[tables[uid]].rating
-			this.place_table({uid1:uid,uid2:tables[uid],name1: n1, name2: n2, rating1: r1, rating2: r2});
+			const r1= players[uid].rating
+			const r2= players[tables[uid]].rating
+			
+			const game_id=players[uid].game_id;
+			this.place_table({uid1:uid,uid2:tables[uid],name1: n1, name2: n2, rating1: r1, rating2: r2, game_id:game_id});
 		}
 		
 	},
@@ -3919,7 +4060,7 @@ var cards_menu = {
 		}
 	},
 
-	place_table : function (params={uid1:0,uid2:0,name1: "XXX",name2: "XXX", rating1: 1400, rating2: 1400}) {
+	place_table : function (params={uid1:0,uid2:0,name1: "XXX",name2: "XXX", rating1: 1400, rating2: 1400, game_id: 0}) {
 				
 		for(let i=1;i<15;i++) {
 
@@ -3958,6 +4099,8 @@ var cards_menu = {
 				
 				objects.mini_cards[i].name1 = params.name1;
 				objects.mini_cards[i].name2 = params.name2;
+				
+				objects.mini_cards[i].game_id=params.game_id;
 
 				//получаем аватар и загружаем его
 				this.load_avatar2({uid:params.uid1, tar_obj:objects.mini_cards[i].avatar1});
@@ -4138,7 +4281,7 @@ var cards_menu = {
 	
 	show_table_dialog : function (card_id) {
 		
-		if (objects.td_cont.ready === false || objects.td_cont.visible === true || objects.big_message_cont.visible === true ||objects.req_cont.visible === true)	{
+		if (anim2.any_on() || objects.td_cont.ready === false || objects.td_cont.visible === true || objects.big_message_cont.visible === true ||objects.req_cont.visible === true)	{
 			gres.locked.sound.play();
 			return
 		};
@@ -4146,7 +4289,11 @@ var cards_menu = {
 
 		gres.click.sound.play();
 		
+		//console.log(objects.mini_cards[card_id].game_id);
+		
 		anim2.add(objects.td_cont,{y:[-150,objects.td_cont.sy]}, true, 0.5,'easeOutBack');
+		
+		objects.td_cont.card=objects.mini_cards[card_id];
 		
 		objects.td_avatar1.texture = objects.mini_cards[card_id].avatar1.texture;
 		objects.td_avatar2.texture = objects.mini_cards[card_id].avatar2.texture;
@@ -4156,7 +4303,7 @@ var cards_menu = {
 		
 		make_text(objects.td_name1, objects.mini_cards[card_id].name1, 150);
 		make_text(objects.td_name2, objects.mini_cards[card_id].name2, 150);
-		
+
 	},
 	
 	close_table_dialog : function () {
@@ -4214,6 +4361,15 @@ var cards_menu = {
 
 	},
 
+	peek_down(){
+		
+		//активируем просмотр игры
+		game_watching.activate(objects.td_cont.card);
+		
+		this.close();
+		
+	},
+
 	close: function() {
 
 		objects.cards_cont.visible=false;
@@ -4236,7 +4392,7 @@ var cards_menu = {
 		objects.players_online.visible=false;
 
 		//подписываемся на изменения состояний пользователей
-		firebase.database().ref("states").off();
+		firebase.database().ref(room_name).off();
 
 	},
 
@@ -4537,7 +4693,7 @@ function set_state(params) {
 	if (opp_data.uid!==undefined)
 		small_opp_id=opp_data.uid.substring(0,10);
 
-	firebase.database().ref("states/"+my_data.uid).set({state:state, name:my_data.name, rating : my_data.rating, hidden:h_state, opp_id : small_opp_id});
+	firebase.database().ref(room_name+'/'+my_data.uid).set({state:state, name:my_data.name, rating : my_data.rating, hidden:h_state, opp_id : small_opp_id, game_id:game_id});
 
 }
 
@@ -4593,7 +4749,7 @@ async function load_user_data() {
 			
 		//отключение от игры и удаление не нужного
 		firebase.database().ref("inbox/"+my_data.uid).onDisconnect().remove();
-		firebase.database().ref("states/"+my_data.uid).onDisconnect().remove();			
+		firebase.database().ref(room_name+'/'+my_data.uid).onDisconnect().remove();			
 
 		//устанавливаем рейтинг в попап
 		objects.id_rating.text=objects.my_card_rating.text=my_data.rating;
@@ -4734,6 +4890,8 @@ async function init_game_env(lng) {
 	
 	//загружаем данные об игроке
 	load_user_data();
+	
+	room_name='states';
 	
 	//нажатие клавиш на клавиатуре
 	window.addEventListener('keydown', function(event) { feedback.key_down(event.key)});
