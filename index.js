@@ -2253,7 +2253,7 @@ var game = {
 	opponent : {},
 	selected : null,
 	sel_cell :{},
-	wall_to_try : V_WALL,
+	sel_cell_wall_iter : [0,0],
 	field : {},
 	pending_wall : {},
 	pending_field :{},
@@ -2442,11 +2442,12 @@ var game = {
 		let my = e.data.global.y/app.stage.scale.y;
 
 		//координаты указателя на игровой доске
-		let _c = Math.floor(9*(mx-objects.field.x-FIELD_MARGIN)/450);
-		let _r = Math.floor(9*(my-objects.field.y-FIELD_MARGIN)/450);
+		const _c = Math.floor(9*(mx-objects.field.x-FIELD_MARGIN)/450);
+		const _r = Math.floor(9*(my-objects.field.y-FIELD_MARGIN)/450);
+		const _id = _c + _r * 8;
 		let p = this.field.pos[MY_ID]; p ={r:p.r, c:p.c};
 		
-		let player_cell_selected = (p.r === _r && p.c === _c);
+		const player_cell_selected = (p.r === _r && p.c === _c);
 		
 		//выбрана ячейка с игроком
 		if (player_cell_selected === true  && this.selected === null) {			
@@ -2515,7 +2516,7 @@ var game = {
 			
 			this.sel_cell={r: _r, c: _c};		
 			
-			let wall_ok = this.show_wall_opt();
+			const wall_ok = this.show_wall_opt();
 			if (wall_ok === 1) {
 				objects.move_buttons_cont.visible = true;				
 				some_process.wall_processing=this.wall_processing;	
@@ -2672,64 +2673,90 @@ var game = {
 		some_process.wall_processing = function(){};
 	},
 			
-	show_wall_opt : function () {
+	show_wall_opt : function (id) {
 		
 		objects.h_wall.visible=false;
 		objects.v_wall.visible=false;
-				
+		
+		gres.iter_wall.sound.play();
 					
 		//тип стены
 		//c смещение
 		//r смещение
 		//следующая ячейка
+		let p = [[V_WALL,0,0,1],[H_WALL,0,0,2],[H_WALL,0,1,3],[V_WALL,0,1,4],[V_WALL,1,1,5],[H_WALL,1,1,6],[H_WALL,1,0,7],[V_WALL,1,0,0]]
 		
-		this.wall_to_try=3-this.wall_to_try;
-		let w_spr = {};
-		
-		const v_check = ffunc.check_new_wall(this.field, this.sel_cell.r, this.sel_cell.c, V_WALL);
-		const h_check = ffunc.check_new_wall(this.field, this.sel_cell.r, this.sel_cell.c, H_WALL);		
-		
-		//если не можем построить не одну стену
-		if(v_check===0 && h_check===0){
-			gres.locked.sound.play();
-			return 0;
-		} 
-		
-		gres.iter_wall.sound.play();
-		
-		if(this.wall_to_try===V_WALL && v_check===0) this.wall_to_try=H_WALL;
-		if(this.wall_to_try===H_WALL && h_check===0) this.wall_to_try=V_WALL;
-		
-		if (this.wall_to_try===V_WALL){
+		if (this.sel_cell_wall_iter[0] !== id) {
+			this.sel_cell_wall_iter[0] = id;
+			this.sel_cell_wall_iter[1] = 0;	
 			
-			w_spr = objects.v_wall;
-			if (this.sel_cell.r === 1)
-				w_spr.texture=gres.v_wall_t.texture;
-			else if (this.sel_cell.r === 8)
-				w_spr.texture=gres.v_wall_b.texture;
-			else
-				w_spr.texture=gres.v_wall.texture;	
+			//убираем кнопку подтверждения так как пока не понятно найдутся ли стены для данной ячейки
+			objects.move_buttons_cont.visible = false;
 		}
 		
-		if (this.wall_to_try===H_WALL){
+		let g_pos = this.sel_cell_wall_iter[1];
+		
+		for (let i = 0 ; i < 8 ; i++) {
 			
-			w_spr = objects.h_wall;
-			if (this.sel_cell.c === 1)
-				w_spr.texture=gres.h_wall_l.texture;
-			else if (this.sel_cell.c === 8)
-				w_spr.texture=gres.h_wall_r.texture;
-			else
-				w_spr.texture=gres.h_wall.texture;	
-		}
+			let wp = p[g_pos];			
+			
+			if (this.sel_cell_wall_iter[1] === g_pos) {
+								
+				let r = this.sel_cell.r + wp[1];								
+				let c = this.sel_cell.c + wp[2];
 
-		w_spr.visible = true;
-		w_spr.y = this.sel_cell.r * 50 + objects.field.y + FIELD_MARGIN;				
-		w_spr.x = this.sel_cell.c * 50 + objects.field.x + FIELD_MARGIN;
+								
+				this.sel_cell_wall_iter[1]++;
+				if (this.sel_cell_wall_iter[1] > 7)
+					this.sel_cell_wall_iter[1] = 0;	
+												
+				//если стену нельзя поставить выбираем следующую конфигурацию								
+				let check = ffunc.check_new_wall(this.field, r, c, wp[0])
+				if (check ===0) {
+					g_pos= p[g_pos][3];
+					continue;
+				}
+							
+				//если все проверки прошли то отображаем стену
+				let w_spr = {};
+				
+				if (wp[0] === V_WALL) {
+					
+					w_spr = objects.v_wall;
+					
+					if (r === 1)
+						w_spr.texture=gres.v_wall_t.texture;
+					else if (r === 8)
+						w_spr.texture=gres.v_wall_b.texture;
+					else
+						w_spr.texture=gres.v_wall.texture;					
+				}
+				
+				if (wp[0] === H_WALL) {
+					
+					w_spr = objects.h_wall;
+					
+					if (c === 1)
+						w_spr.texture=gres.h_wall_l.texture;
+					else if (c === 8)
+						w_spr.texture=gres.h_wall_r.texture;
+					else
+						w_spr.texture=gres.h_wall.texture;				
+				}
+				
+				
+				
+				w_spr.visible = true;
+				w_spr.y = r * 50 + objects.field.y + FIELD_MARGIN;				
+				w_spr.x = c * 50 + objects.field.x + FIELD_MARGIN;
+
+				this.pending_wall = {r: r, c: c, wall_type: wp[0], sprite: w_spr};
+				
+				return 1;
+			}			
+		}
 		
-		
-		this.pending_wall = {r: this.sel_cell.r, c: this.sel_cell.c, wall_type: this.wall_to_try, sprite: w_spr};
-			
-		return 1;		
+		return 0;	
 	},
 			
 	show_my_moves : function(show) {
