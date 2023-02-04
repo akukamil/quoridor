@@ -2845,8 +2845,8 @@ var game_watching={
 		objects.picon1.texture=gres.red_icon.texture;
 		objects.picon0.visible=objects.picon1.visible=true;
 		
-		//аватарки
-		objects.opp_avatar.texture=card_data.avatar1.texture;
+		//аватарки		
+		objects.my_avatar.texture=card_data.avatar1.texture;
 		objects.opp_avatar.texture=card_data.avatar2.texture;
 		
 		//имена
@@ -2951,6 +2951,7 @@ var game_watching={
 		objects.walls.forEach(w=>{w.visible=false});
 		objects.picon0.visible=objects.picon1.visible=false;
 		firebase.database().ref("tables/"+this.game_id).off();
+		objects.my_avatar.texture=my_data.my_texture;
 		this.on=false;
 
 	}
@@ -4730,7 +4731,7 @@ async function load_user_data() {
 		loader.add("my_avatar", my_data.pic_url,{loadType: PIXI.LoaderResource.LOAD_TYPE.IMAGE, timeout: 5000});			
 		await new Promise((resolve, reject)=> loader.load(resolve))
 		
-
+		my_data.my_texture=loader.resources.my_avatar.texture;
 		objects.id_avatar.texture=objects.my_avatar.texture=loader.resources.my_avatar.texture;
 		
 		//получаем остальные данные об игроке
