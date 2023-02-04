@@ -4998,7 +4998,6 @@ async function load_resources() {
 	let git_src="https://akukamil.github.io/quoridor/"
 	//git_src=""
 
-
 	//крейзигеймс! загружаем с сервера крейзигеймс
 	let s = window.location.href;
 	if (s.includes("crazygames") === true){
