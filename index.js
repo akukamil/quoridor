@@ -2003,7 +2003,45 @@ var ffunc = {
 			
 			return 1;				
 		},
-						
+		
+		blocked_opp_up(field,r,c){			
+		
+			if(this.up_w(field,r,c)===0) return 0;
+			if (field.f[r-1][c].player === 0) return 0;				
+			if (r===1) return 1;			
+			if(field.f[r-1][c].wall_type === H_WALL) return 1;			
+			if(c<8&&field.f[r-1][c+1].wall_type === H_WALL) return 1;
+			return 0;			
+		},
+		
+		blocked_opp_down(field,r,c){		
+			if(this.down_w(field,r,c)===0) return 0;
+			if (field.f[r+1][c].player === 0) return 0;				
+			if (r===7) return 1;			
+			if(field.f[r+2][c].wall_type === H_WALL) return 1;			
+			if(c<8&&field.f[r+2][c+1].wall_type === H_WALL) return 1;
+			return 0;			
+		},
+		
+		blocked_opp_left(field,r,c){			
+			if(this.left_w(field,r,c)===0) return 0;
+			if (field.f[r][c-1].player === 0) return 0;				
+			if (c===1) return 1;			
+			if(field.f[r][c-1].wall_type === V_WALL) return 1;			
+			if(r<8&&field.f[r+1][c-1].wall_type === V_WALL) return 1;
+			return 0;			
+			
+		},
+		
+		blocked_opp_right(field,r,c){		
+			if(this.right_w(field,r,c)===0) return 0;
+			if (field.f[r][c+1].player === 0) return 0;				
+			if (c===7) return 1;			
+			if(field.f[r][c+2].wall_type === V_WALL) return 1;			
+			if(r<8&&field.f[r+1][c+2].wall_type === V_WALL) return 1;
+			return 0;			
+		},
+								
 		up_left : function(field, r, c) {
 			
 			let tr = r - 1;			
@@ -2012,54 +2050,32 @@ var ffunc = {
 			if (tc < 0)	return 0;		
 			if (tr < 0)	return 0;	
 			
-			//если впереди нет игрока то нельзя так ходить
-			if (field.f[tr][c].player === 0)
-				return 0;					
+			if (field.f[r][c].wall_type === V_WALL) return 0;				
+			if (field.f[r][c].wall_type === H_WALL) return 0;	
+
+			const up_blocked=this.blocked_opp_up(field, r, c);
+			const left_blocked=this.blocked_opp_left(field, r, c);
 			
-			if (field.f[r][c].wall_type === V_WALL)
-				return 0;	
+			if (up_blocked===0 && left_blocked===0) return 0;
 			
-			if (field.f[r - 1][c].wall_type === V_WALL)
-				return 0;	
-			
-			if (r < 8 && field.f[r + 1][c].wall_type === V_WALL)
-				return 0;	
-			
-			if (field.f[r][c].wall_type === H_WALL)
-				return 0;
-			
-			if (c < 8 && field.f[r][c + 1].wall_type === H_WALL)
-				return 0;
-						
-			return 1;		
+			return 1;			
 		},
-		
+	
 		up_right : function(field, r, c) {
 			
 			let tr = r - 1;			
 			let tc = c + 1;
 			
 			if (tc > 8)	return 0;		
-			if (tr < 0)	return 0;	
+			if (tr < 0)	return 0;							
 			
-			//если впереди нет игрока то нельзя так ходить
-			if (field.f[tr][c].player === 0)
-				return 0;					
+			if (field.f[r][tc].wall_type === V_WALL) return 0;				
+			if (field.f[r][tc].wall_type === H_WALL) return 0;	
+
+			const up_blocked=this.blocked_opp_up(field, r, c);
+			const right_blocked=this.blocked_opp_right(field, r, c);
 			
-			if (field.f[r][c + 1].wall_type === V_WALL)
-				return 0;	
-			
-			if (field.f[r - 1][c + 1].wall_type === V_WALL)
-				return 0;	
-			
-			if (r < 8 && field.f[r + 1][c + 1].wall_type === V_WALL)
-				return 0;	
-			
-			if (field.f[r][c].wall_type === H_WALL)
-				return 0;	
-			
-			if (c < 8 && field.f[r][c + 1].wall_type === H_WALL)
-				return 0;
+			if (up_blocked===0 && right_blocked===0) return 0;
 			
 			return 1;			
 		},	
@@ -2072,26 +2088,15 @@ var ffunc = {
 			if (tc < 0)	return 0;		
 			if (tr > 8)	return 0;	
 			
-			//если впереди нет игрока то нельзя так ходить
-			if (field.f[tr][c].player === 0)
-				return 0;					
+			if (field.f[tr][c].wall_type === V_WALL) return 0;				
+			if (field.f[tr][c].wall_type === H_WALL) return 0;	
+
+			const left_blocked=this.blocked_opp_left(field, r, c);
+			const down_blocked=this.blocked_opp_down(field, r, c);
 			
-			if (field.f[r][c].wall_type === V_WALL)
-				return 0;	
+			if (left_blocked===0 && down_blocked===0) return 0;
 			
-			if (field.f[r +1][c].wall_type === V_WALL)
-				return 0;	
-			
-			if (r < 7 && field.f[r + 2][c].wall_type === V_WALL)
-				return 0;	
-			
-			if (field.f[r + 1][c].wall_type === H_WALL)
-				return 0;	
-			
-			if (c < 8 && field.f[r + 1][c + 1].wall_type === H_WALL)
-				return 0;
-			
-			return 1;			
+			return 1;
 		},		
 
 		down_right : function(field, r, c) {
@@ -2102,28 +2107,18 @@ var ffunc = {
 			if (tc > 8)	return 0;		
 			if (tr > 8)	return 0;	
 			
-			//если впереди нет игрока то нельзя так ходить
-			if (field.f[tr][c].player === 0)
-				return 0;					
+			if (field.f[tr][tc].wall_type === V_WALL) return 0;				
+			if (field.f[tr][tc].wall_type === H_WALL) return 0;	
+
+			const right_blocked=this.blocked_opp_right(field, r, c);
+			const down_blocked=this.blocked_opp_down(field, r, c);
 			
-			if (field.f[r + 1][c + 1].wall_type === V_WALL)
-				return 0;	
-			
-			if (field.f[r + 1][c + 1].wall_type === V_WALL)
-				return 0;	
-			
-			if (r < 7 && field.f[r + 2][c + 1].wall_type === V_WALL)
-				return 0;	
-			
-			if (field.f[r + 1][c].wall_type === H_WALL)
-				return 0;	
-			
-			if (c < 8 && field.f[r + 1][c + 1].wall_type === H_WALL)
-				return 0;
+			if (right_blocked===0 && down_blocked===0) return 0;
 			
 			return 1;			
 		},			
 			
+		//это проверка возможности прохода с учетом стен
 		left_w : function(field, r, c) {
 							
 			let tr = r;			
@@ -2307,6 +2302,9 @@ var game = {
 				
 		//воспроизводим звук о начале игры
 		gres.game_start.sound.play();
+				
+		//восстанавливаем мое имя так как оно могло меняться
+		make_text(objects.my_card_name,my_data.name,150);
 				
 		//показываем карточки игроков		
 		objects.my_card_cont.visible = true;
@@ -2704,19 +2702,20 @@ var game = {
 								
 				let r = this.sel_cell.r + wp[1];								
 				let c = this.sel_cell.c + wp[2];
-
+				
 								
 				this.sel_cell_wall_iter[1]++;
 				if (this.sel_cell_wall_iter[1] > 7)
 					this.sel_cell_wall_iter[1] = 0;	
-												
+				
+				console.log(r,c,wp[0]);												
 				//если стену нельзя поставить выбираем следующую конфигурацию								
 				let check = ffunc.check_new_wall(this.field, r, c, wp[0])
 				if (check ===0) {
 					g_pos= p[g_pos][3];
 					continue;
 				}
-							
+
 				//если все проверки прошли то отображаем стену
 				let w_spr = {};
 				
