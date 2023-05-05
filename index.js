@@ -1,3 +1,4 @@
+@@ -1,5101 +1,5102 @@
 const M_WIDTH=800, M_HEIGHT=450;
 var app, game_res, game, objects={}, state="",my_role="", LANG = 0, game_tick=0, my_turn=0,room_name='states', game_id=0, h_state=0, made_moves=0, game_platform="", hidden_state_start = 0, connected = 1;
 var players="", pending_player="";
@@ -933,7 +934,7 @@ var online_game = {
 		//показываем кнопки
 		objects.game_buttons_cont.visible = true;
 
-		this.reset_timer(20);
+		this.reset_timer(30);
 		
 		this.timer_id = setTimeout(function(){online_game.timer_tick()}, 1000);
 
@@ -1063,9 +1064,10 @@ var online_game = {
 		}
 		else 
 		{
-			if (game_platform === 'CRAZYGAMES')
-				window.CrazyGames.SDK.game.happytime();
-
+			if (game_platform === 'CRAZYGAMES') {
+				let crazysdk = window.CrazyGames.CrazySDK.getInstance();				
+				crazysdk.happytime();
+			}
 			game_res.resources.win.sound.play();			
 		}
 
@@ -3214,12 +3216,6 @@ var	ad = {
 			my_games_api.showAds({interstitial:true});
 		}			
 		
-		if (game_platform === 'CRAZYGAMES') {
-					 
-			window.CrazyGames.SDK.ad.requestAd("midgame");
-		}	
-		
-		
 		/*if (game_platform==='GOOGLE_PLAY') {
 			if (typeof Android !== 'undefined') {
 				Android.showAdFromJs();
@@ -4522,7 +4518,7 @@ var cards_menu = {
 
 auth2 = {
 		
-	load_script (src) {
+	load_script : function(src) {
 	  return new Promise((resolve, reject) => {
 		const script = document.createElement('script')
 		script.type = 'text/javascript'
@@ -4533,14 +4529,14 @@ auth2 = {
 	  })
 	},
 			
-	get_random_char () {		
+	get_random_char : function() {		
 		
 		const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 		return chars[irnd(0,chars.length-1)];
 		
 	},
 	
-	get_random_uid_for_local(prefix) {
+	get_random_uid_for_local : function(prefix) {
 		
 		let uid = prefix;
 		for ( let c = 0 ; c < 12 ; c++ )
@@ -4555,7 +4551,7 @@ auth2 = {
 		
 	},
 	
-	get_random_name(uid) {
+	get_random_name : function(uid) {
 		
 		const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 		const rnd_names = ['Gamma','Chime','Dron','Perl','Onyx','Asti','Wolf','Roll','Lime','Cosy','Hot','Kent','Pony','Baker','Super','ZigZag','Magik','Alpha','Beta','Foxy','Fazer','King','Kid','Rock'];
@@ -4577,7 +4573,7 @@ auth2 = {
 		}	
 	},	
 	
-	async get_country_code() {
+	get_country_code : async function() {
 		
 		let country_code = ''
 		try {
@@ -4590,7 +4586,7 @@ auth2 = {
 		
 	},
 	
-	search_in_local_storage () {
+	search_in_local_storage : function() {
 		
 		//ищем в локальном хранилище
 		let local_uid = null;
@@ -4605,15 +4601,7 @@ auth2 = {
 		
 	},
 	
-	async search_in_crazygames(){
-		
-		const is_user_data = await window.CrazyGames.SDK.user.isUserAccountAvailable();
-		if (is_user_data===false) return {};
-		const user = await window.CrazyGames.SDK.user.getUser();
-		return user;
-	},
-	
-	async init() {	
+	init : async function() {	
 				
 		if (game_platform === 'YANDEX') {			
 		
@@ -4684,12 +4672,10 @@ auth2 = {
 		if (game_platform === 'CRAZYGAMES') {
 			
 			let country_code = await this.get_country_code();
-			try {await this.load_script('https://sdk.crazygames.com/crazygames-sdk-v2.js')} catch (e) {alert(e)};			
-			const cg_user_data=await this.search_in_crazygames();
-			
-			my_data.uid = cg_user_data.id || this.search_in_local_storage() || this.get_random_uid_for_local('CG_');
-			my_data.name = cg_user_data.username || this.get_random_name(my_data.uid) + ' (' + country_code + ')';
-			my_data.pic_url = cg_user_data.profilePictureUrl || ('https://avatars.dicebear.com/api/adventurer/' + my_data.uid + '.svg');	
+			try {await this.load_script('https://sdk.crazygames.com/crazygames-sdk-v1.js')} catch (e) {alert(e)};			
+			my_data.uid = this.search_in_local_storage() || this.get_random_uid_for_local('CG_');
+			my_data.name = this.get_random_name(my_data.uid) + ' (' + country_code + ')';
+			my_data.pic_url = 'https://avatars.dicebear.com/api/adventurer/' + my_data.uid + '.svg';	
 			let crazysdk = window.CrazyGames.CrazySDK.getInstance();
 			crazysdk.init();			
 			return;
