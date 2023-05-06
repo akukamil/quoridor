@@ -5049,6 +5049,7 @@ async function load_resources() {
 
 	game_res.add('click',git_src+'/sounds/click.mp3');
 	game_res.add('locked',git_src+'/sounds/locked.mp3');
+	game_res.add('locked2',git_src+'/sounds/locked2.mp3');
 	game_res.add('clock',git_src+'/sounds/clock.mp3');
 	game_res.add('close_it',git_src+'/sounds/close_it.mp3');
 	game_res.add('game_start',git_src+'/sounds/game_start.mp3');
