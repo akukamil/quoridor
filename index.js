@@ -4690,7 +4690,7 @@ auth2 = {
 		
 		if (game_platform === 'CRAZYGAMES') {
 			
-			if(!window.CrazyGames.SDK)
+			if(!window.CrazyGames)
 				try {await this.load_script('https://sdk.crazygames.com/crazygames-sdk-v1.js')} catch (e) {alert(e)};				
 			
 			let country_code = await this.get_country_code();
