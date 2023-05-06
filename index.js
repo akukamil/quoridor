@@ -4610,6 +4610,16 @@ auth2 = {
 		
 	},
 	
+	async search_in_crazygames(){
+		if(!window.CrazyGames.SDK)
+			return {};
+		
+		const is_user_data = await window.CrazyGames.SDK.user.isUserAccountAvailable();
+		if (is_user_data===false) return {};
+		const user = await window.CrazyGames.SDK.user.getUser();
+		return user || {};
+	},
+	
 	init : async function() {	
 				
 		if (game_platform === 'YANDEX') {			
@@ -4680,11 +4690,16 @@ auth2 = {
 		
 		if (game_platform === 'CRAZYGAMES') {
 			
+			if(!window.CrazyGames.SDK)
+				try {await this.load_script('https://sdk.crazygames.com/crazygames-sdk-v1.js')} catch (e) {alert(e)};				
+			
 			let country_code = await this.get_country_code();
-			try {await this.load_script('https://sdk.crazygames.com/crazygames-sdk-v1.js')} catch (e) {alert(e)};			
-			my_data.uid = this.search_in_local_storage() || this.get_random_uid_for_local('CG_');
-			my_data.name = this.get_random_name(my_data.uid) + ' (' + country_code + ')';
-			my_data.pic_url = 'https://avatars.dicebear.com/api/adventurer/' + my_data.uid + '.svg';	
+			const cg_user_data=await this.search_in_crazygames();
+			
+		
+			my_data.uid = cg_user_data.id || this.search_in_local_storage() || this.get_random_uid_for_local('CG_');
+			my_data.name = cg_user_data.username || this.get_random_name(my_data.uid) + ' (' + country_code + ')';
+			my_data.pic_url = cg_user_data.profilePictureUrl || ('https://avatars.dicebear.com/api/adventurer/' + my_data.uid + '.svg');	
 			let crazysdk = window.CrazyGames.CrazySDK.getInstance();
 			crazysdk.init();			
 			return;
