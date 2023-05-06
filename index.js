@@ -5051,7 +5051,9 @@ async function load_resources() {
 
 	//крейзигеймс! загружаем с сервера крейзигеймс
 	let s = window.location.href;
-	//	git_src = s.substring(0,s.indexOf("index.html")-1);		
+	if (s.includes("crazygames") === true){		
+		await auth2.load_script("https://akukamil.github.io/quoridor/load_list.txt");
+	}	
 
 	game_res=new PIXI.Loader();
 	game_res.add("m2_font", git_src+"/fonts/Neucha/font.fnt");
