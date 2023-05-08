@@ -1074,8 +1074,7 @@ var online_game = {
 		else 
 		{
 			if (game_platform === 'CRAZYGAMES') {
-				let crazysdk = window.CrazyGames.CrazySDK.getInstance();				
-				crazysdk.happytime();
+				window.CrazyGames.SDK.game.happytime();
 			}
 			game_res.resources.win.sound.play();			
 		}
@@ -3225,11 +3224,14 @@ var	ad = {
 			my_games_api.showAds({interstitial:true});
 		}			
 		
-		/*if (game_platform==='GOOGLE_PLAY') {
-			if (typeof Android !== 'undefined') {
-				Android.showAdFromJs();
-			}			
-		}*/
+		if (game_platform==='CRAZYGAMES') {
+			const callbacks = {
+				adFinished: () => console.log("End midgame ad (callback)"),
+				adError: (error) => console.log("Error midgame ad (callback)", error),
+				adStarted: () => console.log("Start midgame ad (callback)"),
+			};
+			window.CrazyGames.SDK.ad.requestAd("midgame", callbacks);		
+		}
 		
 		
 	},
@@ -4688,24 +4690,15 @@ auth2 = {
 			return;
 		}
 		
-		if (game_platform === 'CRAZYGAMES') {
-			
-			if(!window.CrazyGames)
-				try {await this.load_script('https://sdk.crazygames.com/crazygames-sdk-v1.js')} catch (e) {alert(e)};				
+		if (game_platform === 'CRAZYGAMES') {			
 			
 			let country_code = await this.get_country_code();
-			const cg_user_data=await this.search_in_crazygames();
-			
+			const cg_user_data=await this.search_in_crazygames();			
 		
 			my_data.uid = cg_user_data.id || this.search_in_local_storage() || this.get_random_uid_for_local('CG_');
 			my_data.name = cg_user_data.username || this.get_random_name(my_data.uid) + ' (' + country_code + ')';
 			my_data.pic_url = cg_user_data.profilePictureUrl || ('https://avatars.dicebear.com/api/adventurer/' + my_data.uid + '.svg');	
-			
-			if (window.CrazyGames.CrazySDK){
-				let crazysdk = window.CrazyGames.CrazySDK.getInstance();
-				crazysdk.init();				
-			}
-			
+						
 			return;
 		}
 		
