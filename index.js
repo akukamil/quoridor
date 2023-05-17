@@ -3233,7 +3233,11 @@ var	ad = {
 			window.CrazyGames.SDK.ad.requestAd("midgame", callbacks);		
 		}
 		
-		
+		if (game_platform==='GOOGLE_PLAY') {
+			if (typeof Android !== 'undefined') {
+				Android.showAdFromJs();
+			}			
+		}
 	},
 	
 	show2 : async function() {
