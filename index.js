@@ -4597,7 +4597,7 @@ auth2 = {
 			country_code = resp2.country;			
 		} catch(e){}
 
-		return country_code||'UND';
+		return country_code||'';
 		
 	},
 	
