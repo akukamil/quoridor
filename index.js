@@ -1478,11 +1478,11 @@ var ffunc = {
 					objects.walls[wall_iter].x = objects.field.x + FIELD_MARGIN + c * 50;
 					objects.walls[wall_iter].y = objects.field.y + FIELD_MARGIN + r * 50;
 										
-					if (r === 1)
+					/*if (r === 1)
 						objects.walls[wall_iter].texture=gres.v_wall_t.texture;
 					else if (r === 8)
 						objects.walls[wall_iter].texture=gres.v_wall_b.texture;
-					else
+					else*/
 						objects.walls[wall_iter].texture=gres.v_wall.texture;
 										
 					objects.walls[wall_iter].visible = true;
@@ -1496,11 +1496,11 @@ var ffunc = {
 					objects.walls[wall_iter].x = objects.field.x + FIELD_MARGIN + c * 50;
 					objects.walls[wall_iter].y = objects.field.y + FIELD_MARGIN + r * 50;
 					
-					if (c === 1)
+					/*if (c === 1)
 						objects.walls[wall_iter].texture=gres.h_wall_l.texture;
 					else if (c === 8)
 						objects.walls[wall_iter].texture=gres.h_wall_r.texture;
-					else
+					else*/
 						objects.walls[wall_iter].texture=gres.h_wall.texture;
 					
 					objects.walls[wall_iter].visible = true;
@@ -2065,7 +2065,7 @@ var ffunc = {
 			
 			if (up_blocked===0 && left_blocked===0) return 0;
 			
-			if (field.f?.[r]?.[tc].wall_type === H_WALL&&field.f?.[r]?.[c+1].wall_type === H_WALL) return 0;	
+			if (field.f?.[r]?.[tc].wall_type === H_WALL&&field.f?.[r]?.[c+1]?.wall_type === H_WALL) return 0;	
 			if (field.f?.[tr]?.[c].wall_type === V_WALL&&field.f?.[r+1]?.[c].wall_type === V_WALL) return 0;	
 			if (field.f?.[r]?.[tc].wall_type === H_WALL&&field.f?.[tr]?.[c].wall_type === V_WALL) return 0;	
 					
@@ -2088,9 +2088,9 @@ var ffunc = {
 			
 			if (up_blocked===0 && right_blocked===0) return 0;
 			
-			if (field.f?.[r]?.[c].wall_type === H_WALL&&field.f?.[r]?.[tc+1].wall_type === H_WALL) return 0;	
+			if (field.f?.[r]?.[c].wall_type === H_WALL&&field.f?.[r]?.[tc+1]?.wall_type === H_WALL) return 0;	
 			if (field.f?.[tr]?.[tc].wall_type === V_WALL&&field.f?.[r+1]?.[tc].wall_type === V_WALL) return 0;	
-			if (field.f?.[tr]?.[tc].wall_type === V_WALL&&field.f?.[r]?.[tc+1].wall_type === H_WALL) return 0;	
+			if (field.f?.[tr]?.[tc].wall_type === V_WALL&&field.f?.[r]?.[tc+1]?.wall_type === H_WALL) return 0;	
 			
 			return 1;			
 		},	
@@ -2112,7 +2112,7 @@ var ffunc = {
 			if (left_blocked===0 && down_blocked===0) return 0;
 			
 			if (field.f?.[r]?.[c].wall_type===V_WALL&&field.f?.[tr+1]?.[c].wall_type===V_WALL) return 0;	
-			if (field.f?.[tr]?.[c].wall_type===H_WALL&&field.f?.[tr]?.[c-1].wall_type===H_WALL) return 0;	
+			if (field.f?.[tr]?.[c].wall_type===H_WALL&&field.f?.[tr]?.[c-1]?.wall_type===H_WALL) return 0;	
 			if (field.f?.[tr]?.[tc].wall_type===H_WALL&&field.f?.[tr+1]?.[c].wall_type===V_WALL) return 0;
 			
 			return 1;
@@ -2134,9 +2134,9 @@ var ffunc = {
 			
 			if (right_blocked===0 && down_blocked===0) return 0;
 			
-			if (field.f?.[tr]?.[c].wall_type===H_WALL&&field.f?.[tr]?.[tc+1].wall_type===H_WALL) return 0;	
+			if (field.f?.[tr]?.[c].wall_type===H_WALL&&field.f?.[tr]?.[tc+1]?.wall_type===H_WALL) return 0;	
 			if (field.f?.[r]?.[tc].wall_type===V_WALL&&field.f?.[tr+1]?.[tc].wall_type===V_WALL) return 0;	
-			if (field.f?.[tr+1]?.[tc].wall_type===V_WALL&&field.f?.[tr]?.[tc+1].wall_type===H_WALL) return 0;	
+			if (field.f?.[tr+1]?.[tc].wall_type===V_WALL&&field.f?.[tr]?.[tc+1]?.wall_type===H_WALL) return 0;	
 			
 			return 1;			
 		},			
@@ -2265,6 +2265,7 @@ var ffunc = {
 	}
 
 }
+
 
 var game = {
 	
