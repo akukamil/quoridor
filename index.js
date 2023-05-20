@@ -1748,8 +1748,6 @@ var ffunc = {
 		}
 		
 		return walls_num;
-
-		
 	},
 	
 	get_players_num : function (field) {
@@ -2092,7 +2090,7 @@ var ffunc = {
 			
 			if (field.f?.[r]?.[c].wall_type === H_WALL&&field.f?.[r]?.[tc+1].wall_type === H_WALL) return 0;	
 			if (field.f?.[tr]?.[tc].wall_type === V_WALL&&field.f?.[r+1]?.[tc].wall_type === V_WALL) return 0;	
-			if (field.f?.[r-1]?.[tc].wall_type === V_WALL&&field.f?.[r]?.[tc+1].wall_type === H_WALL) return 0;	
+			if (field.f?.[tr]?.[tc].wall_type === V_WALL&&field.f?.[r]?.[tc+1].wall_type === H_WALL) return 0;	
 			
 			return 1;			
 		},	
@@ -2138,7 +2136,7 @@ var ffunc = {
 			
 			if (field.f?.[tr]?.[c].wall_type===H_WALL&&field.f?.[tr]?.[tc+1].wall_type===H_WALL) return 0;	
 			if (field.f?.[r]?.[tc].wall_type===V_WALL&&field.f?.[tr+1]?.[tc].wall_type===V_WALL) return 0;	
-			if (field.f?.[tr+1]?.[tc+1].wall_type===V_WALL&&field.f?.[tr]?.[tc+1].wall_type===H_WALL) return 0;	
+			if (field.f?.[tr+1]?.[tc].wall_type===V_WALL&&field.f?.[tr]?.[tc+1].wall_type===H_WALL) return 0;	
 			
 			return 1;			
 		},			
