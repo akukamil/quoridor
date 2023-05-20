@@ -2067,6 +2067,10 @@ var ffunc = {
 			
 			if (up_blocked===0 && left_blocked===0) return 0;
 			
+			if (field.f?.[r]?.[tc].wall_type === H_WALL&&field.f?.[r]?.[c+1].wall_type === H_WALL) return 0;	
+			if (field.f?.[tr]?.[c].wall_type === V_WALL&&field.f?.[r+1]?.[c].wall_type === V_WALL) return 0;	
+			if (field.f?.[r]?.[tc].wall_type === H_WALL&&field.f?.[tr]?.[c].wall_type === V_WALL) return 0;	
+					
 			return 1;			
 		},
 	
@@ -2085,6 +2089,10 @@ var ffunc = {
 			const right_blocked=this.blocked_opp_right(field, r, c);
 			
 			if (up_blocked===0 && right_blocked===0) return 0;
+			
+			if (field.f?.[r]?.[c].wall_type === H_WALL&&field.f?.[r]?.[tc+1].wall_type === H_WALL) return 0;	
+			if (field.f?.[tr]?.[tc].wall_type === V_WALL&&field.f?.[r+1]?.[tc].wall_type === V_WALL) return 0;	
+			if (field.f?.[r-1]?.[tc].wall_type === V_WALL&&field.f?.[r]?.[tc+1].wall_type === H_WALL) return 0;	
 			
 			return 1;			
 		},	
@@ -2105,6 +2113,10 @@ var ffunc = {
 			
 			if (left_blocked===0 && down_blocked===0) return 0;
 			
+			if (field.f?.[r]?.[c].wall_type===V_WALL&&field.f?.[tr+1]?.[c].wall_type===V_WALL) return 0;	
+			if (field.f?.[tr]?.[tc].wall_type===H_WALL&&field.f?.[tr]?.[c+1].wall_type===H_WALL) return 0;	
+			if (field.f?.[tr]?.[tc].wall_type===H_WALL&&field.f?.[tr+1]?.[c].wall_type===V_WALL) return 0;
+			
 			return 1;
 		},		
 
@@ -2123,6 +2135,10 @@ var ffunc = {
 			const down_blocked=this.blocked_opp_down(field, r, c);
 			
 			if (right_blocked===0 && down_blocked===0) return 0;
+			
+			if (field.f?.[tr]?.[c].wall_type===H_WALL&&field.f?.[tr]?.[tc+1].wall_type===H_WALL) return 0;	
+			if (field.f?.[r]?.[tc].wall_type===V_WALL&&field.f?.[tr+1]?.[tc].wall_type===V_WALL) return 0;	
+			if (field.f?.[tr+1]?.[tc+1].wall_type===V_WALL&&field.f?.[tr]?.[tc+1].wall_type===H_WALL) return 0;	
 			
 			return 1;			
 		},			
