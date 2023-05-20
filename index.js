@@ -2112,7 +2112,7 @@ var ffunc = {
 			if (left_blocked===0 && down_blocked===0) return 0;
 			
 			if (field.f?.[r]?.[c].wall_type===V_WALL&&field.f?.[tr+1]?.[c].wall_type===V_WALL) return 0;	
-			if (field.f?.[tr]?.[tc].wall_type===H_WALL&&field.f?.[tr]?.[c+1].wall_type===H_WALL) return 0;	
+			if (field.f?.[tr]?.[c].wall_type===H_WALL&&field.f?.[tr]?.[c-1].wall_type===H_WALL) return 0;	
 			if (field.f?.[tr]?.[tc].wall_type===H_WALL&&field.f?.[tr+1]?.[c].wall_type===V_WALL) return 0;
 			
 			return 1;
