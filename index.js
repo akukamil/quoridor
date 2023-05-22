@@ -3494,6 +3494,7 @@ var main_menu = {
 		sound.play('click');
 		
 		//отображаем текущую фищку
+		this.chip_id=my_data.chip;
 		objects.chip_sel_frame.x=objects.chip_icons[my_data.chip].x-10;
 		objects.chip_sel_frame.y=objects.chip_icons[my_data.chip].y-10;
 	
