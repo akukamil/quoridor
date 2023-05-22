@@ -4813,7 +4813,7 @@ async function load_user_data() {
 		//делаем защиту от неопределенности
 		my_data.rating = (other_data && other_data.rating) || 1400;	
 		my_data.games = (other_data && other_data.games) || 0;
-		my_data.chip = (other_data && other_data.chip) || 0;		
+		my_data.chip = (other_data && other_data.chip) || 0;	
 			
 		//отключение от игры и удаление не нужного
 		firebase.database().ref("inbox/"+my_data.uid).onDisconnect().remove();
@@ -4829,7 +4829,7 @@ async function load_user_data() {
 		firebase.database().ref("inbox/"+my_data.uid).on('value', (snapshot) => { process_new_message(snapshot.val());});
 
 		//обновляем данные в файербейс так как могли поменяться имя или фото
-		firebase.database().ref("players/"+my_data.uid).set({name:my_data.name, pic_url: my_data.pic_url, rating : my_data.rating, games : my_data.games, tm:firebase.database.ServerValue.TIMESTAMP});
+		firebase.database().ref("players/"+my_data.uid).set({name:my_data.name, pic_url: my_data.pic_url, rating : my_data.rating, chip : my_data.chip, games : my_data.games, tm:firebase.database.ServerValue.TIMESTAMP});
 
 		//устанавливаем мой статус в онлайн
 		set_state({state : 'o'});
