@@ -2316,12 +2316,12 @@ var game = {
 		if (my_role === 'master') {
 			my_turn = 1;			
 			objects.timer.x=80;		
-			message.add(['Вы ходите голубой фишкой. Последний ход за соперником.','You go with a blue chip. The last move is for the opponent'][LANG]);
+			message.add(['Вы ходите первым. Последний ход за соперником.','You go first. The last move is for the opponent'][LANG]);
 
 		} else {
 			my_turn = 0;			
 			objects.timer.x=720;
-			message.add(['Вы ходите красной фишкой. Последний ход за Вами.','You go with a red chip. The last move is yours'][LANG])
+			message.add(['Вы ходите вторым. Последний ход за Вами.','You go second. The last move is yours'][LANG])
 		}
 		
 		objects.my_icon.texture = gres['chip'+my_data.chip].texture;
