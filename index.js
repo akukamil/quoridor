@@ -3424,6 +3424,7 @@ var stickers={
 var main_menu = {
 
 	logo_dx : 0.2,
+	chip_id:0,
 	
 	activate: function() {
 
@@ -3462,7 +3463,7 @@ var main_menu = {
 		}
 
 
-		game_res.resources.click.sound.play();
+		sound.play('click');
 
 		await this.close();
 		cards_menu.activate();
@@ -3476,7 +3477,7 @@ var main_menu = {
 			return;			
 		}
 
-		gres.click.sound.play();
+		sound.play('click');
 
 		this.close();
 		lb.show();
@@ -3486,12 +3487,15 @@ var main_menu = {
 	rules_button_down: function () {
 
 		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.main_buttons_cont.ready === false ||  objects.rules_cont.ready === false) {
-			gres.bad_move.sound.play();
+			sound.play('bad_move');
 			return;			
 		}
-
-		gres.click.sound.play();
-
+		
+		sound.play('click');
+		
+		//отображаем текущую фищку
+		objects.chip_sel_frame.x=objects.chip_icons[my_data.chip].x-10;
+		objects.chip_sel_frame.y=objects.chip_icons[my_data.chip].y-10;
 	
 		anim2.add(objects.rules_cont,{y:[-450, objects.rules_cont.sy]}, true, 0.5,'easeOutBack');
 
@@ -3500,11 +3504,27 @@ var main_menu = {
 	rules_ok_down: function () {
 		
 		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.rules_cont.ready === false) {
-			gres.bad_move.sound.play();
+			sound.play('bad_move');
 			return;			
 		}
 		
+		sound.play('click');
+		
+		//фиксируем номер фишки если поменялся
+		if (my_data.chip!==this.chip_id){
+			my_data.chip=this.chip_id;
+			firebase.database().ref('players/'+my_data.uid+'/chip').set(my_data.chip);			
+		}
+		
 		anim2.add(objects.rules_cont,{y:[objects.rules_cont.y,-450, ]}, false, 0.5,'easeInBack');
+	},
+	
+	chip_down(){
+		
+		sound.play('click');		
+		objects.chip_sel_frame.x=this.x-10;
+		objects.chip_sel_frame.y=this.y-10;
+		main_menu.chip_id=this.chip_id;		
 	},
 	
 	chat_button_down : async function() {
@@ -4943,9 +4963,6 @@ async function init_game_env(lng) {
 	//нажатие клавиш на клавиатуре
 	window.addEventListener('keydown', function(event) { feedback.key_down(event.key)});
 	window.addEventListener("wheel", (event) => {chat.wheel_event(Math.sign(event.deltaY))});	
-	
-	//добавляем описание так как текст слишком большой
-	objects.rules_txt.text=['Добро пожаловать в игру Quoridor ( Лабиринт ) !\n\nДанная игра позволит Вам проверить свои стратегические и тактические способности. Цель игры - быстрее соперника добраться до противоположной стороны доски. Каждый ход предлагает 2 варината действий - передвинуть фишку на одну клетку или поставить "стену". Старайтесь заблокировать соперника, но и сами не попасть в тупик. Побеждая других игроков, Вы зарабатываете рейтинговые баллы и продвигаетесь вверх по таблице лидеров.\n\nУдачной игры!','Welcome to the game Quoridor ( Maze)!\n\n This game will allow you to test your strategic and tactical abilities. The goal of the game is to get to the opposite side of the board faster than the opponent. Each move offers 2 options - move the chip one square or put a wall. Try to block the opponent, but do not get into a dead end yourself. By defeating other players, you earn ranking points and move up the leaderboard.\n\n Have a good game!'][LANG];
 	
 	//показыаем основное меню
 	main_menu.activate();
