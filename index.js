@@ -923,30 +923,36 @@ var online_game = {
 
 	},
 	
-	init : function (r) {
+	async init(r) {
 		
 		this.me_conf_play = 0;
 		this.opp_conf_play = 0;
 		
-		
-		if (state === 'b') {			
-
+		if (state === 'b') {
 			//убираем кнопку стоп
 			objects.stop_bot_button.visible=false;			
 		}
-		
 
 		//устанавливаем статус в базе данных а если мы не видны то установливаем только скрытое состояние
 		set_state({state : 'p'});
-			
 
+		//получаем информацию о фишке соперника
+		let snapshot = await firebase.database().ref('players/'+opp_data.uid+'/chip').once('value');
+		let opp_chip = snapshot.val()||0;
+		objects.opp_icon.texture = gres['chip'+opp_chip].texture;
+		
+		//это если фишки совпадают
+		if (opp_chip===my_data.chip)
+			objects.opp_icon.tint=0x88ff88;
+		else
+			objects.opp_icon.tint=0xffffff;
+		
 		//показываем кнопки
 		objects.game_buttons_cont.visible = true;
 
 		this.reset_timer(30);
 		
 		this.timer_id = setTimeout(function(){online_game.timer_tick()}, 1000);
-
 		
 		//фиксируем врему начала игры
 		this.start_time = Date.now();
@@ -955,8 +961,7 @@ var online_game = {
 		let lose_rating = this.calc_new_rating(my_data.rating, LOSE);
 		if (lose_rating >100 && lose_rating<9999)
 			firebase.database().ref("players/"+my_data.uid+"/rating").set(lose_rating);
-
-		
+	
 	},
 	
 	reset_timer : function(t) {
@@ -1119,7 +1124,7 @@ var bot_player = {
 		
 	},
 	
-	init : function () {
+	async init() {
 		
 		this.pending_stop
 		
@@ -1127,6 +1132,15 @@ var bot_player = {
 
 		//показываем кнопку стоп
 		objects.stop_bot_button.visible = true;
+		
+		const opp_chip=irnd(0,17);
+		objects.opp_icon.texture = gres['chip'+opp_chip].texture;
+		
+		//это если фишки совпадают
+		if (opp_chip===my_data.chip)
+			objects.opp_icon.tint=0x88ff88;
+		else
+			objects.opp_icon.tint=0xffffff;
 		
 		//отключаем таймер...........................
 		objects.timer.text  = ['Мой ход...','My move...'][LANG];
@@ -2266,7 +2280,6 @@ var ffunc = {
 
 }
 
-
 var game = {
 	
 	opponent : {},
@@ -2293,6 +2306,9 @@ var game = {
 		//если открыт просмотр игры
 		if (game_watching.on===true)
 			game_watching.close();
+		
+		//это если обработка стен
+		this.stop_wall_processing();
 				
 		my_role=role;
 		this.opponent = opponent;
@@ -2301,24 +2317,23 @@ var game = {
 			my_turn = 1;			
 			objects.timer.x=80;		
 			message.add(['Вы ходите голубой фишкой. Последний ход за соперником.','You go with a blue chip. The last move is for the opponent'][LANG]);
-			objects.my_icon.texture = gres.blue_icon.texture;
-			objects.opp_icon.texture = gres.red_icon.texture;
+
 		} else {
 			my_turn = 0;			
 			objects.timer.x=720;
 			message.add(['Вы ходите красной фишкой. Последний ход за Вами.','You go with a red chip. The last move is yours'][LANG])
-			objects.my_icon.texture = gres.red_icon.texture;
-			objects.opp_icon.texture = gres.blue_icon.texture;
 		}
 		
-				
+		objects.my_icon.texture = gres['chip'+my_data.chip].texture;
+		objects.opp_icon.tint=0x88ff88;
+		
 		//это то что могло остаться от игры с ботом
 		objects.move_opt_cont.visible=false;
 		objects.my_icon.alpha=1;
 		some_process.player_selected_processing = function(){};
 				
 		//инициируем все что связано с оппонентом
-		this.opponent.init(my_role);
+		await this.opponent.init(my_role);
 				
 		//если открыт лидерборд то закрываем его
 		if (objects.lb_1_cont.visible===true)
@@ -2413,11 +2428,7 @@ var game = {
 		set_state({state : 'o'});		
 		
 		main_menu.activate();
-		
-		//показываем социальную панель
-		if (game_platform === 'VK')
-			if (Math.random()>-0.75)
-				social_dialog.show();		
+			
 	},
 	
 	giveup_down : function() {
@@ -2748,11 +2759,11 @@ var game = {
 					
 					w_spr = objects.v_wall;
 					
-					if (r === 1)
+					/*if (r === 1)
 						w_spr.texture=gres.v_wall_t.texture;
 					else if (r === 8)
 						w_spr.texture=gres.v_wall_b.texture;
-					else
+					else*/
 						w_spr.texture=gres.v_wall.texture;					
 				}
 				
@@ -2760,11 +2771,11 @@ var game = {
 					
 					w_spr = objects.h_wall;
 					
-					if (c === 1)
+					/*if (c === 1)
 						w_spr.texture=gres.h_wall_l.texture;
 					else if (c === 8)
 						w_spr.texture=gres.h_wall_r.texture;
-					else
+					else*/
 						w_spr.texture=gres.h_wall.texture;				
 				}
 				
@@ -2871,7 +2882,7 @@ var game_watching={
 	on:false,
 	anchor_uid:'',
 	
-	activate(card_data){
+	async activate(card_data){
 		
 		this.on=true;
 		ffunc.init(this.field);	
@@ -2884,16 +2895,34 @@ var game_watching={
 		
 		this.game_id=card_data.game_id;
 		
-		objects.my_icon.texture = gres.blue_icon.texture;
-		objects.opp_icon.texture = gres.red_icon.texture;
 		
 		//показываем карточки игроков		
 		objects.my_card_cont.visible = true;
 		objects.opp_card_cont.visible = true;	
 		
+		//получаем остальные данные об игроке
+		let snapshot = await firebase.database().ref('players/'+card_data.uid1+'/chip').once('value');
+		let chip1 = snapshot.val()||0;
+		
+		snapshot = await firebase.database().ref('players/'+card_data.uid2+'/chip').once('value');
+		let chip2 = snapshot.val()||0;
+		
+		
+		
+		
 		//фишки
-		objects.picon0.texture=gres.blue_icon.texture;
-		objects.picon1.texture=gres.red_icon.texture;
+		
+		//это если фишки совпадают
+		if (chip1===chip2)
+			objects.picon1.tint=objects.opp_icon.tint=0x88ff88;
+		else
+			objects.picon1.tint=objects.opp_icon.tint=0xffffff;
+
+
+		
+		objects.my_icon.texture =objects.picon0.texture=gres['chip'+chip1].texture;
+		objects.opp_icon.texture =objects.picon1.texture=gres['chip'+chip2].texture;
+		
 		objects.picon0.visible=objects.picon1.visible=true;
 		
 		//аватарки		
@@ -2914,7 +2943,7 @@ var game_watching={
 		})
 		
 	},
-
+	
 	get_inverted_board(board){
 		
 		
@@ -3291,53 +3320,6 @@ var	ad = {
 		return 'err';
 		
 	}
-}
-
-var social_dialog = {
-	
-	show : function() {
-		
-		anim2.add(objects.social_cont,{x:[800,objects.social_cont.sx]}, true, 0.06,'linear');
-		
-		
-	},
-	
-	invite_down : function() {
-		
-		if (objects.social_cont.ready !== true)
-			return;
-		
-		gres.click.sound.play();
-		vkBridge.send('VKWebAppShowInviteBox');
-		social_dialog.close();
-		
-	},
-	
-	share_down: function() {
-		
-		if (objects.social_cont.ready !== true)
-			return;
-		
-		gres.click.sound.play();
-		vkBridge.send('VKWebAppShowWallPostBox', {"message": `Мой рейтинг в игре Quoridor ${my_data.rating}. Сможешь победить меня?`,
-		"attachments": "https://vk.com/app8095798"});
-		social_dialog.close();
-	},
-	
-	close_down: function() {
-		if (objects.social_cont.ready !== true)
-			return;
-		
-		gres.click.sound.play();
-		social_dialog.close();
-	},
-	
-	close : function() {
-		
-		anim2.add(objects.social_cont,{x:[objects.social_cont.x,800]}, false, 0.06,'linear');
-				
-	}
-	
 }
 
 var stickers={
@@ -4804,17 +4786,13 @@ async function load_user_data() {
 		
 		//получаем остальные данные об игроке
 		let snapshot = await firebase.database().ref("players/"+my_data.uid).once('value');
-		let data = snapshot.val();
+		let other_data = snapshot.val();
+		
 		
 		//делаем защиту от неопределенности
-		data===null ?
-			my_data.rating=1400 :
-			my_data.rating = data.rating || 1400;
-			
-		data===null ?
-			my_data.games = 0 :
-			my_data.games = data.games || 0;
-			
+		my_data.rating = (other_data && other_data.rating) || 1400;	
+		my_data.games = (other_data && other_data.games) || 0;
+		my_data.chip = (other_data && other_data.chip) || 0;		
 			
 		//отключение от игры и удаление не нужного
 		firebase.database().ref("inbox/"+my_data.uid).onDisconnect().remove();
