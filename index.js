@@ -4406,10 +4406,12 @@ var cards_menu = {
 		let invite_available = 	cards_menu._opp_data.uid !== my_data.uid;
 		invite_available=invite_available && (objects.mini_cards[cart_id].state==="o" || objects.mini_cards[cart_id].state==="b");
 		invite_available=invite_available || cards_menu._opp_data.uid==="AI";
-
+		objects.invite_button.state='';
+		
 		//показыаем кнопку приглашения только если это допустимо
 		if (invite_available === true) {
 			objects.invite_button.visible = true;		
+			
 			objects.invite_button.texture = gres.invite_button.texture;	
 		} else {
 			objects.invite_button.visible = false;
@@ -4477,7 +4479,7 @@ var cards_menu = {
 	send_invite: function() {
 
 
-		if (objects.invite_cont.ready === false || 	objects.big_message_cont.visible === true ||objects.req_cont.visible === true)	{
+		if (objects.invite_button.state==='invited'||objects.invite_cont.ready === false || 	objects.big_message_cont.visible === true ||objects.req_cont.visible === true)	{
 			gres.locked.sound.play();
 			return
 		}
@@ -4497,6 +4499,7 @@ var cards_menu = {
 		{
 			gres.click.sound.play();
 			objects.invite_button.texture = gres.invite_button_waiting.texture;
+			objects.invite_button.state='invited';
 			firebase.database().ref("inbox/"+cards_menu._opp_data.uid).set({sender:my_data.uid,message:"INV",tm:Date.now()});
 			pending_player=cards_menu._opp_data.uid;
 		}
