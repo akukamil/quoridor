@@ -4641,9 +4641,8 @@ auth2 = {
 		if(!window.CrazyGames.SDK)
 			return {};
 		
-		const is_user_data = await window.CrazyGames.SDK.user.isUserAccountAvailable();
-		if (is_user_data===false) return {};
-		const user = await window.CrazyGames.SDK.user.getUser();
+		const token = await window.CrazyGames.SDK.user.getUserToken();
+		const user = jwtDecode(token);
 		return user || {};
 	},
 	
@@ -4717,10 +4716,11 @@ auth2 = {
 		
 		if (game_platform === 'CRAZYGAMES') {			
 			
+			try {await this.load_script('https://akukamil.github.io/quoridor/jwt-decode.js')} catch (e) {alert(e)};		
 			let country_code = await this.get_country_code();
 			const cg_user_data=await this.search_in_crazygames();			
 		
-			my_data.uid = cg_user_data.id || this.search_in_local_storage() || this.get_random_uid_for_local('CG_');
+			my_data.uid = cg_user_data.userId || this.search_in_local_storage() || this.get_random_uid_for_local('CG_');
 			my_data.name = cg_user_data.username || this.get_random_name(my_data.uid) + ' (' + country_code + ')';
 			my_data.pic_url = cg_user_data.profilePictureUrl || ('https://api.dicebear.com/7.x/adventurer/svg?seed='+my_data.uid);	
 						
@@ -4735,7 +4735,10 @@ auth2 = {
 			my_data.name = this.get_random_name(my_data.uid);
 			my_data.pic_url = 'https://api.dicebear.com/7.x/adventurer/svg?seed='+my_data.uid;		
 		}
-	}
+	},
+	
+    
+
 	
 }
 
