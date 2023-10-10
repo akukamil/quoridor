@@ -4645,7 +4645,7 @@ auth2 = {
 		try{
 			token = await window.CrazyGames.SDK.user.getUserToken();
 		}catch(e){
-			return;
+			return {};
 		}
 		const user = window.jwt_decode(token);
 		return user || {};
