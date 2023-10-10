@@ -4641,7 +4641,12 @@ auth2 = {
 		if(!window.CrazyGames.SDK)
 			return {};
 		
-		const token = await window.CrazyGames.SDK.user.getUserToken();
+		let token='';
+		try{
+			token = await window.CrazyGames.SDK.user.getUserToken();
+		}catch(e){
+			return;
+		}
 		const user = window.jwt_decode(token);
 		return user || {};
 	},
@@ -4736,10 +4741,7 @@ auth2 = {
 			my_data.pic_url = 'https://api.dicebear.com/7.x/adventurer/svg?seed='+my_data.uid;		
 		}
 	},
-	
-    
-
-	
+	    	
 }
 
 function resize() {
