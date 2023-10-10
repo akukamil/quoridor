@@ -1542,13 +1542,13 @@ var ffunc = {
 		
 		if (this.blocked_way(field, field.pos[OPP_ID].r, field.pos[OPP_ID].c, ROW8, 1) === 1) {
 			field.f[wr][wc].wall_type = 0;
-			console.log('blocked opp');
+			//console.log('blocked opp');
 			return 1;			
 		}
 		
 		if (this.blocked_way(field, field.pos[MY_ID].r, field.pos[MY_ID].c, ROW0, 1) === 1) {
 			field.f[wr][wc].wall_type = 0;
-			console.log('blocked me');
+			//console.log('blocked me');
 			return 1;			
 		}
 		
