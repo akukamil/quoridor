@@ -4970,7 +4970,7 @@ async function init_game_env(lng) {
 	room_name='states';
 	
 	//нажатие клавиш на клавиатуре
-	window.addEventListener('keydown', function(event) { feedback.key_down(event.key)});
+	window.addEventListener('keydown', function(event) {event.preventDefault();feedback.key_down(event.key)}, {passive: false});
 	window.addEventListener("wheel", (event) => {chat.wheel_event(Math.sign(event.deltaY))});	
 	
 	//показыаем основное меню
