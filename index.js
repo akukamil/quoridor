@@ -4554,7 +4554,7 @@ var cards_menu = {
 
 auth2 = {
 		
-	load_script : function(src) {
+	load_script(src) {
 	  return new Promise((resolve, reject) => {
 		const script = document.createElement('script')
 		script.type = 'text/javascript'
@@ -4565,14 +4565,14 @@ auth2 = {
 	  })
 	},
 			
-	get_random_char : function() {		
+	get_random_char () {		
 		
 		const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 		return chars[irnd(0,chars.length-1)];
 		
 	},
 	
-	get_random_uid_for_local : function(prefix) {
+	get_random_uid_for_local (prefix) {
 		
 		let uid = prefix;
 		for ( let c = 0 ; c < 12 ; c++ )
@@ -4587,7 +4587,7 @@ auth2 = {
 		
 	},
 	
-	get_random_name : function(uid) {
+	get_random_name(uid) {
 		
 		const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 		const rnd_names = ['Gamma','Chime','Dron','Perl','Onyx','Asti','Wolf','Roll','Lime','Cosy','Hot','Kent','Pony','Baker','Super','ZigZag','Magik','Alpha','Beta','Foxy','Fazer','King','Kid','Rock'];
@@ -4609,7 +4609,7 @@ auth2 = {
 		}	
 	},	
 	
-	get_country_code : async function() {
+	async get_country_code() {
 		
 		let country_code = ''
 		try {
@@ -4622,7 +4622,7 @@ auth2 = {
 		
 	},
 	
-	search_in_local_storage : function() {
+	search_in_local_storage() {
 		
 		//ищем в локальном хранилище
 		let local_uid = null;
@@ -4650,7 +4650,7 @@ auth2 = {
 		const user = window.jwt_decode(token);
 		return user || {};
 	},
-	
+		
 	init : async function() {	
 				
 		if (game_platform === 'YANDEX') {			
@@ -4724,6 +4724,11 @@ auth2 = {
 			try {await this.load_script('https://akukamil.github.io/quoridor/jwt-decode.js')} catch (e) {alert(e)};		
 			let country_code = await this.get_country_code();
 			const cg_user_data=await this.search_in_crazygames();			
+		
+			//перезапускаем если авторизация прошла
+			window.CrazyGames.SDK.user.addAuthListener(function(){				
+				location.reload();				
+			});
 		
 			my_data.uid = cg_user_data.userId || this.search_in_local_storage() || this.get_random_uid_for_local('CG_');
 			my_data.name = cg_user_data.username || this.get_random_name(my_data.uid) + ' (' + country_code + ')';
