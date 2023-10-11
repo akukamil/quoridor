@@ -4725,19 +4725,22 @@ auth2 = {
 			let country_code = await this.get_country_code();
 			const cg_user_data=await this.search_in_crazygames();			
 		
-			//перезапускаем если авторизация прошла
-			//if (!cg_user_data.userId){
-				window.CrazyGames.SDK.user.addAuthListener(function(user){	
-					console.log('user changed',user);
-					//location.reload();				
-				});				
-			//}
-
-		
 			my_data.uid = cg_user_data.userId || this.search_in_local_storage() || this.get_random_uid_for_local('CG_');
 			my_data.name = cg_user_data.username || this.get_random_name(my_data.uid) + ' (' + country_code + ')';
 			my_data.pic_url = cg_user_data.profilePictureUrl || ('https://api.dicebear.com/7.x/adventurer/svg?seed='+my_data.uid);	
-						
+					
+
+			//перезапускаем если авторизация прошла
+			//if (!cg_user_data.userId){
+				window.CrazyGames.SDK.user.addAuthListener(function(user){	
+					if (user?.id&&user.id!==my_data.uid){
+						console.log('user changed',user);						
+					}
+
+					//location.reload();				
+				});				
+			//}
+					
 			return;
 		}
 		
