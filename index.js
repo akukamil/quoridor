@@ -4727,8 +4727,8 @@ auth2 = {
 		
 			//перезапускаем если авторизация прошла
 			if (!cg_user_data.userId){
-				window.CrazyGames.SDK.user.addAuthListener(function(){	
-					console.log('user changed');
+				window.CrazyGames.SDK.user.addAuthListener(function(user){	
+					console.log('user changed',user);
 					//location.reload();				
 				});				
 			}
