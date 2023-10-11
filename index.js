@@ -4726,12 +4726,12 @@ auth2 = {
 			const cg_user_data=await this.search_in_crazygames();			
 		
 			//перезапускаем если авторизация прошла
-			if (!cg_user_data.userId){
+			//if (!cg_user_data.userId){
 				window.CrazyGames.SDK.user.addAuthListener(function(user){	
 					console.log('user changed',user);
 					//location.reload();				
 				});				
-			}
+			//}
 
 		
 			my_data.uid = cg_user_data.userId || this.search_in_local_storage() || this.get_random_uid_for_local('CG_');
