@@ -4734,10 +4734,10 @@ auth2 = {
 			//if (!cg_user_data.userId){
 				window.CrazyGames.SDK.user.addAuthListener(function(user){	
 					if (user?.id&&user.id!==my_data.uid){
-						console.log('user changed',user);						
+						console.log('user changed',user);
+						location.reload();	
 					}
-
-					//location.reload();				
+					//			
 				});				
 			//}
 					
