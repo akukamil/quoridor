@@ -4726,10 +4726,13 @@ auth2 = {
 			const cg_user_data=await this.search_in_crazygames();			
 		
 			//перезапускаем если авторизация прошла
-			window.CrazyGames.SDK.user.addAuthListener(function(){	
-				console.log('sdfds');
-				//location.reload();				
-			});
+			if (!cg_user_data.userId){
+				window.CrazyGames.SDK.user.addAuthListener(function(){	
+					console.log('user changed');
+					//location.reload();				
+				});				
+			}
+
 		
 			my_data.uid = cg_user_data.userId || this.search_in_local_storage() || this.get_random_uid_for_local('CG_');
 			my_data.name = cg_user_data.username || this.get_random_name(my_data.uid) + ' (' + country_code + ')';
