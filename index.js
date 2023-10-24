@@ -404,7 +404,7 @@ class node_class {
 	
 }
 
-var sound = {
+sound = {
 	
 	on : 1,
 	
@@ -625,7 +625,7 @@ feedback = {
 	
 }
 
-var message =  {
+message =  {
 	
 	promise_resolve :0,
 	
@@ -655,7 +655,7 @@ var message =  {
 
 }
 
-var anim2 = {
+anim2 = {
 		
 	c1: 1.70158,
 	c2: 1.70158 * 1.525,
@@ -665,7 +665,7 @@ var anim2 = {
 		
 	slot: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
 	
-	any_on : function() {
+	any_on () {
 		
 		for (let s of this.slot)
 			if (s !== null)
@@ -673,11 +673,11 @@ var anim2 = {
 		return false;		
 	},
 	
-	linear: function(x) {
+	linear(x) {
 		return x
 	},
 	
-	kill_anim: function(obj) {
+	kill_anim(obj) {
 		
 		for (var i=0;i<this.slot.length;i++)
 			if (this.slot[i]!==null)
@@ -685,11 +685,11 @@ var anim2 = {
 					this.slot[i]=null;		
 	},
 	
-	easeOutBack: function(x) {
+	easeOutBack(x) {
 		return 1 + this.c3 * Math.pow(x - 1, 3) + this.c1 * Math.pow(x - 1, 2);
 	},
 	
-    easeOutBounce: function (x) {
+    easeOutBounce(x) {
         const n1 = 7.5625;
         const d1 = 2.75;
 
@@ -704,7 +704,7 @@ var anim2 = {
         }
     },
 	
-	easeOutElastic: function(x) {
+	easeOutElastic(x) {
 		return x === 0
 			? 0
 			: x === 1
@@ -712,31 +712,31 @@ var anim2 = {
 			: Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * this.c4) + 1;
 	},
 	
-	easeOutSine: function(x) {
+	easeOutSine(x) {
 		return Math.sin( x * Math.PI * 0.5);
 	},
 	
-	easeOutCubic: function(x) {
+	easeOutCubic(x) {
 		return 1 - Math.pow(1 - x, 3);
 	},
 	
-	easeInBack: function(x) {
+	easeInBack(x) {
 		return this.c3 * x * x * x - this.c1 * x * x;
 	},
 	
-	easeInQuad: function(x) {
+	easeInQuad(x) {
 		return x * x;
 	},
 	
-	ease2back : function(x) {
+	ease2back(x) {
 		return Math.sin(x*Math.PI);
 	},
 	
-	easeInOutCubic: function(x) {
+	easeInOutCubic(x) {
 		return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 	},
 	
-	add : function(obj, params, vis_on_end, time, func) {
+	add (obj, params, vis_on_end, time, func) {
 				
 		//если уже идет анимация данного спрайта то отменяем ее
 		anim2.kill_anim(obj);
@@ -752,7 +752,12 @@ var anim2 = {
 
 				//добавляем дельту к параметрам и устанавливаем начальное положение
 				for (let key in params) {
-					params[key][2]=params[key][1]-params[key][0];					
+					
+					//если начального показателя нет то устанавливаем его текущим
+					if (!params[key][0])						
+						params[key][0]=obj[key]
+						
+					params[key][2]=params[key][1]-params[key][0];
 					obj[key]=params[key][0];
 				}
 				
@@ -760,13 +765,11 @@ var anim2 = {
 				if (func === 'ease2back')
 					for (let key in params)
 						params[key][1]=params[key][0];					
-
 					
-
 				this.slot[i] = {
-					obj: obj,
-					params: params,
-					vis_on_end: vis_on_end,
+					obj,
+					params,
+					vis_on_end,
 					func: this[func].bind(anim2),
 					speed: 0.01818 / time,
 					progress: 0
@@ -801,18 +804,17 @@ var anim2 = {
 
 	},	
 	
-	process: function () {
+	process() {
 		
 		for (var i = 0; i < this.slot.length; i++)
 		{
-			if (this.slot[i] !== null) {
+			if (this.slot[i]) {
 				
 				let s=this.slot[i];
 				
 				s.progress+=s.speed;				
 				for (let key in s.params)				
 					s.obj[key]=s.params[key][0]+s.params[key][2]*s.func(s.progress);		
-
 				
 				//если анимация завершилась то удаляем слот
 				if (s.progress>=0.999) {
@@ -833,7 +835,7 @@ var anim2 = {
 	
 }
 
-var big_message = {
+big_message = {
 	
 	p_resolve : 0,
 		
@@ -864,7 +866,7 @@ var big_message = {
 
 }
 
-var make_text = function (obj, text, max_width) {
+make_text = function (obj, text, max_width) {
 
 	let sum_v=0;
 	let f_size=obj.fontSize;
@@ -888,7 +890,7 @@ var make_text = function (obj, text, max_width) {
 	obj.text =  text;
 }
 
-var online_game = {
+online_game = {
 		
 	timer_id : 0,
 	move_time_left : 0,
@@ -1105,7 +1107,7 @@ var online_game = {
 
 };
 
-var bot_player = {
+bot_player = {
 	
 	true_rating : 34634,	
 	timer : 0,
@@ -1119,7 +1121,7 @@ var bot_player = {
 		
 		let root_node = new node_class(game.field, MY_ID, 0);
 		let best_child = await this.start_mm_search(root_node);
-					
+		if (!best_child) return;
 		game.receive_move(best_child.move_data);
 		
 	},
@@ -1132,6 +1134,7 @@ var bot_player = {
 
 		//показываем кнопку стоп
 		objects.stop_bot_button.visible = true;
+		objects.stop_bot_button.pointerdown=function(){game.stop_down()};
 		
 		const opp_chip=irnd(0,17);
 		objects.opp_icon.texture = gres['chip'+opp_chip].texture;
@@ -1146,7 +1149,7 @@ var bot_player = {
 		objects.timer.text  = ['Мой ход...','My move...'][LANG];
 	},
 	
-	stop : async function (result) {
+	async stop(result) {
 		
 		let res_array = [
 			['my_stop' ,DRAW, ['Вы отменили игру!','You canceled the game']],
@@ -1180,7 +1183,7 @@ var bot_player = {
 	
 	},
 	
-	silent_stop : function() {
+	silent_stop() {
 		
 		
 		//убираем кнопку стоп
@@ -1189,12 +1192,12 @@ var bot_player = {
 		
 	},
 	
-	reset_timer : function() {
+	reset_timer() {
 		
 		
 	},
 	
-	start_mm_search : async function(node) {
+	async start_mm_search(node) {
 		
 		//ходит бот
 		node.add_childs(1);
@@ -1255,7 +1258,7 @@ var bot_player = {
 	
 };
 
-var mcts = {	
+mcts = {	
 
 	run : function(node) {
 		
@@ -1363,9 +1366,9 @@ var mcts = {
 	
 };
 
-var ffunc = {
+ffunc = {
 	
-	blocked_way : function (field, r, c, tar_row, init) {
+	blocked_way (field, r, c, tar_row, init) {
 		
 		if (r === tar_row)
 			return 0;
@@ -1408,7 +1411,7 @@ var ffunc = {
 		return 1;		
 	},
 		
-	init : function (field) {
+	init (field) {
 		
 		
 		//создаем поле
@@ -1421,7 +1424,8 @@ var ffunc = {
 			field.f.push([{},{},{},{},{},{},{},{},{}]);
 			
 			for (let c = 0; c < 9; c++ ) {				
-				field.f[r][c].wall_type = 0;	
+				field.f[r][c].wall_type = 0;
+				field.f[r][c].wall_owner = 0;
 				field.f[r][c].visited = 0;					
 				field.f[r][c].player = 0;	
 			}
@@ -1471,7 +1475,7 @@ var ffunc = {
 
 	},
 	
-	draw : function(field) {
+	draw(field) {
 		
 		let wall_iter = 0;
 				
@@ -1483,41 +1487,28 @@ var ffunc = {
 		for (let r = 0; r < 9; r++ ) {
 			for (let c = 0; c < 9; c++ ) {	
 				
-				let cell = field.f[r][c];
+				const cell = field.f[r][c];
+				const wall=objects.walls[wall_iter];
 				
 				if (cell.wall_type === V_WALL) {	
-					
-					objects.walls[wall_iter].height=140;
-					objects.walls[wall_iter].width=40;
-					objects.walls[wall_iter].x = objects.field.x + FIELD_MARGIN + c * 50;
-					objects.walls[wall_iter].y = objects.field.y + FIELD_MARGIN + r * 50;
-										
-					/*if (r === 1)
-						objects.walls[wall_iter].texture=gres.v_wall_t.texture;
-					else if (r === 8)
-						objects.walls[wall_iter].texture=gres.v_wall_b.texture;
-					else*/
-						objects.walls[wall_iter].texture=gres.v_wall.texture;
-										
-					objects.walls[wall_iter].visible = true;
+					wall.height=140;
+					wall.width=40;
+					wall.tint=[0xaaaaaa,0xffffff,0xff7777][cell.wall_owner];
+					wall.x = objects.field.x + FIELD_MARGIN + c * 50;
+					wall.y = objects.field.y + FIELD_MARGIN + r * 50;
+					wall.texture=gres.v_wall.texture;										
+					wall.visible = true;
 					wall_iter++;
 				}
 				
-				if (cell.wall_type === H_WALL) {		
-
-					objects.walls[wall_iter].height=40;
-					objects.walls[wall_iter].width=140;
-					objects.walls[wall_iter].x = objects.field.x + FIELD_MARGIN + c * 50;
-					objects.walls[wall_iter].y = objects.field.y + FIELD_MARGIN + r * 50;
-					
-					/*if (c === 1)
-						objects.walls[wall_iter].texture=gres.h_wall_l.texture;
-					else if (c === 8)
-						objects.walls[wall_iter].texture=gres.h_wall_r.texture;
-					else*/
-						objects.walls[wall_iter].texture=gres.h_wall.texture;
-					
-					objects.walls[wall_iter].visible = true;
+				if (cell.wall_type === H_WALL) {
+					wall.height=40;
+					wall.width=140;
+					wall.tint=[0xaaaaaa,0xffffff,0xff7777][cell.wall_owner];
+					wall.x = objects.field.x + FIELD_MARGIN + c * 50;
+					wall.y = objects.field.y + FIELD_MARGIN + r * 50;
+					wall.texture=gres.h_wall.texture;					
+					wall.visible = true;
 					wall_iter++;
 				}				
 				
@@ -1536,7 +1527,7 @@ var ffunc = {
 		}		
 	},
 	
-	check_if_wall_block : function(field, wr, wc, wtype) {
+	check_if_wall_block(field, wr, wc, wtype) {
 		
 		field.f[wr][wc].wall_type = wtype;
 		
@@ -1557,7 +1548,7 @@ var ffunc = {
 		
 	},
 	
-	get_random_wall_with_block_check : function ( field, player_id ) {
+	get_random_wall_with_block_check( field, player_id ) {
 		
 		if (field.pos[player_id].walls === 0)
 			return {type : 'wall', r: 0, c: 0, wall_type: -1};	
@@ -1580,7 +1571,7 @@ var ffunc = {
 		
 	},
 	
-	get_random_wall : function ( field, player_id ) {
+	get_random_wall( field, player_id ) {
 		
 		if (field.pos[player_id].walls === 0)
 			return {type : 'wall', r: 0, c: 0, wall_type: -1};	
@@ -1601,7 +1592,7 @@ var ffunc = {
 		
 	},
 		
-	check_new_wall : function (field, r, c, wall_type) {
+	check_new_wall(field, r, c, wall_type) {
 		
 		if (c === 0)	return 0;		
 		if (r === 0)	return 0;		
@@ -1639,7 +1630,7 @@ var ffunc = {
 		
 	},
 	
-	get_moves : function (field, PLAYER_ID) {
+	get_moves(field, PLAYER_ID) {
 		
 		
 		let r = field.pos[PLAYER_ID].r;		
@@ -1685,7 +1676,7 @@ var ffunc = {
 		return moves;		
 	},
 	
-	get_simple_moves_for_bfs : function (field, r, c) {
+	get_simple_moves_for_bfs(field, r, c) {
 		
 		
 
@@ -1707,7 +1698,7 @@ var ffunc = {
 		return moves;		
 	},
 			
-	get_random_move : function(field, player_id) {
+	get_random_move(field, player_id) {
 				
 		let new_wall_data = ffunc.get_random_wall_with_block_check(field, player_id );
 		let moves = ffunc.get_moves( field, player_id );
@@ -1747,7 +1738,7 @@ var ffunc = {
 		
 	},
 	
-	get_walls_num : function (field) {
+	get_walls_num (field) {
 		
 		let walls_num = 0 ;
 		for (let r = 0; r < 9; r++ ) {
@@ -1764,7 +1755,7 @@ var ffunc = {
 		return walls_num;
 	},
 	
-	get_players_num : function (field) {
+	get_players_num(field) {
 		
 		let walls_num = 0 ;
 		for (let r = 0; r < 9; r++ ) {
@@ -1783,7 +1774,7 @@ var ffunc = {
 		
 	},
 	
-	perform_random_move : function(field, player_id) {
+	perform_random_move(field, player_id) {
 		
 		
 		let walls_num =ffunc.get_walls_num(field);
@@ -1816,7 +1807,7 @@ var ffunc = {
 		
 	},
 	
-	get_winner : function (field) {
+	get_winner(field) {
 		
 			
 		if ( field.pos[MY_ID].r === ROW0 && field.pos[OPP_ID].r !== ROW8 )
@@ -1832,7 +1823,7 @@ var ffunc = {
 	
 	check_move :  {
 		
-		left : function(field, r, c) {
+		left(field, r, c) {
 			
 			let tr = r;			
 			let tc = c - 1;
@@ -1852,7 +1843,7 @@ var ffunc = {
 			return 1;
 		},
 		
-		right : function(field, r, c) {			
+		right(field, r, c) {			
 
 			let tr = r;			
 			let tc = c + 1;
@@ -1874,7 +1865,7 @@ var ffunc = {
 			
 		},
 		
-		up : function(field, r, c) {
+		up(field, r, c) {
 			
 			let tr = r - 1;			
 			let tc = c;
@@ -1896,7 +1887,7 @@ var ffunc = {
 			
 		},
 		
-		down : function(field, r, c) {
+		down(field, r, c) {
 			
 			let tr = r + 1;			
 			let tc = c;
@@ -1917,7 +1908,7 @@ var ffunc = {
 			return 1;
 		},
 		
-		up_jump : function(field, r, c) {
+		up_jump(field, r, c) {
 			
 			let tr = r - 2;			
 			let tc = c;
@@ -1944,7 +1935,7 @@ var ffunc = {
 			return 1;		
 		},
 		
-		down_jump : function(field, r, c) {
+		down_jump(field, r, c) {
 			
 			let tr = r + 2;			
 			let tc = c;
@@ -1971,7 +1962,7 @@ var ffunc = {
 			return 1;		
 		},
 		
-		left_jump : function(field, r, c) {
+		left_jump(field, r, c) {
 			
 			let tr = r;			
 			let tc = c - 2;
@@ -1998,7 +1989,7 @@ var ffunc = {
 			return 1;			
 		},
 		
-		right_jump : function(field, r, c) {
+		right_jump(field, r, c) {
 			
 			let tr = r;			
 			let tc = c + 2;
@@ -2063,7 +2054,7 @@ var ffunc = {
 			return 0;			
 		},
 								
-		up_left : function(field, r, c) {
+		up_left(field, r, c) {
 			
 			let tr = r - 1;			
 			let tc = c - 1;
@@ -2086,7 +2077,7 @@ var ffunc = {
 			return 1;			
 		},
 	
-		up_right : function(field, r, c) {
+		up_right(field, r, c) {
 			
 			let tr = r - 1;			
 			let tc = c + 1;
@@ -2109,7 +2100,7 @@ var ffunc = {
 			return 1;			
 		},	
 
-		down_left : function(field, r, c) {
+		down_left(field, r, c) {
 			
 			let tr = r + 1;			
 			let tc = c - 1;
@@ -2132,7 +2123,7 @@ var ffunc = {
 			return 1;
 		},		
 
-		down_right : function(field, r, c) {
+		down_right(field, r, c) {
 			
 			let tr = r + 1;			
 			let tc = c + 1;
@@ -2156,7 +2147,7 @@ var ffunc = {
 		},			
 			
 		//это проверка возможности прохода с учетом стен
-		left_w : function(field, r, c) {
+		left_w(field, r, c) {
 							
 			let tr = r;			
 			let tc = c - 1;
@@ -2172,7 +2163,7 @@ var ffunc = {
 			return 1;
 		},
 		
-		right_w : function(field, r, c) {			
+		right_w(field, r, c) {			
 
 			let tr = r;			
 			let tc = c + 1;
@@ -2190,7 +2181,7 @@ var ffunc = {
 			
 		},
 	
-		up_w : function(field, r, c) {
+		up_w(field, r, c) {
 			
 			let tr = r - 1;			
 			let tc = c;
@@ -2207,7 +2198,7 @@ var ffunc = {
 			
 		},
 		
-		down_w : function(field, r, c) {
+		down_w(field, r, c) {
 			
 			let tr = r + 1;			
 			let tc = c;
@@ -2224,7 +2215,7 @@ var ffunc = {
 		},
 	},
 	
-	get_shortest_distance_to_target : function (field, player_id, target_row) {
+	get_shortest_distance_to_target(field, player_id, target_row) {
 		
 		
 		//устанавливаем все клетки как ранее не посещенные
@@ -2280,7 +2271,7 @@ var ffunc = {
 
 }
 
-var game = {
+game = {
 	
 	opponent : {},
 	selected : null,
@@ -2291,7 +2282,7 @@ var game = {
 	pending_field :{},
 	av_moves: [],
 	
-	activate: async function(role, opponent) {
+	async activate(role, opponent) {
 					
 		//если это переход из бот игры
 		if (state === 'b') {
@@ -2302,10 +2293,19 @@ var game = {
 		//если открыт чат то закрываем его
 		if (objects.chat_cont.visible===true)
 			chat.close();
+				
 		
 		//если открыт просмотр игры
 		if (game_watching.on===true)
 			game_watching.close();
+		
+		//если открыт туториал
+		if (game_tutor.on)
+			game_tutor.close();
+		
+		//включаем кнопки так как они были отключены в туториале
+		objects.move_confirm_button.interactive=true;
+		objects.move_decline_button.interactive=true;
 		
 		//это если обработка стен
 		this.stop_wall_processing();
@@ -2386,7 +2386,7 @@ var game = {
 		
 	},
 		
-	stop : async function (result) {
+	async stop(result) {
 						
 		//отключаем взаимодейтсвие с доской
 		objects.field.pointerdown = function() {};
@@ -2431,7 +2431,7 @@ var game = {
 			
 	},
 	
-	giveup_down : function() {
+	giveup_down() {
 		
 		
 		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true) {
@@ -2446,7 +2446,7 @@ var game = {
 		
 	},
 	
-	stop_down : function() {
+	stop_down() {
 		
 		
 		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true) {
@@ -2458,14 +2458,13 @@ var game = {
 		
 	},
 	
-	mouse_down : async function(e) {
+	async mouse_down(e) {
 		
 		if (my_turn === 0) {
 			message.add(['Не твоя очередь','Not you turn'][LANG])
 			return;
 		}
-		
-		
+				
 		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true || objects.req_cont.visible === true || objects.my_icon.ready === false) {
 			gres.bad_move.sound.play();
 			return;			
@@ -2485,8 +2484,7 @@ var game = {
 		
 		//выбрана ячейка с игроком
 		if (player_cell_selected === true  && this.selected === null) {			
-			
-			
+						
 			gres.checker_tap.sound.play();
 			
 			//если происходит строительство стены то отменяем
@@ -2560,13 +2558,13 @@ var game = {
 	
 	},
 	
-	player_selected_processing : function() {
+	player_selected_processing() {
 		
 		objects.my_icon.alpha = Math.abs(Math.sin(game_tick * 5));
 		
 	},
 	
-	wall_processing : function() {
+	wall_processing () {
 		
 		if (objects.h_wall.visible === true)
 			objects.h_wall.alpha = Math.abs(Math.sin(game_tick * 5));
@@ -2574,7 +2572,7 @@ var game = {
 			objects.v_wall.alpha = Math.abs(Math.sin(game_tick * 5));
 	},
 	
-	update_player_pos : async function (sprite, r1, c1, r2, c2) {
+	async update_player_pos(sprite, r1, c1, r2, c2) {
 		
 		let x1 = objects.field.x + FIELD_MARGIN + c1 * 50;
 		let y1 = objects.field.y + FIELD_MARGIN + r1 * 50;
@@ -2586,7 +2584,7 @@ var game = {
 		
 	},
 	
-	confirm_move : function () {
+	confirm_move  () {
 		
 		//короткое обращение
 		let pw = this.pending_wall;
@@ -2609,8 +2607,11 @@ var game = {
 			return;
 		}
 		
-		game_res.resources.place_wall.sound.play();
-		this.field.f[pw.r][pw.c].wall_type = pw.wall_type;
+		gres.place_wall.sound.play();
+		const tar_cell=this.field.f[pw.r][pw.c];
+		tar_cell.wall_type = pw.wall_type;
+		tar_cell.wall_owner = MY_ID;
+		
 		
 		//уменьшаем кол-во стен
 		this.field.pos[MY_ID].walls--;
@@ -2660,7 +2661,7 @@ var game = {
 		
 	},	
 	
-	get_game_state : function () {
+	get_game_state  () {
 		
 			
 		if ( this.field.pos[MY_ID].r === ROW0 && this.field.pos[OPP_ID].r !== ROW8 )
@@ -2688,8 +2689,7 @@ var game = {
 				
 	},
 	
-	decline_move : function () {
-		
+	decline_move () {		
 		
 		//воспроизводим звук
 		game_res.resources.cancel_wall.sound.play();
@@ -2698,7 +2698,7 @@ var game = {
 		
 	},
 	
-	stop_wall_processing : function () {
+	stop_wall_processing () {
 		
 		objects.h_wall.visible = false;
 		objects.v_wall.visible = false;
@@ -2707,7 +2707,7 @@ var game = {
 		some_process.wall_processing = function(){};
 	},
 			
-	show_wall_opt : function (id) {
+	show_wall_opt(id) {
 		
 		objects.h_wall.visible=false;
 		objects.v_wall.visible=false;
@@ -2739,12 +2739,12 @@ var game = {
 				let r = this.sel_cell.r + wp[1];								
 				let c = this.sel_cell.c + wp[2];
 				
-								
+				
 				this.sel_cell_wall_iter[1]++;
 				if (this.sel_cell_wall_iter[1] > 7)
 					this.sel_cell_wall_iter[1] = 0;	
 				
-				console.log(r,c,wp[0]);												
+				//console.log(r,c,wp[0]);												
 				//если стену нельзя поставить выбираем следующую конфигурацию								
 				let check = ffunc.check_new_wall(this.field, r, c, wp[0])
 				if (check ===0) {
@@ -2755,32 +2755,16 @@ var game = {
 				//если все проверки прошли то отображаем стену
 				let w_spr = {};
 				
-				if (wp[0] === V_WALL) {
-					
+				if (wp[0] === V_WALL) {					
 					w_spr = objects.v_wall;
-					
-					/*if (r === 1)
-						w_spr.texture=gres.v_wall_t.texture;
-					else if (r === 8)
-						w_spr.texture=gres.v_wall_b.texture;
-					else*/
-						w_spr.texture=gres.v_wall.texture;					
+					w_spr.texture=gres.v_wall.texture;					
 				}
 				
-				if (wp[0] === H_WALL) {
-					
+				if (wp[0] === H_WALL) {					
 					w_spr = objects.h_wall;
-					
-					/*if (c === 1)
-						w_spr.texture=gres.h_wall_l.texture;
-					else if (c === 8)
-						w_spr.texture=gres.h_wall_r.texture;
-					else*/
-						w_spr.texture=gres.h_wall.texture;				
+					w_spr.texture=gres.h_wall.texture;				
 				}
-				
-				
-				
+								
 				w_spr.visible = true;
 				w_spr.y = r * 50 + objects.field.y + FIELD_MARGIN;				
 				w_spr.x = c * 50 + objects.field.x + FIELD_MARGIN;
@@ -2794,7 +2778,7 @@ var game = {
 		return 0;	
 	},
 			
-	show_my_moves : function(show) {
+	show_my_moves(show) {
 				
 		if (show===0) {
 			objects.move_opt_cont.visible=false;
@@ -2802,18 +2786,14 @@ var game = {
 			some_process.player_selected_processing = function(){};
 			return;			
 		}
-		
-		
-		
+				
 		//сначала убираем все подсветки
 		objects.move_opt.forEach(m => m.visible = false);		
-		
-		
+				
 		objects.move_opt_cont.visible=true;
 		this.av_moves=[];		
 		let moves = ffunc.get_moves(this.field, MY_ID);
-		
-		
+				
 		for (let i = 0 ; i < moves.length ; i++) {
 			
 			objects.move_opt[i].visible = true;						
@@ -2824,7 +2804,7 @@ var game = {
 
 	},
 	
-	receive_move : async function (data) {
+	async receive_move(data) {
 		
 		if (data.type === 'move') {
 			
@@ -2840,7 +2820,9 @@ var game = {
 			game_res.resources.place_wall.sound.play();
 			
 			//устанаваем полученную стену в наше поле
-			this.field.f[data.r][data.c].wall_type = data.wall_type;
+			const tar_cell=this.field.f[data.r][data.c];
+			tar_cell.wall_type = data.wall_type;
+			tar_cell.wall_owner = OPP_ID;
 			
 			//обновляем кол-во стен
 			this.field.pos[OPP_ID].walls--;
@@ -2875,7 +2857,7 @@ var game = {
 
 }
 
-var game_watching={
+game_watching={
 	
 	game_id:0,
 	field:{},
@@ -2906,9 +2888,7 @@ var game_watching={
 		
 		snapshot = await firebase.database().ref('players/'+card_data.uid2+'/chip').once('value');
 		let chip2 = snapshot.val()||0;
-		
-		
-		
+			
 		
 		//фишки
 		
@@ -2917,8 +2897,6 @@ var game_watching={
 			objects.picon1.tint=objects.opp_icon.tint=0x88ff88;
 		else
 			objects.picon1.tint=objects.opp_icon.tint=0xffffff;
-
-
 		
 		objects.my_icon.texture =objects.picon0.texture=gres['chip'+chip1].texture;
 		objects.opp_icon.texture =objects.picon1.texture=gres['chip'+chip2].texture;
@@ -2976,11 +2954,12 @@ var game_watching={
 				const wall_type=+data.f_str[i];					
 				if (wall_type>0) {
 					
-					if(data.uid===this.anchor_uid){
-			
-						this.field.f[r][c].wall_type=wall_type;					
+					if(data.uid===this.anchor_uid){			
+						this.field.f[r][c].wall_type=wall_type;		
+						this.field.f[r][c].wall_owner=0;	
 					} else {
 						this.field.f[9-r][9-c].wall_type=wall_type;	
+						this.field.f[9-r][9-c].wall_owner=0;	
 					}						
 				}
 				i++;
@@ -3038,7 +3017,193 @@ var game_watching={
 	
 }
 
-var keep_alive = function() {
+game_tutor={
+
+	time:0,
+	timeline:[],	
+	next_frame:0,
+	resolver:0,
+	on:0,
+		
+	async start(){		
+
+
+		//ссылки на стены
+		for(let w=0;w<6;w++){
+			objects['w'+w]=objects.walls[w];			
+			objects['w'+w].scale_xy=0.6666666;
+		}
+		
+		const d1=await fetch('timeline.txt')
+		const d2=await d1.text();
+		this.timeline=eval(d2);
+		
+		this.on=1;
+		
+		objects.my_icon.texture = gres['chip4'].texture;
+		objects.opp_icon.texture = gres['chip5'].texture;
+		
+		//это то что могло остаться от игры с ботом
+		objects.move_opt_cont.visible=false;
+		objects.stop_bot_button.visible=true;
+		objects.stop_bot_button.pointerdown=function(){game_tutor.stop()};
+		some_process.player_selected_processing = function(){};
+		
+		objects.move_confirm_button.interactive=false;
+		objects.move_decline_button.interactive=false;
+											
+		//показываем карточки игроков		
+		objects.my_card_cont.visible = true;
+		objects.my_card_name.text=['Игрок 1', 'Player 1'][LANG];
+		objects.my_avatar.texture=gres['chip4'].texture;
+		objects.my_card_rating.text='-';
+		
+		objects.opp_card_cont.visible = true;		
+		objects.opp_card_name.text=['Игрок 2', 'Player 2'][LANG];
+		objects.opp_avatar.texture=gres['chip5'].texture;
+		objects.opp_card_rating.text='-';
+		
+		//отключаем взаимодейтсвие с доской
+		objects.field.pointerdown = null;		
+			
+		//формируем игровое поле
+		ffunc.init(game.field);	
+
+		//показываем игровое поле
+		objects.field.visible = true;		
+				
+		//убираем таймер
+		objects.timer.visible=false;		
+
+				
+		//количество стен
+		this.wall_num = [10,10];
+		objects.my_walls.text = ['Стены: ','Walls: '][LANG]+this.wall_num[0];
+		objects.opp_walls.text = ['Стены: ','Walls: '][LANG]+this.wall_num[1];
+		
+		//плавно добавляем фигуры
+		objects.my_icon.x = objects.field.x + FIELD_MARGIN + 4 * 50;
+		objects.my_icon.r=8;
+		objects.my_icon.c=4;
+		
+		objects.opp_icon.x = objects.field.x + FIELD_MARGIN + 4 * 50;
+		objects.opp_icon.r=0;
+		objects.opp_icon.c=4;
+		
+		anim2.add(objects.my_icon,{y:[450, 400]}, true, 0.5,'linear');	
+		anim2.add(objects.opp_icon,{y:[-50, 0]}, true, 0.5,'linear');	
+		
+		//обновляем поле
+		ffunc.draw(game.field)		
+		
+		this.time=0;
+		this.next_frame=0;
+		some_process.tutor=function(){game_tutor.run()};
+				
+	},
+	
+	stop(){
+		
+		if (anim2.any_on()) return;
+		
+		this.close();
+		main_menu.activate();		
+		
+	},
+	
+	async run(){
+				
+		const next_frame_time=this.timeline[this.next_frame]?.[0]||9999999999;
+		
+		if (this.time>next_frame_time){
+			const frame_data=this.timeline[this.next_frame][1];
+			for (let frame of frame_data){
+				
+				if (frame){
+					
+					if (frame.type==='anim'){
+						const obj_name=frame.obj;
+						const time=frame.time;
+						const params=frame.params;
+						const func=frame.func;
+						const vis_on_end=frame.vis_on_end;
+						anim2.add(objects[obj_name],params,vis_on_end,time,func);						
+					}	
+					
+					if (frame.type==='event'){
+						const obj=frame.obj;
+						const params=frame.params;
+						for (let p in params){							
+							const val=params[p];
+							if (p==='texture')
+								objects[obj][p]=gres[val].texture;
+							else
+								objects[obj][p]=val;							
+						}						
+					}		
+
+					if (frame.type==='func'){
+						frame.f();						
+					}	
+									
+					if (frame.type==='wait'){
+						
+						some_process.tutor=function(){};
+						await new Promise(resolve=>{
+							this.resolver=resolve;
+						}).finally(()=>{
+							objects.tutor_arrow.visible=false;
+							objects.tutor_text.visible=false;			
+							objects.tutor_text_bcg.visible=false;	
+							some_process.tutor=function(){game_tutor.run()};
+						});	
+					
+					}
+				}				
+			}
+			this.next_frame++;
+		}
+		
+		this.time+=0.016666666;
+	},
+	
+	show_text(x,y,t){
+		
+		objects.tutor_text_bcg.visible=true;
+		objects.tutor_text.visible=true;		
+		
+		objects.tutor_text_bcg.x=x;
+		objects.tutor_text_bcg.y=y;
+
+		objects.tutor_text.x=x;
+		objects.tutor_text.y=y-20;
+		
+		objects.tutor_text.text=t;
+		
+	},
+	
+	close(){
+		this.on=0;
+		some_process.tutor=function(){};
+		objects.move_buttons_cont.visible=false;
+		objects.stop_bot_button.visible=false;
+		objects.tutor_text_bcg.visible=false;
+		objects.hand.visible=false;
+		objects.tutor_text.visible=false;	
+		objects.tutor_arrow.visible=false;	
+		objects.my_card_cont.visible = false;
+		objects.opp_card_cont.visible = false;
+		objects.move_opt_cont.visible=false;
+		objects.my_icon.visible=false;
+		objects.opp_icon.visible=false;
+		objects.field.visible = false;	
+		objects.walls.forEach(w=>w.visible=false)
+		
+	}
+	
+}
+
+keep_alive = function() {
 	
 	if (h_state === 1) {		
 		
@@ -3056,7 +3221,7 @@ var keep_alive = function() {
 	set_state({});
 }
 
-var process_new_message = function(msg) {
+process_new_message = function(msg) {
 
 	//проверяем плохие сообщения
 	if (msg===null || msg===undefined)
@@ -3120,7 +3285,7 @@ var process_new_message = function(msg) {
 	}
 }
 
-var req_dialog = {
+req_dialog={
 	
 	_opp_data : {} ,
 	
@@ -3242,7 +3407,7 @@ var req_dialog = {
 
 }
 
-var	ad = {
+ad={
 			
 	show : function() {
 		
@@ -3322,7 +3487,7 @@ var	ad = {
 	}
 }
 
-var stickers={
+stickers={
 	
 	promise_resolve_send :0,
 	promise_resolve_recive :0,
@@ -3421,7 +3586,7 @@ var stickers={
 
 }
 
-var main_menu = {
+main_menu={
 
 	logo_dx : 0.2,
 	chip_id:0,
@@ -3502,6 +3667,18 @@ var main_menu = {
 
 	},
 
+	tutor_button_down(){
+		
+		if (anim2.any_on()===true) {
+			sound.play('locked');
+			return
+		};
+		
+		this.close();
+		game_tutor.start();
+		
+	},
+
 	rules_ok_down: function () {
 		
 		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.rules_cont.ready === false) {
@@ -3555,7 +3732,7 @@ var main_menu = {
 
 }
 
-var chat = {
+chat={
 	
 	MESSAGE_HEIGHT : 75,
 	last_record_end : 0,
@@ -3748,7 +3925,7 @@ var chat = {
 	
 }
 
-var lb = {
+lb={
 
 	cards_pos: [[370,10],[380,70],[390,130],[380,190],[360,250],[330,310],[290,370]],
 
@@ -3872,7 +4049,7 @@ var lb = {
 
 }
 
-var cards_menu = {
+cards_menu={
 
 	state_tint :{},
 	_opp_data : {},
@@ -4552,7 +4729,7 @@ var cards_menu = {
 
 }
 
-auth2 = {
+auth2={
 		
 	load_script(src) {
 	  return new Promise((resolve, reject) => {
@@ -4721,6 +4898,7 @@ auth2 = {
 		
 		if (game_platform === 'CRAZYGAMES') {			
 			
+			try {await this.load_script('https://sdk.crazygames.com/crazygames-sdk-v2.js')} catch (e) {alert(e)};	
 			try {await this.load_script('https://akukamil.github.io/quoridor/jwt-decode.js')} catch (e) {alert(e)};		
 			let country_code = await this.get_country_code();
 			const cg_user_data=await this.search_in_crazygames();			
@@ -4986,7 +5164,6 @@ async function init_game_env(lng) {
 	
 	//показыаем основное меню
 	main_menu.activate();
-		
 	console.clear()
 	
 	//контроль за присутсвием
@@ -5079,16 +5256,9 @@ async function load_resources() {
 	//подпапка с ресурсами
 	let lang_pack = ['RUS','ENG'][LANG];
 
-	let git_src="https://akukamil.github.io/quoridor/"
-	//git_src=""
+	let git_src='https://akukamil.github.io/quoridor/'
+	//git_src=''
 
-	//крейзигеймс! загружаем с сервера крейзигеймс
-	let s = window.location.href;
-	if (s.includes("crazygames") === true){
-		
-		await auth2.load_script("https://akukamil.github.io/quoridor/load_list.txt");
-	}
-	//	git_src = s.substring(0,s.indexOf("index.html")-1);		
 
 	game_res=new PIXI.Loader();
 	game_res.add("m2_font", git_src+"/fonts/Neucha/font.fnt");
