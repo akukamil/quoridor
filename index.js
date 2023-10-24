@@ -3595,7 +3595,7 @@ main_menu={
 
 
 		
-
+		objects.tutor_button.visible=false;
 		//просто добавляем контейнер с кнопками
 		objects.desktop.texture=gres.desktop.texture;
 		//objects.desktop.visible = true;
