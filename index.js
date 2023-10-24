@@ -3020,7 +3020,7 @@ game_watching={
 game_tutor={
 
 	time:0,
-	timeline:[],	
+	timeline:null,	
 	next_frame:0,
 	resolver:0,
 	on:0,
@@ -3034,9 +3034,12 @@ game_tutor={
 			objects['w'+w].scale_xy=0.6666666;
 		}
 		
-		const d1=await fetch('timeline.txt')
-		const d2=await d1.text();
-		this.timeline=eval(d2);
+		if (!this.timeline){
+			const d1=await fetch('https://akukamil.github.io/quoridor/timeline.txt')
+			const d2=await d1.text();
+			this.timeline=eval(d2);			
+		}
+
 		
 		this.on=1;
 		
