@@ -1,6 +1,6 @@
 const M_WIDTH=800, M_HEIGHT=450;
 var app, game_res, game, objects={}, state="",my_role="", LANG = 0, game_tick=0, my_turn=0,room_name='states', game_id=0, h_state=0, made_moves=0, game_platform="", hidden_state_start = 0, connected = 1;
-var players="", pending_player="";
+var players="", pending_player="",git_src;
 var my_data={opp_id : ''},opp_data={};
 var some_process = {};
 const V_WALL = 2, H_WALL = 1, ROW0 = 0, ROW8 = 8, MY_ID = 1, OPP_ID = 2, MAX_MOVES = 50, FIELD_MARGIN = 20;
@@ -434,7 +434,7 @@ feedback = {
 	uid:0,
 	en_stop_list:['2 girls 1 cup','2g1c','4r5e','5h1t','5hit','a_s_s','a55','a55hole','acrotomophilia','aeolus','ahole','alabama hot pocket','alaskan pipeline','anal','analprobe','anilingus','anus','apeshit','ar5e','areola','areole','arian','arrse','arse','arsehole','aryan','ass','ass hole','assbag','assbandit','assbang','assbanged','assbanger','assbangs','assbite','assclown','asscock','asscracker','asses','assface','assfuck','assfucker','ass-fucker','assfukka','assgoblin','assh0le','asshat','ass-hat','asshead','assho1e','asshole','assholes','asshopper','ass-jabber','assjacker','asslick','asslicker','assmaster','assmonkey','assmunch','assmuncher','assnigger','asspirate','ass-pirate','assshit','assshole','asssucker','asswad','asswhole','asswipe','asswipes','auto erotic','autoerotic','axwound','azazel','azz','b!tch','b00bs','b17ch','b1tch','babe','babeland','babes','baby batter','baby juice','balls','ball gag','ball gravy','ball kicking','ball licking','ball sack','ball sucking','ballbag','ballsack','bampot','bang','bangbros','banger','bareback','barely legal','barenaked','barf','bastard','bastardo','bastards','bastinado','bawdy','bbw','bdsm','beaner','beaners','beardedclam','beastial','beastiality','beatch','beater','beaver cleaver','beaver lips','beeyotch','bellend','beotch','bestial','bestiality','bi+ch','biatch','big black','big breasts','big knockers','big tits','bigtits','bimbo','bimbos','birdlock','bitch','bitchass','bitched','bitcher','bitchers','bitches','bitchin','bitching','bitchtits','bitchy','black cock','blonde action','blonde on blonde action','blow job','blow your load','blowjob','blowjobs','blue waffle','blumpkin','bod','bodily','boink','boiolas','bollock','bollocks','bollok','bollox','bondage','boned','boner','boners','bong','boob','boobies','boobs','booby','booger','bookie','booobs','boooobs','booooobs','booooooobs','bootee','bootie','booty','booty call','booze','boozer','boozy','bosom','bosomy','bra','brassiere','breast','breasts','breeder','brotherfucker','brown showers','brunette action','buceta','bugger','bukkake','bull shit','bulldyke','bullet vibe','bullshit','bullshits','bullshitted','bullturds','bum','bumblefuck','bung','bung hole','bunghole','bunny fucker','busty','butt','butt fuck','butt plug','buttcheeks','buttfuck','buttfucka','buttfucker','butthole','buttmuch','butt-pirate','buttplug','c.0.c.k','c.o.c.k.','c.u.n.t','c0ck','c-0-c-k','c0cksucker','caca','cahone','camel toe','cameltoe','camgirl','camslut','camwhore','carpet muncher','carpetmuncher','cawk','cervix','chesticle','chinc','chincs','chink','choad','chocolate rosebuds','chode','chodes','cipa','circlejerk','cl1t','cleveland steamer','climax','clit','clitface','clitfuck','clitoris','clitorus','clits','clitty','clover clamps','clusterfuck','cnut','cocain','cocaine','cock','c-o-c-k','cock sucker','cockass','cockbite','cockblock','cockburger','cockeye','cockface','cockfucker','cockhead','cockholster','cockjockey','cockknocker','cockknoker','cocklump','cockmaster','cockmongler','cockmongruel','cockmonkey','cockmunch','cockmuncher','cocknose','cocknugget','cocks','cockshit','cocksmith','cocksmoke','cocksmoker','cocksniffer','cocksuck','cocksucked','cocksucker','cock-sucker','cocksucking','cocksucks','cocksuka','cocksukka','cockwaffle','coital','cok','cokmuncher','coksucka','commie','condom','coochie','coochy','coon','coons','cooter','coprolagnia','coprophilia','corksucker','cornhole','cox','crabs','crack','crackwhore','crap','crappy','creampie','crotte','cum','cumbubble','cumdumpster','cumguzzler','cumjockey','cummer','cummin','cumming','cums','cumshot','cumshots','cumslut','cumstain','cumtart','cunilingus','cunillingus','cunnie','cunnilingus','cunny','cunt','c-u-n-t','cuntass','cuntface','cunthole','cunthunter','cuntlick','cuntlicker','cuntlicking','cuntrag','cunts','cuntslut','cyalis','cyberfuc','cyberfuck','cyberfucked','cyberfucker','cyberfuckers','cyberfucking','d0ng','d0uch3','d0uche','d1ck','d1ld0','d1ldo','dago','dagos','darkie','damn','damned','dammit','date rape','daterape','dawgie-style','deep throat','deepthroat','deggo','dendrophilia','dick','dickbag','dickbeaters','dickdipper','dickface','dickflipper','dickfuck','dickfucker','dickhead','dickheads','dickhole','dickish','dick-ish','dickjuice','dickmilk ','dickmonger','dickripper','dicks','dicksipper','dickslap','dick-sneeze','dicksucker','dicksucking','dicktickler','dickwad','dickweasel','dickweed','dickwhipper','dickwod','dickzipper','diddle','dike','dildo','dildos','diligaf','dillweed','dimwit','dingle','dingleberries','dingleberry','dink','dinks','dipship','dipshit','dirsa','dirty pillows','dirty sanchez','dlck','dog style','dog-fucker','doggie style','doggiestyle','doggie-style','doggin','dogging','doggy style','doggystyle','doggy-style','dolcett','domination','dominatrix','dommes','dong','donkey punch','donkeyribber','doochbag','doofus','dookie','doosh','dopey','double dong','double penetration','doublelift','douch3','douche','douchebag','douchebags','douche-fag','douchewaffle','douchey','dp action','drunk','dry hump','duche','dumass','dumb ass','dumbass','dumbasses','dumbcunt','dumbfuck','dumbshit','dummy','dumshit','dvda','dyke','dykes','eat my ass','ecchi','ejaculate','ejaculated','ejaculates','ejaculating','ejaculatings','ejaculation','ejakulate','enlargement','erect','erection','erotic','erotism','escort','essohbee','eunuch','extacy','extasy','f u c k','f u c k e r','f.u.c.k','f_u_c_k','f4nny','fack','fag','fagbag','fagfucker','fagg','fagged','fagging','faggit','faggitt','faggot','faggotcock','faggs','fagot','fagots','fags','fagtard','faig','faigt','fanny','fannybandit','fannyflaps','fannyfucker','fanyy','fartknocker','fatass','fcuk','fcuker','fcuking','fecal','feck','fecker','felch','felcher','felching','fellate','fellatio','feltch','feltcher','female squirting','femdom','figging','fingerbang','fingerfuck','fingerfucked','fingerfucker','fingerfuckers','fingerfucking','fingerfucks','fingering','fisted','fistfuck','fistfucked','fistfucker','fistfuckers','fistfucking','fistfuckings','fistfucks','fisting','fisty','flamer','flange','floozy','foad','foah','fondle','foobar','fook','fooker','foot fetish','footjob','foreskin','freex','frigg','frigga','frotting','fubar','fuck','f-u-c-k','fuck buttons','fuck off','fucka','fuckass','fuckbag','fuckboy','fuckbrain','fuckbutt','fuckbutter','fucked','fucker','fuckers','fuckersucker','fuckface','fuckhead','fuckheads','fuckhole','fuckin','fucking','fuckings','fuckingshitmotherfucker','fuckme','fucknugget','fucknut','fucknutt','fuckoff','fucks','fuckstick','fucktard','fuck-tard','fucktards','fucktart','fucktwat','fuckup','fuckwad','fuckwhit','fuckwit','fuckwitt','fudge packer','fudgepacker','fuk','fuker','fukker','fukkin','fuks','fukwhit','fukwit','futanari','fux','fux0r','fvck','fxck','gae','gai','gang bang','gangbang','gangbanged','gangbangs','ganja','gay','gay sex','gayass','gaybob','gaydo','gayfuck','gayfuckist','gaylord','gays','gaysex','gaytard','gaywad','genitals','gey','gfy','ghay','ghey','giant cock','gigolo','girl on','girl on top','girls gone wild','glans','goatcx','goatse','god damn','godamn','godamnit','goddam','god-dam','goddammit','goddamn','goddamned','god-damned','goddamnit','gokkun','golden shower','goldenshower','gonad','gonads','goo girl','gooch','goodpoop','gook','gooks','goregasm','gringo','grope','group sex','gspot','g-spot','gtfo','guido','guro','h0m0','h0mo','hand job','handjob','hard core','hard on','hardcore','hardcoresex','he11','heeb','hemp','hentai','heroin','herp','herpes','herpy','heshe','hitler','hiv','ho','hoar','hoare','hobag','hoe','hoer','hom0','homey','homo','homodumbshit','homoerotic','homoey','honkey','honky','hooch','hookah','hooker','hoor','hootch','hooter','hooters','hore','horniest','horny','hot carl','hot chick','hotsex','how to kill','how to murder','huge fat','hump','humped','humping','hussy','hymen','inbred','incest','injun','intercourse','j3rk0ff','jack Off','jackass','jackhole','jackoff','jack-off','jaggi','jagoff','jail bait','jailbait','jap','japs','jelly donut','jerk','jerk off','jerk0ff','jerkass','jerked','jerkoff','jerk-off','jigaboo','jiggaboo','jiggerboo','jism','jiz','jizm','jizz','jizzed','juggs','jungle bunny','junglebunny','junkie','junky','kawk','kike','kikes','kinbaku','kinkster','kinky','kkk','knob','knobbing','knobead','knobed','knobend','knobhead','knobjocky','knobjokey','kock','kondum','kondums','kooch','kooches','kootch','kraut','kum','kummer','kumming','kums','kunilingus','kunja','kunt','kyke','l3i+ch','l3itch','labia','lameass','lardass','leather restraint','leather straight jacket','lech','lemon party','leper','lesbian','lesbians','lesbo','lesbos','lez','lezbian','lezbians','lezbo','lezbos','lezzie','lezzies','lezzy','lmao','lmfao','loin','loins','lolita','lovemaking','lube','lust','lusting','lusty','m0f0','m0fo','m45terbate','ma5terb8','ma5terbate','make me come','male squirting','mams','masochist','massa','masterb8','masterbat','masterbat3','masterbate','master-bate','masterbating','masterbation','masterbations','masturbate','masturbating','masturbation','maxi','mcfagget','menage a trois','menses','menstruate','menstruation','meth','m-fucking','mick','milf','minge','missionary position','mof0','mofo','mo-fo','molest','moolie','moron','mothafuck','mothafucka','mothafuckas','mothafuckaz','mothafucked','mothafucker','mothafuckers','mothafuckin','mothafucking','mothafuckings','mothafucks','mother fucker','motherfuck','motherfucka','motherfucked','motherfucker','motherfuckers','motherfuckin','motherfucking','motherfuckings','motherfuckka','motherfucks','mound of venus','mr hands','mtherfucker','mthrfucker','mthrfucking','muff','muff diver','muffdiver','muffdiving','munging','murder','mutha','muthafecker','muthafuckaz','muthafucker','muthafuckker','muther','mutherfucker','mutherfucking','muthrfucking','n1gga','n1gger','nad','nads','naked','nambla','napalm','nappy','nawashi','nazi','nazism','negro','neonazi','nig nog','nigaboo','nigg3r','nigg4h','nigga','niggah','niggas','niggaz','nigger','niggers','niggle','niglet','nimphomania','nimrod','ninny','nipple','nipples','nob','nob jokey','nobhead','nobjocky','nobjokey','nooky','nsfw images','nude','nudity','numbnuts','nut sack','nutsack','nympho','nymphomania','octopussy','omorashi','one cup two girls','one guy one jar','opiate','opium','oral','orally','organ','orgasim','orgasims','orgasm','orgasmic','orgasms','orgies','orgy','ovary','ovum','ovums','p.u.s.s.y.','p0rn','paddy','paedophile','paki','panooch','pantie','panties','panty','pastie','pasty','pawn','pcp','pecker','peckerhead','pedo','pedobear','pedophile','pedophilia','pedophiliac','peepee','pegging','penetrate','penetration','penial','penile','penis','penisbanger','penisfucker','penispuffer','perversion','peyote','phalli','phallic','phone sex','phonesex','phuck','phuk','phuked','phuking','phukked','phukking','phuks','phuq','piece of shit','pigfucker','pillowbiter','pimp','pimpis','pinko','piss pig','pissed','pissed off','pisser','pissers','pisses','pissflaps','pissin','pissing','pissoff','piss-off','pisspig','playboy','pleasure chest','pms','polack','pole smoker','polesmoker','pollock','ponyplay','poof','poon','poonani','poonany','poontang','poop','poop chute','poopchute','poopuncher','porch monkey','porchmonkey','porn','porno','pornography','pornos','potty','prick','pricks','prig','prince albert piercing','pron','prostitute','prude','pthc','pube','pubes','pubic','pubis','punanny','punany','punkass','punky','punta','puss','pusse','pussi','pussies','pussy','pussylicking','pussypounder','pussys','pust','puto','queaf','queef','queer','queerbait','queerhole','queero','queers','quicky','quim','racy','raghead','raging boner','rape','raped','raper','raping','rapist','raunch','rectal','rectum','rectus','reefer','reetard','reich','renob','retard','retarded','reverse cowgirl','revue','rimjaw','rimjob','rimming','ritard','rosy palm','rosy palm and her 5 sisters','rtard','r-tard','rump','rumprammer','ruski','rusty trombone','s hit','s&m','s.h.i.t.','s.o.b.','s_h_i_t','s0b','sadism','sadist','sand nigger','sandler','sandnigger','sanger','santorum','scag','scantily','scat','schizo','schlong','scissoring','screw','screwed','screwing','scroat','scrog','scrot','scrote','scrotum','scrud','scum','seaman','seamen','seduce','seks','semen','sex','sexo','sexual','sexy','sh!+','sh!t','sh1t','s-h-1-t','shag','shagger','shaggin','shagging','shamedame','shaved beaver','shaved pussy','shemale','shi+','shibari','shit','s-h-i-t','shitass','shitbag','shitbagger','shitblimp','shitbrains','shitbreath','shitcanned','shitcunt','shitdick','shite','shiteater','shited','shitey','shitface','shitfaced','shitfuck','shitfull','shithead','shithole','shithouse','shiting','shitings','shits','shitspitter','shitstain','shitt','shitted','shitter','shitters','shittiest','shitting','shittings','shitty','shiz','shiznit','shota','shrimping','sissy','skag','skank','skeet','skullfuck','slag','slanteye','slave','sleaze','sleazy','slut','slutbag','slutdumper','slutkiss','sluts','smeg','smegma','smut','smutty','snatch','snowballing','snuff','s-o-b','sodom','sodomize','sodomy','son-of-a-bitch','souse','soused','spac','sperm','spic','spick','spik','spiks','splooge','splooge moose','spooge','spook','spread legs','spunk','steamy','stfu','stiffy','stoned','strap on','strapon','strappado','strip','strip club','stroke','stupid','style doggy','suck','suckass','sucked','sucking','sucks','suicide girls','sultry women','sumofabiatch','swastika','swinger','t1t','t1tt1e5','t1tties','tainted love','tampon','tard','taste my','tawdry','tea bagging','teabagging','teat','teets','teez','terd','teste','testee','testes','testical','testicle','testis','threesome','throating','thrust','thug','thundercunt','tied up','tight white','tinkle','tit','titfuck','titi','tits','titt','tittie5','tittiefucker','titties','titty','tittyfuck','tittyfucker','tittywank','titwank','toke','tongue in a','toots','topless','tosser','towelhead','tramp','tranny','transsexual','trashy','tribadism','tub girl','tubgirl','turd','tush','tushy','tw4t','twat','twathead','twatlips','twats','twatty','twatwaffle','twink','twinkie','two girls one cup','twunt','twunter','ugly','unclefucker','undies','undressing','unwed','upskirt','urethra play','urinal','urine','urophilia','uterus','uzi','v14gra','v1gra','vag','vagina','vajayjay','va-j-j','valium','venus mound','viagra','vibrator','violet wand','virgin','vixen','vjayjay','vodka','vomit','vorarephilia','voyeur','vulgar','vulva','w00se','wad','wang','wank','wanker','wankjob','wanky','wazoo','wedgie','weed','weenie','weewee','weiner','weirdo','wench','wet dream','wetback','wh0re','wh0reface','white power','whitey','whiz','whoar','whoralicious','whore','whorealicious','whorebag','whored','whoreface','whorehopper','whorehouse','whores','whoring','wigger','willies','willy','womb','woody','wop','wrapping men','wrinkled starfish','wtf','xrated','x-rated','xxx','yaoi','yeasty','yellow showers','yiffy','yobbo','zoophile','zoophilia','zubb'],
 	
-	show : function(uid,max_symbols) {
+	show(uid,max_symbols) {
 		
 		if (max_symbols)
 			this.MAX_SYMBOLS=max_symbols
@@ -470,13 +470,13 @@ feedback = {
 		
 	},
 	
-	close : function() {
+	close () {
 			
 		anim2.add(objects.feedback_cont,{y:[objects.feedback_cont.y,450]}, false, 0.4,'easeInBack');		
 		
 	},
 	
-	response_message:function(s) {
+	response_message(s) {
 
 		
 		objects.feedback_msg.text = s.name.text.split(' ')[0]+', ';	
@@ -492,7 +492,7 @@ feedback = {
 		return gres.hl_key0.texture;
 	},
 	
-	key_down : function(key) {
+	key_down(key) {
 		
 		
 		if (objects.feedback_cont.visible === false || objects.feedback_cont.ready === false) return;
@@ -513,7 +513,7 @@ feedback = {
 		
 	},
 	
-	pointerdown : function(e, inp_key) {
+	pointerdown(e, inp_key) {
 		
 		let key = -1;
 		let key_x = 0;
@@ -542,7 +542,10 @@ feedback = {
 		}
 		
 		//не нажата кнопка
-		if (key === -1) return;			
+		if (key === -1) return;		
+
+		//звук нажатой клавиши
+		sound.play('keypress');
 				
 		//подсвечиваем клавишу
 		objects.hl_key.x = key_x - 10;
@@ -635,7 +638,7 @@ message =  {
 			this.promise_resolve("forced");
 		
 		//воспроизводим звук
-		game_res.resources.block_wall.sound.play();
+		sound.play('block_wall');
 
 		objects.message_text.text=text;
 
@@ -859,7 +862,7 @@ big_message = {
 		if (objects.big_message_cont.ready===false)
 			return;
 
-		gres.close_it.sound.play();
+		sound.play('close_it');
 		anim2.add(objects.big_message_cont,{y:[objects.big_message_cont.sy,450]}, false, 0.4,'easeInBack');		
 		this.p_resolve("close");			
 	}
@@ -1021,7 +1024,7 @@ online_game = {
 		//подсвечиваем красным если осталость мало времени
 		if (this.move_time_left === 15) {
 			objects.timer.tint=0xff0000;
-			gres.clock.sound.play();
+			sound.play('clock');
 		}
 		
 		//обновляем текст на экране
@@ -1074,16 +1077,14 @@ online_game = {
 		
 		//воспроизводим звук
 		if (result_number === DRAW || result_number === LOSE || result_number === NOSYNC ) {
-			
-			game_res.resources.lose.sound.play();	
-			
+			sound.play('lose');
 		}
 		else 
 		{
 			if (game_platform === 'CRAZYGAMES') {
 				window.CrazyGames.SDK.game.happytime();
 			}
-			game_res.resources.win.sound.play();			
+			sound.play('win');			
 		}
 
 				
@@ -1175,9 +1176,9 @@ bot_player = {
 		
 		//воспроизводим звук
 		if (result_number === DRAW || result_number === LOSE)
-			game_res.resources.lose.sound.play();
+			sound.play('lose');
 		else
-			game_res.resources.win.sound.play();		
+			sound.play('win');		
 		
 		await big_message.show(result_info, ['Сыграйте с реальным соперником для получения рейтинга','Play online with other player to increase rating'][LANG])
 	
@@ -2340,7 +2341,7 @@ game = {
 			lb.close();
 				
 		//воспроизводим звук о начале игры
-		gres.game_start.sound.play();
+		sound.play('game_start');
 				
 		//восстанавливаем мое имя так как оно могло меняться
 		make_text(objects.my_card_name,my_data.name,150);
@@ -2435,7 +2436,7 @@ game = {
 		
 		
 		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true) {
-			gres.bad_move.sound.play();
+			sound.play('bad_move');
 			return;			
 		}
 		
@@ -2450,7 +2451,7 @@ game = {
 		
 		
 		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true) {
-			gres.bad_move.sound.play();
+			sound.play('bad_move');
 			return;			
 		}
 		
@@ -2466,7 +2467,7 @@ game = {
 		}
 				
 		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true || objects.req_cont.visible === true || objects.my_icon.ready === false) {
-			gres.bad_move.sound.play();
+			sound.play('bad_move');
 			return;			
 		}
 		
@@ -2485,7 +2486,7 @@ game = {
 		//выбрана ячейка с игроком
 		if (player_cell_selected === true  && this.selected === null) {			
 						
-			gres.checker_tap.sound.play();
+			sound.play('checker_tap');
 			
 			//если происходит строительство стены то отменяем
 			if (objects.move_buttons_cont.visible === true)
@@ -2516,7 +2517,7 @@ game = {
 				return;				
 			}
 
-			gres.checker_tap.sound.play();			
+			sound.play('checker_tap');			
 						
 			//убираем выделение
 			this.selected = null;
@@ -2607,7 +2608,7 @@ game = {
 			return;
 		}
 		
-		gres.place_wall.sound.play();
+		sound.play('place_wall');
 		const tar_cell=this.field.f[pw.r][pw.c];
 		tar_cell.wall_type = pw.wall_type;
 		tar_cell.wall_owner = MY_ID;
@@ -2692,7 +2693,7 @@ game = {
 	decline_move () {		
 		
 		//воспроизводим звук
-		game_res.resources.cancel_wall.sound.play();
+		sound.play('cancel_wall');
 		this.wall_to_try=V_WALL;
 		this.stop_wall_processing();
 		
@@ -2711,8 +2712,8 @@ game = {
 		
 		objects.h_wall.visible=false;
 		objects.v_wall.visible=false;
-		
-		gres.iter_wall.sound.play();
+
+		sound.play('iter_wall');
 					
 		//тип стены
 		//c смещение
@@ -2808,16 +2809,16 @@ game = {
 		
 		if (data.type === 'move') {
 			
-			gres.checker_tap.sound.play();
+			sound.play('checker_tap');
 			let p = this.field.pos[OPP_ID];			
 			await this.update_player_pos(objects.opp_icon, data.r0, data.c0, data.r1, data.c1);			
 			ffunc.make_move(this.field, data.r0, data.c0, data.r1, data.c1)
-			gres.checker_tap.sound.play();
+			sound.play('checker_tap');
 		}
 		
 		if (data.type === 'wall') {
 			
-			game_res.resources.place_wall.sound.play();
+			sound.play('place_wall');
 			
 			//устанаваем полученную стену в наше поле
 			const tar_cell=this.field.f[data.r][data.c];
@@ -3032,10 +3033,12 @@ game_tutor={
 		for(let w=0;w<6;w++){
 			objects['w'+w]=objects.walls[w];			
 			objects['w'+w].scale_xy=0.6666666;
+			objects['w'+w].width=140;
+			objects['w'+w].height=40;
 		}
 		
 		if (!this.timeline){
-			const d1=await fetch('https://akukamil.github.io/quoridor/timeline.txt')
+			const d1=await fetch(git_src+'timeline.txt')
 			const d2=await d1.text();
 			this.timeline=eval(d2);			
 		}
@@ -3108,7 +3111,7 @@ game_tutor={
 	stop(){
 		
 		if (anim2.any_on()) return;
-		
+		sound.play('click')
 		this.close();
 		main_menu.activate();		
 		
@@ -3158,6 +3161,7 @@ game_tutor={
 							objects.tutor_arrow.visible=false;
 							objects.tutor_text.visible=false;			
 							objects.tutor_text_bcg.visible=false;	
+							sound.play('close_it');
 							some_process.tutor=function(){game_tutor.run()};
 						});	
 					
@@ -3307,9 +3311,7 @@ req_dialog={
 				//console.log("Не получилось загрузить данные о сопернике");
 			}	else	{
 
-
-				gres.invite.sound.play();
-				
+				sound.play('invite');
 				
 				//так как успешно получили данные о сопернике то показываем окно	
 				anim2.add(objects.req_cont,{y:[-260, objects.req_cont.sy]}, true, 0.5,'easeOutElastic');
@@ -3357,7 +3359,7 @@ req_dialog={
 		if (objects.req_cont.ready===false)
 			return;
 		
-		gres.click.sound.play();
+		sound.play('click');
 
 		anim2.add(objects.req_cont,{y:[objects.req_cont.sy, -260]}, false, 0.5,'easeInBack');
 		
@@ -3368,7 +3370,7 @@ req_dialog={
 	accept: function() {
 				
 		if (objects.req_cont.ready===false || objects.rules_cont.visible===true ) {
-			gres.bad_move.sound.play();
+			sound.play('bad_move');
 			return;			
 		}
 		
@@ -3376,7 +3378,8 @@ req_dialog={
 		if (state ==='b' && my_turn === 0)
 			return;
 				
-		gres.click.sound.play();
+		sound.play('click');
+		
 		
 		//устанавливаем окончательные данные оппонента
 		opp_data=req_dialog._opp_data;
@@ -3499,14 +3502,11 @@ stickers={
 
 		
 		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true || objects.stickers_cont.ready===false) {
-			gres.bad_move.sound.play();
+			sound.play('bad_move');
 			return;			
 		}
 
-	
-		
-		game_res.resources.click.sound.play();
-
+		sound.play('click');
 
 		//ничего не делаем если панель еще не готова
 		if (objects.stickers_cont.ready===false || objects.stickers_cont.visible===true || state!=="p")
@@ -3519,8 +3519,6 @@ stickers={
 
 	hide_panel: function() {
 
-		//game_res.resources.close.sound.play();
-
 		if (objects.stickers_cont.ready===false)
 			return;
 
@@ -3532,7 +3530,7 @@ stickers={
 	send : async function(id) {
 
 		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true || objects.stickers_cont.ready===false) {
-			gres.bad_move.sound.play();
+			sound.play('bad_move');
 			return;			
 		}
 		
@@ -3598,7 +3596,7 @@ main_menu={
 
 
 		
-		objects.tutor_button.visible=false;
+		//objects.tutor_button.visible=false;
 		//просто добавляем контейнер с кнопками
 		objects.desktop.texture=gres.desktop.texture;
 		//objects.desktop.visible = true;
@@ -3626,7 +3624,7 @@ main_menu={
 	play_button_down: async function () {
 
 		if (objects.big_message_cont.visible === true || objects.id_cont.visible === true || objects.req_cont.visible === true ||  objects.main_buttons_cont.ready === false) {
-			gres.bad_move.sound.play();
+			sound.play('bad_move');
 			return;			
 		}
 
@@ -3641,7 +3639,7 @@ main_menu={
 	lb_button_down: function () {
 
 		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.main_buttons_cont.ready === false) {
-			gres.bad_move.sound.play();
+			sound.play('bad_move');
 			return;			
 		}
 
@@ -3654,7 +3652,7 @@ main_menu={
 
 	rules_button_down: function () {
 
-		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.main_buttons_cont.ready === false ||  objects.rules_cont.ready === false) {
+		if (objects.big_message_cont.visible|| objects.req_cont.visible|| !objects.main_buttons_cont.ready||!objects.rules_cont.ready) {
 			sound.play('bad_move');
 			return;			
 		}
@@ -3672,11 +3670,12 @@ main_menu={
 
 	tutor_button_down(){
 		
-		if (anim2.any_on()===true) {
+		if (objects.big_message_cont.visible|| objects.req_cont.visible||anim2.any_on()) {
 			sound.play('locked');
 			return
 		};
 		
+		sound.play('click')
 		this.close();
 		game_tutor.start();
 		
@@ -3973,12 +3972,12 @@ lb={
 	back_button_down: function() {
 
 		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.lb_cards_cont.ready === false) {
-			gres.bad_move.sound.play();
+			sound.play('bad_move');
 			return;			
 		}
 
 
-		gres.click.sound.play();
+		sound.play('click');
 		this.close();
 		main_menu.activate();
 
@@ -4524,12 +4523,12 @@ cards_menu={
 	show_table_dialog : function (card_id) {
 		
 		if (anim2.any_on() || objects.td_cont.ready === false || objects.td_cont.visible === true || objects.big_message_cont.visible === true ||objects.req_cont.visible === true)	{
-			gres.locked.sound.play();
+			sound.play('locked');
 			return
 		};
 
 
-		gres.click.sound.play();
+		sound.play('click');
 		
 		//console.log(objects.mini_cards[card_id].game_id);
 		
@@ -4553,8 +4552,7 @@ cards_menu={
 		if (objects.td_cont.ready === false)
 			return;
 		
-		
-		gres.close_it.sound.play();
+		sound.play('close_it');
 		
 		anim2.add(objects.td_cont,{y:[objects.td_cont.sy,400,]}, false, 0.5,'easeInBack');
 		
@@ -4564,14 +4562,14 @@ cards_menu={
 
 
 		if (objects.invite_cont.ready === false || objects.invite_cont.visible === true || 	objects.big_message_cont.visible === true ||objects.req_cont.visible === true)	{
-			game_res.resources.locked.sound.play();
+			sound.play('locked');
 			return
 		};
 
 
 		pending_player="";
 
-		gres.click.sound.play();
+		sound.play('click');
 
 		//показыаем кнопку приглашения
 		
@@ -4645,7 +4643,7 @@ cards_menu={
 		if (objects.invite_cont.ready === false)
 			return;
 		
-		gres.close_it.sound.play();
+		sound.play('close_it');
 
 		//отправляем сообщение что мы уже не заинтересованы в игре
 		if (pending_player!=="") {
@@ -4660,7 +4658,7 @@ cards_menu={
 
 
 		if (objects.invite_button.state==='invited'||objects.invite_cont.ready === false || 	objects.big_message_cont.visible === true ||objects.req_cont.visible === true)	{
-			gres.locked.sound.play();
+			sound.play('locked');
 			return
 		}
 
@@ -4677,7 +4675,7 @@ cards_menu={
 		}
 		else
 		{
-			gres.click.sound.play();
+			sound.play('click');
 			objects.invite_button.texture = gres.invite_button_waiting.texture;
 			objects.invite_button.state='invited';
 			firebase.database().ref("inbox/"+cards_menu._opp_data.uid).set({sender:my_data.uid,message:"INV",tm:Date.now()});
@@ -4717,13 +4715,11 @@ cards_menu={
 	back_button_down: function() {
 
 		if (objects.td_cont.visible === true || objects.big_message_cont.visible === true ||objects.req_cont.visible === true ||objects.invite_cont.visible === true)	{
-			gres.locked.sound.play();
+			sound.play('locked');
 			return
 		};
 
-
-
-		gres.close_it.sound.play();
+		sound.play('close_it');
 
 		this.close();
 		main_menu.activate();
@@ -5259,7 +5255,7 @@ async function load_resources() {
 	//подпапка с ресурсами
 	let lang_pack = ['RUS','ENG'][LANG];
 
-	let git_src='https://akukamil.github.io/quoridor/'
+	git_src='https://akukamil.github.io/quoridor/'
 	//git_src=''
 
 
@@ -5276,19 +5272,15 @@ async function load_resources() {
 	game_res.add('receive_move',git_src+'/sounds/receive_move.mp3');
 	game_res.add('receive_sticker',git_src+'sounds/receive_sticker.mp3');
 	game_res.add('block_wall',git_src+'/sounds/block_wall.mp3');
-	game_res.add('good_word',git_src+'/sounds/good_word.mp3');
-	game_res.add('key_down',git_src+'/sounds/key_down.mp3');
-	game_res.add('cell_down',git_src+'/sounds/cell_down.mp3');
 	game_res.add('iter_wall',git_src+'/sounds/iter_wall.mp3');
 	game_res.add('bad_move',git_src+'/sounds/bad_move.mp3');
 	game_res.add('win',git_src+'/sounds/win.mp3');
 	game_res.add('invite',git_src+'/sounds/invite.mp3');
-	game_res.add('draw',git_src+'/sounds/draw.mp3');
 	game_res.add('cancel_wall',git_src+'/sounds/cancel_wall.mp3');
 	game_res.add('place_wall',git_src+'/sounds/place_wall.mp3');
 	game_res.add('checker_tap',git_src+'/sounds/checker_tap.mp3');
 	game_res.add('keypress',git_src+'sounds/keypress.mp3');
-	
+	game_res.add('note',git_src+'sounds/note.mp3');
 	
 	//отдельно загружаем тайлинговый спрайта
 	game_res.add('tile_img',git_src+'/res/tile_img.png');
