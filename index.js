@@ -4758,7 +4758,7 @@ lobby={
 		}
 		
 		//кнопка удаления комментариев
-		objects.fb_delete_button.visible=my_data.uid===lobby._opp_data.uid;
+		//objects.fb_delete_button.visible=my_data.uid===lobby._opp_data.uid;
 		
 		//если мы в списке игроков которые нас недавно отврегли
 		if (this.rejected_invites[lobby._opp_data.uid] && Date.now()-this.rejected_invites[lobby._opp_data.uid]<60000) invite_available=false;
