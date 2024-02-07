@@ -593,7 +593,7 @@ anim2 = {
 				for (let key in params) {
 					
 					//если начального показателя нет то устанавливаем его текущим
-					if (params[key][0]===null)
+					if (params[key][0]===null||params[key][0]===undefined)
 						params[key][0]=obj[key]
 					
 					params[key][2]=params[key][1]-params[key][0];					
