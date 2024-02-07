@@ -5292,9 +5292,8 @@ auth2={
 		
 		if (game_platform === 'GOOGLE_PLAY') {	
 
-			let country_code = await this.get_country_code();
 			my_data.uid = this.search_in_local_storage() || this.get_random_uid_for_local('GP_');
-			my_data.name = this.get_random_name(my_data.uid) + ' (' + country_code + ')';
+			my_data.name = this.get_random_name(my_data.uid);
 			my_data.orig_pic_url = 'mavatar'+my_data.uid;		
 			return;
 		}
@@ -5310,11 +5309,9 @@ auth2={
 			
 			try {await this.load_script('https://sdk.crazygames.com/crazygames-sdk-v2.js')} catch (e) {alert(e)};	
 			try {await this.load_script('https://akukamil.github.io/quoridor/jwt-decode.js')} catch (e) {alert(e)};		
-			let country_code = await this.get_country_code();
 			const cg_user_data=await this.search_in_crazygames();			
-		
 			my_data.uid = cg_user_data.userId || this.search_in_local_storage() || this.get_random_uid_for_local('CG_');
-			my_data.name = cg_user_data.username || this.get_random_name(my_data.uid) + ' (' + country_code + ')';
+			my_data.name = cg_user_data.username || this.get_random_name(my_data.uid);
 			my_data.orig_pic_url = cg_user_data.profilePictureUrl || ('mavatar'+my_data.uid);	
 					
 
