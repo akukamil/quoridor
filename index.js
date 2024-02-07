@@ -5259,20 +5259,14 @@ auth2={
 			
 			my_data.uid = _player.getUniqueID().replace(/[\/+=]/g, '');
 			my_data.name = _player.getName();
-			my_data.pic_url = _player.getPhoto('medium');
+			my_data.orig_pic_url = _player.getPhoto('medium');
 			
 			if (my_data.orig_pic_url === 'https://games-sdk.yandex.ru/games/api/sdk/v1/player/avatar/0/islands-retina-medium')
 				my_data.orig_pic_url = 'mavatar'+my_data.uid;	
 			
 			if (my_data.name === '')
 				my_data.name = this.get_random_name(my_data.uid);
-			
-			//если английский яндекс до добавляем к имени страну
-			let country_code = await this.get_country_code();
-			my_data.name = my_data.name + ' (' + country_code + ')';			
-
-
-			
+				
 			return;
 		}
 		
