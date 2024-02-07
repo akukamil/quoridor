@@ -1,5 +1,5 @@
 const M_WIDTH=800, M_HEIGHT=450;
-var app ={stage:{},renderer:{}}, game_res, game, gdata={}, objects={}, state='',my_role='',chat_path='chat', LANG = 0, game_tick=0, my_turn=0,room_name='states', game_id=0, h_state=0, made_moves=0, game_platform="", hidden_state_start = 0, connected = 1;
+var app ={stage:{},renderer:{}}, game_res, game, gdata={}, objects={}, state='',my_role='',chat_path='chat', LANG = 0, game_tick=0, my_turn=0,room_name='states', game_id=0, h_state=0, made_moves=0,client_id, game_platform="", hidden_state_start = 0, connected = 1;
 var players="", pending_player="",git_src;
 var my_data={opp_id : ''},opp_data={};
 var some_process = {};
@@ -735,6 +735,7 @@ online_game = {
 	start_time : 0,	
 	disconnect_time : 0,
 	no_incoming_move : 0,
+	write_fb_timer:0,
 	
 	calc_new_rating : function (old_rating, game_result) {
 				
@@ -751,13 +752,17 @@ online_game = {
 		
 	},
 	
-	send_move : function  (data) {
+	send_move (data) {
 		
-		
-		firebase.database().ref("inbox/"+opp_data.uid).set({sender:my_data.uid,message:"MOVE",tm:Date.now(),data:data});
+		//отправляем ход сопернику
+		clearTimeout(online_game.write_fb_timer);
+		online_game.write_fb_timer=setTimeout(function(){online_game.stop('my_no_connection');}, 8000); 
+		firebase.database().ref('inbox/'+opp_data.uid).set({sender:my_data.uid,message:'MOVE',tm:Date.now(),data:data}).then(()=>{	
+			clearTimeout(online_game.write_fb_timer);
+		});	
 		
 		//также фиксируем данные стола
-		firebase.database().ref("tables/"+game_id).set({uid:my_data.uid,f_str:ffunc.get_minified_field(game.field),tm:firebase.database.ServerValue.TIMESTAMP});
+		firebase.database().ref('tables/'+game_id).set({uid:my_data.uid,f_str:ffunc.get_minified_field(game.field),tm:firebase.database.ServerValue.TIMESTAMP});
 
 	},
 	
@@ -802,7 +807,7 @@ online_game = {
 	
 	},
 	
-	reset_timer : function(t) {
+	reset_timer(t) {
 		
 		//обовляем время разъединения
 		this.disconnect_time = 0;
@@ -815,7 +820,7 @@ online_game = {
 		
 	},
 	
-	timer_tick : function () {
+	timer_tick () {
 		
 		this.move_time_left--;
 		
@@ -867,7 +872,7 @@ online_game = {
 		
 	},
 	
-	stop : async function(result) {
+	async stop(result) {
 					
 		let res_array = [
 			['my_timeout',LOSE, ['Вы проиграли!\nУ вас закончилось время','You have lost!\nYou have run out of time']],
@@ -875,6 +880,7 @@ online_game = {
 			['my_giveup' ,LOSE, ['Вы сдались!','You have given up!']],
 			['opp_giveup' ,WIN , ['Вы выиграли!\nСоперник сдался','You won!\nOpponent gave up']],
 			['both_finished',DRAW, ['Ничья','Draw']],
+			['my_no_connection',LOSE,['Потеряна связь! Используйте надежное интернет соединение.','Lost connection! Use a reliable internet connection']],
 			['my_finished_first',WIN , ['Вы выиграли!\nБыстрее соперника добрались до цели','You won!\nFaster than the opponent got to the goal']],
 			['opp_finished_first',LOSE, ['Вы проиграли!\nСоперник оказался быстрее вас.','You have lost!\nOpponent was faster than you']],
 			['my_closer_after_80',WIN , ['Вы выиграли!\nВы оказались ближе к цели.','You won!\nYou were closer to the goal']],
@@ -3170,6 +3176,12 @@ keep_alive = function() {
 	set_state({});
 }
 
+var kill_game = function() {
+	
+	firebase.app().delete();
+	document.body.innerHTML = 'CLIENT TURN OFF';
+}
+
 process_new_message = function(msg) {
 
 	//проверяем плохие сообщения
@@ -3220,6 +3232,11 @@ process_new_message = function(msg) {
 				game.stop("opp_giveup");
 		}
 	}
+
+	//айди клиента для удаления дубликатов
+	if (msg.message==='CLIEND_ID') 
+		if (msg.client_id !== client_id)
+			kill_game();
 
 	//приглашение поиграть
 	if(state==="o" || state==="b") {
@@ -5547,6 +5564,10 @@ async function init_game_env(lng) {
 
 	//обновляем данные в файербейс так как могли поменяться имя или фото
 	firebase.database().ref('players/'+my_data.uid).set({name:my_data.name,country:my_data.country, pic_url: my_data.pic_url, rating : my_data.rating, chip : my_data.chip, games : my_data.games, tm:firebase.database.ServerValue.TIMESTAMP});
+
+	//сообщение для дубликатов
+	client_id = irnd(10,999999);
+	fbs.ref('inbox/'+my_data.uid).set({message:'CLIEND_ID',tm:Date.now(),client_id});
 
 	//устанавливаем мой статус в онлайн
 	set_state({state : 'o'});
