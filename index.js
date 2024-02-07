@@ -1105,7 +1105,13 @@ keyboard={
 	read(max_symb){
 		
 		this.MAX_SYMBOLS=max_symb||60;
-		if (!this.layout)this.switch_layout();	
+		if (LANG===1){
+			this.layout=this.en_keys;
+			objects.chat_keyboard.texture=gres.eng_layout.texture;
+		}else{
+			this.layout=this.ru_keys;
+			objects.chat_keyboard.texture=gres.rus_layout.texture;
+		}
 		
 		//если какой-то ресолвер открыт
 		if(this.resolver) this.resolver('');
@@ -5298,7 +5304,7 @@ auth2={
 		
 			my_data.uid = cg_user_data.userId || this.search_in_local_storage() || this.get_random_uid_for_local('CG_');
 			my_data.name = cg_user_data.username || this.get_random_name(my_data.uid) + ' (' + country_code + ')';
-			my_data.pic_url = cg_user_data.profilePictureUrl || ('mavatar'+my_data.uid);	
+			my_data.orig_pic_url = cg_user_data.profilePictureUrl || ('mavatar'+my_data.uid);	
 					
 
 			//перезапускаем если авторизация прошла
