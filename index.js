@@ -5572,7 +5572,7 @@ async function init_game_env(lng) {
 	
 	
 	//правильно определяем аватарку
-	if (other_data.pic_url && other_data.pic_url.includes('mavatar'))
+	if (other_data?.pic_url && other_data.pic_url.includes('mavatar'))
 		my_data.pic_url=other_data.pic_url
 	else
 		my_data.pic_url=my_data.orig_pic_url
