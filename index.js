@@ -689,12 +689,14 @@ big_message = {
 	
 	p_resolve : 0,
 		
-	show(t1,t2) {
+	show(t1,t2, feedback_on) {
 				
 		if (t2!==undefined || t2!=="")
 			objects.big_message_text2.text=t2;
 		else
 			objects.big_message_text2.text='**********';
+		
+		objects.feedback_button.visible = feedback_on;
 
 		objects.big_message_text.text=t1;
 		anim2.add(objects.big_message_cont,{y:[-180,objects.big_message_cont.sy]}, true, 0.6,'easeOutBack');		
@@ -952,7 +954,7 @@ online_game = {
 			
 		}
 		
-		await big_message.show(result_info, ['Рейтинг','Rating'][LANG]+`: ${old_rating} > ${my_data.rating}`)
+		await big_message.show(result_info, ['Рейтинг','Rating'][LANG]+`: ${old_rating} > ${my_data.rating}`,true)
 	
 	}
 
@@ -1030,7 +1032,7 @@ bot_player = {
 		else
 			sound.play('win');		
 		
-		await big_message.show(result_info, ['Сыграйте с реальным соперником для получения рейтинга','Play online with other player to increase rating'][LANG])
+		await big_message.show(result_info, ['Сыграйте с реальным соперником для получения рейтинга','Play online with other player to increase rating'][LANG],true)
 	
 	},
 	
@@ -2847,7 +2849,7 @@ game_watching={
 			return;
 		
 		if(data.fin_flag){
-			await big_message.show("This game is finished",")))");
+			await big_message.show("This game is finished",")))",false);
 			this.stop_and_return();
 			return;
 		}
@@ -5094,7 +5096,7 @@ lobby={
 		pending_player="";
 		lobby._opp_data={};
 		this.close_invite_dialog();
-		big_message.show(['Соперник отказался от игры. Повторить приглашение можно через 1 минуту.','The opponent refused to play. You can repeat the invitation in 1 minute'][LANG],'---');
+		big_message.show(['Соперник отказался от игры. Повторить приглашение можно через 1 минуту.','The opponent refused to play. You can repeat the invitation in 1 minute'][LANG],'---',false);
 
 
 	},
