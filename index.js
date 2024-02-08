@@ -5562,10 +5562,10 @@ async function init_game_env(lng) {
 	let other_data = snapshot.val();
 		
 	//делаем защиту от неопределенности
-	my_data.rating = (other_data && other_data.rating) || 1400;	
-	my_data.games = (other_data && other_data.games) || 0;
+	my_data.rating = (other_data?.rating) || 1400;	
+	my_data.games = (other_data?.games) || 0;
 	my_data.name=other_data?.name || my_data.name;
-	my_data.chip = (other_data && other_data.chip) || 0;
+	my_data.chip = (other_data?.chip) || 0;
 	my_data.nick_tm = other_data?.nick_tm || 0;
 	my_data.avatar_tm = other_data?.avatar_tm || 0;
 	my_data.country = other_data?.country || await auth2.get_country_code() || await auth2.get_country_code2() 
