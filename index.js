@@ -1090,9 +1090,7 @@ bot_player = {
 				
 
 			if (min_val1 > max_val2)
-				min_val1 = max_val2;
-
-			
+				min_val1 = max_val2;			
 			}	
 
 		if (min_val1 > max_val) {
@@ -3567,11 +3565,12 @@ ad={
 		
 		if (game_platform==="YANDEX") {			
 			//показываем рекламу
+			PIXI.sound.volumeAll=0;
 			window.ysdk.adv.showFullscreenAdv({
 			  callbacks: {
-				onClose: function() {}, 
-				onError: function() {}
-						}
+				onClose: function() {PIXI.sound.volumeAll=1;}, 
+				onError: function() {PIXI.sound.volumeAll=1;}
+				}
 			})
 		}
 		
@@ -4327,6 +4326,9 @@ lobby={
 		//отключаем все карточки
 		for(let i=1;i<objects.mini_cards.length;i++)
 			objects.mini_cards[i].visible=false;
+		
+		if (game_platform==='YANDEX')
+			objects.pref_button.visible=false;
 		
 		//процессинг
 		some_process.lobby=function(){lobby.process()};
@@ -5418,12 +5420,14 @@ function set_state(params) {
 
 function vis_change() {
 
-	if (document.hidden === true)
+	if (document.hidden === true) {
 		hidden_state_start = Date.now();
+		PIXI.sound.volumeAll=0;	
+	} else {
+		PIXI.sound.volumeAll=1;	
+	}	
 	
-	set_state({hidden : document.hidden});
-	
-		
+	set_state({hidden : document.hidden});	
 }
 
 async function init_game_env(lng) {
@@ -5564,7 +5568,7 @@ async function init_game_env(lng) {
 	//делаем защиту от неопределенности
 	my_data.rating = (other_data?.rating) || 1400;	
 	my_data.games = (other_data?.games) || 0;
-	my_data.name=other_data?.name || my_data.name;
+	my_data.name=other_data?.name || 'noname';
 	my_data.chip = (other_data?.chip) || 0;
 	my_data.nick_tm = other_data?.nick_tm || 0;
 	my_data.avatar_tm = other_data?.avatar_tm || 0;
