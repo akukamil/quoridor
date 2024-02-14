@@ -2259,6 +2259,9 @@ game = {
 		objects.my_card_cont.visible = true;
 		objects.opp_card_cont.visible = true;		
 		
+		//устанавливаем мою аватарку
+		objects.my_avatar.texture=players_cache.players[my_data.uid].texture;
+		
 		//отключаем взаимодейтсвие с доской
 		objects.field.pointerdown = this.mouse_down.bind(game);		
 			
@@ -2918,8 +2921,7 @@ game_watching={
 		objects.opp_card_cont.visible = false;	
 		objects.walls.forEach(w=>{w.visible=false});
 		objects.picon0.visible=objects.picon1.visible=false;
-		firebase.database().ref("tables/"+this.game_id).off();
-		objects.my_avatar.texture=my_data.my_texture;
+		firebase.database().ref("tables/"+this.game_id).off();		
 		this.on=false;
 
 	}
