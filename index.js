@@ -4328,10 +4328,7 @@ lobby={
 		//отключаем все карточки
 		for(let i=1;i<objects.mini_cards.length;i++)
 			objects.mini_cards[i].visible=false;
-		
-		if (game_platform==='YANDEX')
-			objects.pref_button.visible=false;
-		
+				
 		//процессинг
 		some_process.lobby=function(){lobby.process()};
 
@@ -5637,9 +5634,7 @@ async function init_game_env(lng) {
 	//событие ролика мыши в карточном меню
 	window.addEventListener('keydown',function(event){keyboard.keydown(event.key)});	
 	window.addEventListener('wheel', (event) => {chat.wheel_event(Math.sign(event.deltaY))}, {passive: false});	
-	
-
-	
+		
 	//контроль за присутсвием
 	var connected_control = firebase.database().ref('.info/connected');
 	connected_control.on("value", (snap) => {
