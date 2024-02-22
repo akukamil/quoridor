@@ -5607,7 +5607,7 @@ async function init_game_env(lng) {
 	firebase.database().ref("inbox/"+my_data.uid).on('value', (snapshot) => { process_new_message(snapshot.val());});
 
 	//обновляем данные в файербейс так как могли поменяться имя или фото
-	firebase.database().ref('players/'+my_data.uid).set({name:my_data.name,country:my_data.country, pic_url: my_data.pic_url, rating : my_data.rating, chip : my_data.chip, games : my_data.games, tm:firebase.database.ServerValue.TIMESTAMP});
+	firebase.database().ref('players/'+my_data.uid).set({name:my_data.name,country:my_data.country, pic_url: my_data.pic_url, rating : my_data.rating, chip : my_data.chip,nick_tm:my_data.nick_tm, avatar_tm:my_data.avatar_tm, games : my_data.games, tm:firebase.database.ServerValue.TIMESTAMP});
 
 	//сообщение для дубликатов
 	client_id = irnd(10,999999);
