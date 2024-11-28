@@ -5228,7 +5228,7 @@ auth2={
 
 		let country_code = ''
 		try {
-			let resp1 = await fetch("https://ipinfo.io/json?token=a3455d3185ba47");
+			let resp1 = await fetch("https://ipinfo.io/json?token=63f43de65702b8");
 			let resp2 = await resp1.json();			
 			country_code = resp2.country || '';			
 		} catch(e){}
@@ -5385,8 +5385,8 @@ auth2={
 }
 
 function resize() {
-    const vpw = window.innerWidth;  // Width of the viewport
-    const vph = window.innerHeight; // Height of the viewport
+    const vpw = document.body.clientWidth;  // Width of the viewport
+    const vph = document.body.clientHeight; // Height of the viewport
     let nvw; // New game width
     let nvh; // New game height
 
