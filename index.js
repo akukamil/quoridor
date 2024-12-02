@@ -204,7 +204,7 @@ class chat_record_class extends PIXI.Container {
 		//определяем pic_url
 		await players_cache.update(uid);
 		await players_cache.update_avatar(uid);
-		tar_sprite.set_texture(players_cache.players[uid].texture);	
+		tar_sprite.texture=players_cache.players[uid].texture;	
 	}
 	
 	async set(msg_data) {
