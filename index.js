@@ -5989,7 +5989,7 @@ async function load_resources() {
 	let lang_pack = ['RUS','ENG'][LANG];
 
 	git_src='https://akukamil.github.io/quoridor/'
-	git_src=''
+	//git_src=''
 
 
 	const loader=new PIXI.Loader();
