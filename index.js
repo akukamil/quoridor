@@ -4210,8 +4210,8 @@ chat={
 		objects.desktop.texture=assets.lobby_bcg;
 		objects.chat_enter_btn.visible=my_data.games>=this.games_to_chat;
 		
-
-		objects.chat_rules.text='Правила чата!\n1. Будьте вежливы: Общайтесь с другими игроками с уважением. Избегайте угроз, грубых выражений, оскорблений, конфликтов.\n2. Отправлять сообщения в чат могут игроки сыгравшие более 200 онлайн партий.\n3. За нарушение правил игрок может попасть в черный список.'
+		objects.chat_rules.visible=false;
+		//objects.chat_rules.text='Правила чата!\n1. Будьте вежливы: Общайтесь с другими игроками с уважением. Избегайте угроз, грубых выражений, оскорблений, конфликтов.\n2. Отправлять сообщения в чат могут игроки сыгравшие более 200 онлайн партий.\n3. За нарушение правил игрок может попасть в черный список.'
 		if(my_data.blocked) objects.chat_rules.text='Вы не можете писать в чат, так как вы находитесь в черном списке';
 
 	},
@@ -5296,11 +5296,11 @@ lobby={
 		
 		objects.fb_delete_button.visible=false;
 		fbs.ref('fb/' + my_data.uid).remove();
-		this.fb_cache[my_data.uid].fb_obj={0:['***нет отзывов***',999,' ']};
+		this.fb_cache[my_data.uid].fb_obj={0:['*** empty ***',999,' ']};
 		this.fb_cache[my_data.uid].tm=Date.now();
 		objects.feedback_records.forEach(fb=>fb.visible=false);
 		
-		message.add('Отзывы удалены')
+		message.add(['Отзывы удалены','Removed!'][LANG])
 		
 	},
 	
