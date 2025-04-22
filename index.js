@@ -1,6 +1,6 @@
 const M_WIDTH=800, M_HEIGHT=450;
 var app ={stage:{},renderer:{}}, assets={}, game,serv_tm, gdata={}, objects={}, state='',my_role='',LANG = 0, game_tick=0, my_turn=0,room_name='states', game_id=0, h_state=0, made_moves=0,client_id, game_platform="", hidden_state_start = 0, connected = 1, players="", pending_player="",git_src,my_data={opp_id : ''},opp_data={},some_process = {},game_name='quoridor';
-const V_WALL = 2, H_WALL = 1, ROW0 = 0, ROW8 = 8, MY_ID = 1, OPP_ID = 2, MAX_MOVES = 50, FIELD_MARGIN = 20;
+const V_WALL = 2, H_WALL = 1, ROW0 = 0, ROW8 = 8, MY_ID = 1, OPP_ID = 2, MAX_MOVES = 50, FIELD_MARGIN_X = 50,FIELD_MARGIN_Y = 30;
 const WIN = 1, DRAW = 0, LOSE = -1, NOSYNC = 2;
 
 fbs_once=async function(path){	
@@ -1541,8 +1541,8 @@ ffunc = {
 					wall.height=140;
 					wall.width=40;
 					wall.tint=[0xaaaaaa,0xffffff,0xff7777][cell.wall_owner];
-					wall.x = objects.field.x + FIELD_MARGIN + c * 50;
-					wall.y = objects.field.y + FIELD_MARGIN + r * 50;
+					wall.x = objects.field.x + FIELD_MARGIN_X + c * 50;
+					wall.y = objects.field.y + FIELD_MARGIN_Y + r * 50;
 					wall.texture=assets.v_wall;										
 					wall.visible = true;
 					wall_iter++;
@@ -1552,22 +1552,22 @@ ffunc = {
 					wall.height=40;
 					wall.width=140;
 					wall.tint=[0xaaaaaa,0xffffff,0xff7777][cell.wall_owner];
-					wall.x = objects.field.x + FIELD_MARGIN + c * 50;
-					wall.y = objects.field.y + FIELD_MARGIN + r * 50;
+					wall.x = objects.field.x + FIELD_MARGIN_X + c * 50;
+					wall.y = objects.field.y + FIELD_MARGIN_Y + r * 50;
 					wall.texture=assets.h_wall;					
 					wall.visible = true;
 					wall_iter++;
 				}				
 				
 				if (cell.player === MY_ID) {					
-					objects.my_icon.x = objects.field.x + FIELD_MARGIN + c * 50;
-					objects.my_icon.y = objects.field.y + FIELD_MARGIN + r * 50;
+					objects.my_icon.x = objects.field.x + FIELD_MARGIN_X + c * 50;
+					objects.my_icon.y = objects.field.y + FIELD_MARGIN_Y + r * 50;
 					objects.my_icon.visible = true;					
 				}
 				
 				if (cell.player === OPP_ID) {					
-					objects.opp_icon.x = objects.field.x + FIELD_MARGIN + c * 50;
-					objects.opp_icon.y = objects.field.y + FIELD_MARGIN + r * 50;
+					objects.opp_icon.x = objects.field.x + FIELD_MARGIN_X + c * 50;
+					objects.opp_icon.y = objects.field.y + FIELD_MARGIN_Y + r * 50;
 					objects.opp_icon.visible = true;					
 				}				
 			}
@@ -1641,10 +1641,10 @@ ffunc = {
 		
 	check_new_wall(field, r, c, wall_type) {
 		
-		if (c === 0)	return 0;		
-		if (r === 0)	return 0;		
-		if (c === 9)	return 0;		
-		if (r === 9)	return 0;
+		if (c < 1)	return 0;		
+		if (r < 1)	return 0;		
+		if (c > 8)	return 0;		
+		if (r > 8)	return 0;
 		
 		//если какая-то стена уже есть на этом месте
 		if (field.f[r][c].wall_type !== 0)	return 0;
@@ -2425,8 +2425,8 @@ game = {
 		objects.opp_walls.text = ['Стены: ','Walls: '][LANG]+this.wall_num[1];
 		
 		//плавно добавляем фигуры
-		objects.my_icon.x = objects.field.x + FIELD_MARGIN + 4 * 50;
-		objects.opp_icon.x = objects.field.x + FIELD_MARGIN + 4 * 50;
+		objects.my_icon.x = objects.field.x + FIELD_MARGIN_X + 4 * 50;
+		objects.opp_icon.x = objects.field.x + FIELD_MARGIN_X + 4 * 50;
 		
 		anim2.add(objects.my_icon,{y:[450, 400]}, true, 0.5,'linear');	
 		await anim2.add(objects.opp_icon,{y:[-50, 0]}, true, 0.5,'linear');	
@@ -2525,8 +2525,8 @@ game = {
 		let my = e.data.global.y/app.stage.scale.y;
 
 		//координаты указателя на игровой доске
-		const _c = Math.floor(9*(mx-objects.field.x-FIELD_MARGIN)/450);
-		const _r = Math.floor(9*(my-objects.field.y-FIELD_MARGIN)/450);
+		const _c = Math.floor(9*(mx-objects.field.x-FIELD_MARGIN_X)/450);
+		const _r = Math.floor(9*(my-objects.field.y-FIELD_MARGIN_Y)/450);
 		const _id = _c + _r * 8;
 		let p = this.field.pos[MY_ID]; p ={r:p.r, c:p.c};
 		
@@ -2624,11 +2624,11 @@ game = {
 	
 	async update_player_pos(sprite, r1, c1, r2, c2) {
 		
-		let x1 = objects.field.x + FIELD_MARGIN + c1 * 50;
-		let y1 = objects.field.y + FIELD_MARGIN + r1 * 50;
-		let x2 = objects.field.x + FIELD_MARGIN + c2 * 50;
-		let y2 = objects.field.y + FIELD_MARGIN + r2 * 50;
-					
+		let x1 = objects.field.x + FIELD_MARGIN_X + c1 * 50;
+		let y1 = objects.field.y + FIELD_MARGIN_Y + r1 * 50;
+		let x2 = objects.field.x + FIELD_MARGIN_X + c2 * 50;
+		let y2 = objects.field.y + FIELD_MARGIN_Y + r2 * 50;
+									
 		await anim2.add(sprite,{x:[x1, x2],y:[y1,y2]}, true, 0.25,'linear');
 		sprite.alpha = 1;
 		
@@ -2696,12 +2696,10 @@ game = {
 				return;				
 			}
 		}
-		
-		
+				
 		my_turn = 0;
 		me_conf_play = 1;	
 		this.opponent.reset_timer();	
-
 		
 		//обозначаем что я сделал ход и следовательно подтвердил согласие на игру
 		this.opponent.me_conf_play=1;
@@ -2816,8 +2814,8 @@ game = {
 				}
 								
 				w_spr.visible = true;
-				w_spr.y = r * 50 + objects.field.y + FIELD_MARGIN;				
-				w_spr.x = c * 50 + objects.field.x + FIELD_MARGIN;
+				w_spr.y = r * 50 + objects.field.y + FIELD_MARGIN_Y;				
+				w_spr.x = c * 50 + objects.field.x + FIELD_MARGIN_X;
 
 				this.pending_wall = {r: r, c: c, wall_type: wp[0], sprite: w_spr};
 				
@@ -2847,8 +2845,8 @@ game = {
 		for (let i = 0 ; i < moves.length ; i++) {
 			
 			objects.move_opt[i].visible = true;						
-			objects.move_opt[i].x = objects.field.x + FIELD_MARGIN + moves[i].c1 * 50;
-			objects.move_opt[i].y = objects.field.y + FIELD_MARGIN + moves[i].r1 * 50;			
+			objects.move_opt[i].x = objects.field.x + FIELD_MARGIN_X + moves[i].c1 * 50;
+			objects.move_opt[i].y = objects.field.y + FIELD_MARGIN_Y + moves[i].r1 * 50;			
 			this.av_moves.push(moves[i].r1.toString() + moves[i].c1.toString());			
 		}
 
@@ -3139,11 +3137,11 @@ game_tutor={
 		objects.opp_walls.text = ['Стены: ','Walls: '][LANG]+this.wall_num[1];
 		
 		//плавно добавляем фигуры
-		objects.my_icon.x = objects.field.x + FIELD_MARGIN + 4 * 50;
+		objects.my_icon.x = objects.field.x + FIELD_MARGIN_X + 4 * 50;
 		objects.my_icon.r=8;
 		objects.my_icon.c=4;
 		
-		objects.opp_icon.x = objects.field.x + FIELD_MARGIN + 4 * 50;
+		objects.opp_icon.x = objects.field.x + FIELD_MARGIN_X + 4 * 50;
 		objects.opp_icon.r=0;
 		objects.opp_icon.c=4;
 		
@@ -3265,16 +3263,26 @@ players_cache={
 	
 	players:{},
 		
-	async my_texture_from(pic_url){
+	async my_texture_from(pic_url, timeoutMs = 3000){
 		
-		//если это мультиаватар
-		if(pic_url.includes('mavatar')) pic_url=multiavatar(pic_url);
-	
-		try{
-			const texture = await PIXI.Texture.fromURL(pic_url);	
-			return texture;
-		}catch(er){
-			return PIXI.Texture.WHITE;
+		// If this is a multavatar
+		if (pic_url.includes('mavatar')) pic_url = multiavatar(pic_url);
+
+		// Create a timeout promise
+		const timeoutPromise = new Promise((_, reject) =>
+		setTimeout(() => reject(new Error('Timeout: Failed to load texture within the specified time')), timeoutMs)
+		);
+
+		try {
+			// Race the texture loading against the timeout
+			const texture = await Promise.race([
+			PIXI.Texture.fromURL(pic_url), // The actual texture loading
+			timeoutPromise // The timeout
+		]);
+		return texture;
+		} catch (er) {
+			console.error(er); // Optionally log the error
+			return PIXI.Texture.WHITE; // Return a default white texture on error or timeout
 		}
 
 	},
