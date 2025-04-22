@@ -3864,15 +3864,17 @@ pref={
 	
 	chip_down(){
 		
-		sound.play('click');	
+		
 
 		const req=pref.ICONS_DATA[this.chip_id];
-		if(my_data.rating<req.rating&&my_data.games<req.games){			
+		if(my_data.rating<req.rating&&my_data.games<req.games){		
+			sound.play('locked');	
 			anim2.add(objects.pref_info,{alpha:[0,1]}, false, 3,'easeBridge',false);	
 			objects.pref_info.text=[`Нужно: рейтинг>${req.rating} или игры>${req.games}`,`Need: rating>${req.rating} or games>${req.games}`][LANG];
 			return;
-		}
+		}		
 		
+		sound.play('click');	
 		//если это уже выбранная фишка
 		if (my_data.chip===this.chip_id)
 			objects.chip_sel_frame.alpha=0.4;
