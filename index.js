@@ -1099,7 +1099,7 @@ bot_player = {
 	search_start_time : 0,
 	no_incoming_move : 0,
 		
-	send_move : async function  () {
+	async send_move() {
 		
 		let root_node = new node_class(game.field, MY_ID, 0);
 		let best_child = await this.start_mm_search(root_node);
@@ -2268,15 +2268,13 @@ ffunc = {
 		//устанавливаем все клетки как ранее не посещенные
 		for (let r = 0; r < 9; r++ )
 			for (let c = 0; c < 9; c++ )			
-				field.f[r][c].visited = 0;					
-
+				field.f[r][c].visited = 0;
 
 		let r = field.pos[player_id].r;
 		let c = field.pos[player_id].c;
 
 		if (r === target_row)
-			return 0;	
-		
+			return 0;			
 		
 		//первая ячейка с которой начинается поиск
 		field.f[r][c].visited = 1;
@@ -2388,6 +2386,7 @@ game = {
 				
 		//воспроизводим звук о начале игры
 		sound.play('game_start');
+		
 				
 		//восстанавливаем мое имя так как оно могло меняться
 		objects.my_card_name.set2(my_data.name,150);
@@ -2412,7 +2411,6 @@ game = {
 		//показыаем таймер
 		objects.timer.visible=true;
 		
-	
 
 		//обозначаем какой сейчас ход
 		made_moves = 0;
@@ -2432,7 +2430,9 @@ game = {
 		await anim2.add(objects.opp_icon,{y:[-50, 0]}, true, 0.5,'linear');	
 		
 		//обновляем поле
-		ffunc.draw(this.field)			
+		ffunc.draw(this.field)	
+
+		this.update_moves_to_win(this.field);
 		
 	},
 		
@@ -2680,10 +2680,25 @@ game = {
 		
 	},
 	
+	update_moves_to_win(field){
+		
+		//определяем сколько ходов осталось
+		const my_root=new node_class(field, MY_ID, 0)
+		let moves_left=ffunc.get_shortest_distance_to_target(my_root.field,MY_ID,ROW0)
+		objects.my_moves_to_win.text=moves_left+' moves to finish';
+
+		const opp_root=new node_class(field, OPP_ID, 0)
+		moves_left=ffunc.get_shortest_distance_to_target(opp_root.field,OPP_ID,ROW8)
+		objects.opp_moves_to_win.text=moves_left+' moves to finish';		
+		
+	},
+	
 	process_move(data) {
 				
 		//отправляем ход сопернику
-		this.opponent.send_move(data);					
+		this.opponent.send_move(data);		
+
+		this.update_moves_to_win(this.field);		
 	
 		this.wall_to_try=V_WALL;
 	
@@ -2901,6 +2916,8 @@ game = {
 		//перемещаем табло времени
 		objects.timer.x = 80;
 		
+		this.update_moves_to_win(this.field);		
+		
 	}
 
 }
@@ -3038,15 +3055,25 @@ game_watching={
 			this.field.f[opp_r][opp_c].player=OPP_ID;	
 			objects.my_walls.text = ['Стены: ','Walls: '][LANG]+walls_num1;
 			objects.opp_walls.text = ['Стены: ','Walls: '][LANG]+walls_num2;
+			this.field.pos[MY_ID].r=my_r;
+			this.field.pos[MY_ID].c=my_c;
+			this.field.pos[OPP_ID].r=opp_r;
+			this.field.pos[OPP_ID].c=opp_c;
 			
 		} else {
 			this.field.f[8-my_r][8-my_c].player=OPP_ID;
 			this.field.f[8-opp_r][8-opp_c].player=MY_ID;			
 			objects.opp_walls.text = ['Стены: ','Walls: '][LANG]+walls_num1;
 			objects.my_walls.text = ['Стены: ','Walls: '][LANG]+walls_num2;
+			this.field.pos[MY_ID].r=8-opp_r;
+			this.field.pos[MY_ID].c=8-opp_c;
+			this.field.pos[OPP_ID].r=8-my_r;
+			this.field.pos[OPP_ID].c=8-my_c;
 		}
 
 		ffunc.draw(this.field); 
+		
+		game.update_moves_to_win(this.field);
 		
 	},
 	
