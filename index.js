@@ -4,12 +4,12 @@ const V_WALL = 2, H_WALL = 1, ROW0 = 0, ROW8 = 8, MY_ID = 1, OPP_ID = 2, MAX_MOV
 const WIN = 1, DRAW = 0, LOSE = -1, NOSYNC = 2;
 
 fbs_once=async function(path){	
-	let info=await fbs.ref(path).once('value');
-	return info.val();
+	const info=await fbs.ref(path).get();
+	return info.val();	
 }
 
 irnd = function (min,max) {	
-	//мин и макс включительно
+	//мин и макс включительно3
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
@@ -871,29 +871,63 @@ big_message = {
 online_game = {
 		
 	timer_id : 0,
-	move_time_left : 0,
+	start_time : 0,
 	me_conf_play : 0,
 	opp_conf_play : 0,
-	start_time : 0,	
+	time_for_move:0,
+	prv_tick_time:0,
 	disconnect_time : 0,
 	no_incoming_move : 0,
 	write_fb_timer:0,
 	
-	calc_new_rating : function (old_rating, game_result) {
+	calc_new_rating(old_rating, game_result) {
 				
-		if (game_result === NOSYNC)
-			return old_rating;
-		
-		var Ea = 1 / (1 + Math.pow(10, ((opp_data.rating-my_data.rating)/400)));
-		if (game_result === WIN)
-			return Math.round(my_data.rating + 16 * (1 - Ea));
-		if (game_result === DRAW)
-			return Math.round(my_data.rating + 16 * (0.5 - Ea));
-		if (game_result === LOSE)
-			return Math.round(my_data.rating + 16 * (0 - Ea));
+		if (game_result === NOSYNC)	return old_rating;
+				
+		const Ea = 1 / (1 + Math.pow(10, ((opp_data.rating-my_data.rating)/400)));
+		const Sa = (game_result + 1) / 2;
+		return Math.round(my_data.rating + 16 * (Sa - Ea));
 		
 	},
 	
+	async activate(r) {
+		
+		this.me_conf_play = 0;
+		this.opp_conf_play = 0;
+		
+		//устанавливаем статус в базе данных а если мы не видны то установливаем только скрытое состояние
+		set_state({state : 'p'});
+
+		//получаем информацию о фишке соперника
+		const opp_chip = await fbs_once('players/'+opp_data.uid+'/chip')||0
+		objects.opp_icon.texture = assets['chip'+opp_chip]
+		
+		//это если фишки совпадают
+		if (opp_chip===my_data.chip)
+			objects.opp_icon.tint=0xff8800;
+		else
+			objects.opp_icon.tint=0xffffff;
+		
+		//показываем кнопки
+		objects.game_buttons_cont.visible = true;
+
+		//счетчик времени
+		this.prv_tick_time=Date.now();
+		this.reset_timer(15);
+		
+		//отображаем таймер
+		objects.timer_cont.visible = true;
+		
+		//фиксируем врему начала игры
+		this.start_time = Date.now();
+		
+		//вычиcляем рейтинг при проигрыше и устанавливаем его в базу он потом изменится
+		let lose_rating = this.calc_new_rating(my_data.rating, LOSE);
+		if (lose_rating >100 && lose_rating<9999)
+			firebase.database().ref("players/"+my_data.uid+"/rating").set(lose_rating);
+	
+	},
+		
 	send_move (data) {
 		
 		//отправляем ход сопернику
@@ -908,72 +942,39 @@ online_game = {
 
 	},
 	
-	async init(r) {
-		
-		this.me_conf_play = 0;
-		this.opp_conf_play = 0;
-		
-		if (state === 'b') {
-			//убираем кнопку стоп
-			objects.stop_bot_button.visible=false;			
-		}
-
-		//устанавливаем статус в базе данных а если мы не видны то установливаем только скрытое состояние
-		set_state({state : 'p'});
-
-		//получаем информацию о фишке соперника
-		let snapshot = await firebase.database().ref('players/'+opp_data.uid+'/chip').once('value');
-		let opp_chip = snapshot.val()||0;
-		objects.opp_icon.texture = assets['chip'+opp_chip];
-		
-		//это если фишки совпадают
-		if (opp_chip===my_data.chip)
-			objects.opp_icon.tint=0x88ff88;
-		else
-			objects.opp_icon.tint=0xffffff;
-		
-		//показываем кнопки
-		objects.game_buttons_cont.visible = true;
-
-		this.reset_timer(30);
-		
-		this.timer_id = setTimeout(function(){online_game.timer_tick()}, 1000);
-		
-		//фиксируем врему начала игры
-		this.start_time = Date.now();
-		
-		//вычиcляем рейтинг при проигрыше и устанавливаем его в базу он потом изменится
-		let lose_rating = this.calc_new_rating(my_data.rating, LOSE);
-		if (lose_rating >100 && lose_rating<9999)
-			firebase.database().ref("players/"+my_data.uid+"/rating").set(lose_rating);
-	
-	},
-	
 	reset_timer(t) {
-		
+				
 		//обовляем время разъединения
-		this.disconnect_time = 0;
+		this.timer_start_time=Date.now();
+		this.timer_prv_time=Date.now();
+		this.disconnect_time=0;		
 		
-		if (t===undefined)
-			this.move_time_left=40;
-		else
-			this.move_time_left=t;
-		objects.timer.tint=0xffffff;	
-		
+		clearInterval(this.timer_id);
+		this.timer_id=setInterval(()=>{online_game.timer_tick()},1000);
+						
+		this.me_conf_play&&this.opp_conf_play
+			? this.time_for_move=40
+			: this.time_for_move=15
+			
+		objects.timer_cont.x = [650,10][my_turn];			
+		objects.timer_text.text = '0:'+this.time_for_move;
+		objects.timer_bcg.tint=0xbbbbff;	
+
 	},
 	
-	timer_tick () {
+	timer_tick () {		
 		
-		this.move_time_left--;
+		const cur_time=Date.now();
+		if ((cur_time-this.prv_tick_time)>5000||cur_time<this.prv_tick_time){
+			game.stop('timer_error');			
+			return;
+		}			
+		this.prv_tick_time=Date.now();
 		
-		if (this.move_time_left >= 0) {
-			if ( this.move_time_left >9 )
-				objects.timer.text = '0:'+this.move_time_left;
-			else
-				objects.timer.text = '0:0'+this.move_time_left;
-		}
-		
-		if (this.move_time_left < 0 && my_turn === 1)	{
+		const time_passed=Math.floor((Date.now()-this.timer_start_time)*0.001);
+		const move_time_left=this.time_for_move-time_passed;	
+				
+		if (move_time_left < 0 && my_turn)	{
 			
 			if (this.me_conf_play === 1)
 				game.stop('my_timeout');
@@ -983,7 +984,7 @@ online_game = {
 			return;
 		}
 
-		if (this.move_time_left < -5 && my_turn === 0)	{
+		if (move_time_left < -5 && !my_turn)	{
 			
 			if (this.opp_conf_play === 1)
 				game.stop('opp_timeout');
@@ -993,7 +994,7 @@ online_game = {
 			return;
 		}
 		
-		if (connected === 0 && my_turn === 0) {
+		if (!connected ) {
 			this.disconnect_time ++;
 			if (this.disconnect_time > 5) {
 				game.stop('my_no_connection');
@@ -1002,21 +1003,21 @@ online_game = {
 		}
 
 		//подсвечиваем красным если осталость мало времени
-		if (this.move_time_left === 15) {
-			objects.timer.tint=0xff0000;
+		if (move_time_left === 8) {
+			objects.timer_bcg.tint=0xff3333;	
 			sound.play('clock');
 		}
 		
 		//обновляем текст на экране
-		objects.timer.text="0:"+this.move_time_left;
+		if (move_time_left>=0)
+			objects.timer_text.text = (move_time_left>9?'0:':'0:0')+move_time_left;
 		
-		this.timer_id = setTimeout(function(){online_game.timer_tick()}, 1000);
-		
+
 	},
 	
 	async stop(result) {
 					
-		let res_array = [
+		const res_array = [
 			['my_timeout',LOSE, ['Вы проиграли!\nУ вас закончилось время','You have lost!\nYou have run out of time']],
 			['opp_timeout',WIN , ['Вы выиграли!\nУ соперника закончилось время','You won!\nThe opponent has run out of time']],
 			['my_giveup' ,LOSE, ['Вы сдались!','You have given up!']],
@@ -1028,30 +1029,28 @@ online_game = {
 			['my_closer_after_80',WIN , ['Вы выиграли!\nВы оказались ближе к цели.','You won!\nYou were closer to the goal']],
 			['opp_closer_after_80',LOSE, ['Вы проиграли!\nСоперник оказался ближе к цели.','You have lost!\nOpponent was closer to the goal']],
 			['both_closer_80',DRAW , ['Ничья\nОба на одинаковом расстоянии до цели','Draw\nBoth at the same distance to the goal']],
+			['timer_error' ,LOSE, ['Ошибка таймера!','Timer error!']],
 			['my_no_sync',NOSYNC , ['Похоже вы не захотели начинать игру.','It looks like you did not want to start the game']],
 			['opp_no_sync',NOSYNC , ['Похоже соперник не смог начать игру.','It looks like the opponent could not start the game']],
 			['my_no_connection',LOSE , ['Потеряна связь!\nИспользуйте надежное интернет соединение.','Lost connection!\nUse a reliable internet connection']]
-		];
-			
+		];		
+					
+		clearInterval(this.timer_id);		
 		
-			
-		clearTimeout(this.timer_id);		
-		
-		let result_row = res_array.find( p => p[0] === result);
-		let result_str = result_row[0];
-		let result_number = result_row[1];
-		let result_info = result_row[2][LANG];				
-		let old_rating = my_data.rating;
+		const result_row = res_array.find( p => p[0] === result);
+		const result_str = result_row[0];
+		const result_number = result_row[1];
+		const result_info = result_row[2][LANG];				
+		const old_rating = my_data.rating;
 		my_data.rating = this.calc_new_rating (my_data.rating, result_number);
 		objects.my_card_rating.text = my_data.rating;
 		firebase.database().ref("players/"+my_data.uid+"/rating").set(my_data.rating);
 	
 		//также фиксируем данные стола
 		firebase.database().ref("tables/"+game_id).set({uid:my_data.uid,fin_flag:1,tm:firebase.database.ServerValue.TIMESTAMP});
-
 		
 		//убираем элементы
-		objects.timer.visible = false;
+		objects.timer_cont.visible = false;
 		
 		//убираем кнопки
 		objects.game_buttons_cont.visible = false;
@@ -1067,8 +1066,7 @@ online_game = {
 			}
 			sound.play('win');			
 		}
-
-				
+	
 
 		//если игра результативна то записываем дополнительные данные
 		if (result_number === DRAW || result_number === LOSE || result_number === WIN) {
@@ -1108,10 +1106,9 @@ bot_player = {
 		
 	},
 	
-	async init() {
+	async activate() {
 		
-		this.pending_stop
-		
+				
 		set_state({state : 'b'});	
 
 		//показываем кнопку стоп
@@ -1119,13 +1116,12 @@ bot_player = {
 		objects.stop_bot_button.pointerdown=function(){game.stop_down()};
 		
 		const opp_chip=irnd(0,17);
-		objects.opp_icon.texture = assets['chip'+opp_chip];
-		
+		objects.opp_icon.texture = assets['chip'+opp_chip];	
 		
 		objects.opp_card_name.text='Bot';
 		objects.opp_card_rating.text='1400'
-		objects.opp_avatar.texture=assets.pc_icon;	
-		
+		objects.opp_avatar.texture=assets.pc_icon;			
+			
 		
 		//это если фишки совпадают
 		if (opp_chip===my_data.chip)
@@ -1133,8 +1129,10 @@ bot_player = {
 		else
 			objects.opp_icon.tint=0xffffff;
 		
-		//отключаем таймер...........................
-		objects.timer.text  = ['Мой ход...','My move...'][LANG];
+		//Ход вместо таймера...........................
+		this.reset_timer();
+		objects.timer_cont.visible = true;
+		objects.timer_text.text  = ['мой ход','my turn'][LANG];
 	},
 	
 	async stop(result) {
@@ -1154,13 +1152,10 @@ bot_player = {
 		let result_number = res_array.find( p => p[0] === result)[1];
 		let result_info = res_array.find( p => p[0] === result)[2][LANG];				
 			
-		//выключаем элементы
-		objects.timer.visible = false;
-
-		//убираем кнопку стоп
+		//убираем кнопку стоп и таймер
 		objects.stop_bot_button.visible=false;
-		
-		
+		objects.timer_cont.visible=false;
+				
 		//воспроизводим звук
 		if (result_number === DRAW || result_number === LOSE)
 			sound.play('lose');
@@ -1182,6 +1177,8 @@ bot_player = {
 	
 	reset_timer() {
 		
+		objects.timer_bcg.tint=0xbbbbff;	
+		objects.timer_cont.x = [650,10][my_turn];	
 		
 	},
 	
@@ -2334,11 +2331,9 @@ game = {
 			this.opponent.silent_stop();
 		}
 			
-
 		//если открыт чат то закрываем его
 		if (objects.chat_cont.visible===true)
-			chat.close();
-				
+			chat.close();				
 		
 		//если открыт просмотр игры
 		if (game_watching.on===true)
@@ -2360,14 +2355,13 @@ game = {
 		
 		if (my_role === 'master') {
 			my_turn = 1;			
-			objects.timer.x=80;		
 			message.add(['Вы ходите первым. Последний ход за соперником.','You go first. The last move is for the opponent'][LANG]);
 
 		} else {
 			my_turn = 0;			
-			objects.timer.x=720;
 			message.add(['Вы ходите вторым. Последний ход за Вами.','You go second. The last move is yours'][LANG])
 		}
+		
 		
 		objects.my_icon.texture = assets['chip'+my_data.chip];
 		objects.opp_icon.tint=0x88ff88;
@@ -2378,7 +2372,7 @@ game = {
 		some_process.player_selected_processing = function(){};
 				
 		//инициируем все что связано с оппонентом
-		await this.opponent.init(my_role);
+		await this.opponent.activate(my_role);
 				
 		//если открыт лидерборд то закрываем его
 		if (objects.lb_1_cont.visible===true)
@@ -2407,9 +2401,6 @@ game = {
 
 		//показываем игровое поле
 		objects.field.visible = true;		
-				
-		//показыаем таймер
-		objects.timer.visible=true;
 		
 
 		//обозначаем какой сейчас ход
@@ -2454,7 +2445,6 @@ game = {
 		//сначала завершаем все что связано с оппонентом
 		await this.opponent.stop(result);		
 						
-		objects.timer.visible=false;
 		objects.opp_card_cont.visible=false;
 		objects.my_card_cont.visible=false;
 		objects.field.visible = false;
@@ -2713,14 +2703,10 @@ game = {
 		}
 				
 		my_turn = 0;
-		me_conf_play = 1;	
-		this.opponent.reset_timer();	
-		
-		//обозначаем что я сделал ход и следовательно подтвердил согласие на игру
+
 		this.opponent.me_conf_play=1;
-		
-		//перемещаем табло времени
-		objects.timer.x = 720;
+		this.opponent.reset_timer();	
+					
 		
 	},	
 	
@@ -2912,9 +2898,6 @@ game = {
 		if (made_moves>(MAX_MOVES-5)) {
 			message.add([`После ${MAX_MOVES} хода выиграет тот кто ближе к цели`,`After ${MAX_MOVES} move the one who is closer to the goal will win`][LANG]);
 		}
-		
-		//перемещаем табло времени
-		objects.timer.x = 80;
 		
 		this.update_moves_to_win(this.field);		
 		
@@ -6024,7 +6007,7 @@ async function load_resources() {
 	let lang_pack = ['RUS','ENG'][LANG];
 
 	git_src='https://akukamil.github.io/quoridor/'
-	//git_src=''
+	git_src=''
 
 
 	const loader=new PIXI.Loader();
@@ -6307,7 +6290,6 @@ async function init_game_env(lng) {
 	
 	some_process.loup_anim=function() {};
 
-	
 		
 	//событие ролика мыши в карточном меню
 	window.addEventListener('keydown',function(event){keyboard.keydown(event.key)});	
