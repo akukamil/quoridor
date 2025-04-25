@@ -5022,7 +5022,7 @@ lobby={
 
 		card.visible=true;
 		card.uid='bot';
-		card.name=card.name_text.text='Бот';
+		card.name=card.name_text.text=['Бот','Bot'][LANG];
 
 		card.rating=1400;		
 		card.rating_text.text = card.rating;
@@ -5031,7 +5031,7 @@ lobby={
 		//также сразу включаем его в кэш
 		if(!players_cache.players.bot){
 			players_cache.players.bot={};
-			players_cache.players.bot.name='Бот';
+			players_cache.players.bot.name=card.name;
 			players_cache.players.bot.rating=1400;
 			players_cache.players.bot.texture=assets.pc_icon;			
 		}
