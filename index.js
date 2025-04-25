@@ -586,8 +586,7 @@ anim2 = {
 	empty_spr : {x:0, visible:false, ready:true, alpha:0},
 		
 	slot: Array(30).fill(null),
-		
-	
+			
 	any_on() {		
 		for (let s of this.slot)
 			if (s !== null&&s.block)
@@ -725,6 +724,9 @@ anim2 = {
 
 				//добавляем дельту к параметрам и устанавливаем начальное положение
 				for (let key in params) {
+					if (params[key][0]===undefined){
+						params[key][0]=obj[key];
+					}
 					params[key][2]=params[key][1]-params[key][0];					
 					obj[key]=params[key][0];
 				}
@@ -3138,7 +3140,7 @@ game_tutor={
 		objects.field.visible = true;		
 				
 		//убираем таймер
-		objects.timer.visible=false;		
+		objects.timer_cont.visible=false;		
 
 				
 		//количество стен
