@@ -6280,7 +6280,7 @@ async function init_game_env(lng) {
 	setInterval(function()	{keep_alive()}, 40000);
 
 	//загрузка сокета
-	await auth2.load_script('https://akukamil.github.io/common/my_ws.js');	
+	await auth2.load_script('https://akukamil.github.io/com/my_ws.js');	
 	
 	//ждем загрузки чата
 	chat.init();	
