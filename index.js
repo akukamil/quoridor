@@ -6553,8 +6553,8 @@ async function init_game_env(lng) {
 	
 	//анимация лупы
 	some_process.loup_anim=function() {
-		objects.id_loup.x=20*Math.sin(TM.s*8)+90;
-		objects.id_loup.y=20*Math.cos(TM.s*8)+110;
+		objects.id_loup.x=20*Math.sin(TM.s*8)+100;
+		objects.id_loup.y=20*Math.cos(TM.s*8)+130;
 	}
 
 	//запускаем главный цикл
