@@ -1,7 +1,9 @@
 const M_WIDTH=800, M_HEIGHT=450;
-var app ={stage:{},renderer:{}}, assets={}, game,serv_tm, gdata={}, objects={}, state='',my_role='',LANG = 0, game_tick=0, my_turn=0,room_name='states', game_id=0, h_state=0, made_moves=0,client_id, game_platform="", hidden_state_start = 0, connected = 1, players="", pending_player="",git_src,my_data={opp_id : ''},opp_data={},some_process = {},game_name='quoridor';
+var app ={stage:{},renderer:{}}, assets={},ROOM_NAME='states1', game,SERVER_TM=0, gdata={}, objects={}, state='',my_role='',LANG = 0, game_tick=0, my_turn=0,game_id=0, h_state=0, made_moves=0,client_id, game_platform="", hidden_state_start = 0, connected = 1, players="", pending_player="",git_src,my_data={opp_id : ''},opp_data={},some_process = {},game_name='quoridor';
 const V_WALL = 2, H_WALL = 1, ROW0 = 0, ROW8 = 8, MY_ID = 1, OPP_ID = 2, MAX_MOVES = 50, FIELD_MARGIN_X = 50,FIELD_MARGIN_Y = 30;
 const WIN = 1, DRAW = 0, LOSE = -1, NOSYNC = 2;
+const COM_URL='https://akukamil.github.io/com'
+let TM={s:0,ms:0}
 
 fbs_once=async function(path){	
 	const info=await fbs.ref(path).get();
@@ -52,14 +54,14 @@ class player_mini_card_class extends PIXI.Container {
 		this.avatar_frame.width=this.avatar_frame.height=81.48;
 				
 		this.name="";
-		this.name_text=new PIXI.BitmapText('', {fontName: 'mfont',fontSize: 22,align: 'center'});
+		this.name_text=new PIXI.BitmapText('', {fontName: 'bahnschrift48',fontSize: 22,align: 'center'});
 		this.name_text.anchor.set(1,0);
 		this.name_text.x=180;
 		this.name_text.y=20;
 		this.name_text.tint=0xffffff;		
 
 		this.rating=0;
-		this.rating_text=new PIXI.BitmapText('', {fontName: 'mfont',fontSize: 30,align: 'center'});
+		this.rating_text=new PIXI.BitmapText('', {fontName: 'bahnschrift48',fontSize: 30,align: 'center'});
 		this.rating_text.tint=0xffff00;
 		this.rating_text.anchor.set(1,0.5);
 		this.rating_text.x=180;
@@ -89,19 +91,19 @@ class player_mini_card_class extends PIXI.Container {
 		this.avatar2_frame.width=this.avatar2_frame.height=81.48;
 		
 		
-		this.rating_text1=new PIXI.BitmapText('', {fontName: 'mfont',fontSize: 24,align: 'center'});
+		this.rating_text1=new PIXI.BitmapText('', {fontName: 'bahnschrift48',fontSize: 24,align: 'center'});
 		this.rating_text1.tint=0xffff00;
 		this.rating_text1.anchor.set(0.5,0);
 		this.rating_text1.x=48.1;
 		this.rating_text1.y=56;
 
-		this.rating_text2=new PIXI.BitmapText('', {fontName: 'mfont',fontSize: 24,align: 'center'});
+		this.rating_text2=new PIXI.BitmapText('', {fontName: 'bahnschrift48',fontSize: 24,align: 'center'});
 		this.rating_text2.tint=0xffff00;
 		this.rating_text2.anchor.set(0.5,0);
 		this.rating_text2.x=150.1;
 		this.rating_text2.y=56;		
 		
-		this.t_country=new PIXI.BitmapText('', {fontName: 'mfont',fontSize: 25,align: 'center'});
+		this.t_country=new PIXI.BitmapText('', {fontName: 'bahnschrift48',fontSize: 25,align: 'center'});
 		this.t_country.tint=0xffff00;
 		this.t_country.anchor.set(1,0.5);
 		this.t_country.x=105;
@@ -121,121 +123,116 @@ class lb_player_card_class extends PIXI.Container{
 	constructor(x,y,place) {
 		super();
 
-		this.bcg=new PIXI.Sprite(assets.lb_player_card_bcg);
-		this.bcg.interactive=true;
-		this.bcg.pointerover=function(){this.tint=0x55ffff};
-		this.bcg.pointerout=function(){this.tint=0xffffff};
-		this.bcg.width = 370;
-		this.bcg.height = 70;
+		this.bcg=new PIXI.Sprite(assets.lb_player_card_bcg)
+		this.bcg.interactive=true
+		this.bcg.pointerover=function(){this.tint=0x55ffff}
+		this.bcg.pointerout=function(){this.tint=0xffffff}
+		this.bcg.width = 370
+		this.bcg.height = 70
 
-		this.place=new PIXI.BitmapText('', {fontName: 'mfont',fontSize: 25,align: 'center'});
-		this.place.tint=0xffffff;
-		this.place.x=20;
-		this.place.y=22;
+		this.place=new PIXI.BitmapText('', {fontName: 'bahnschrift48',fontSize: 25,align: 'center'})
+		this.place.tint=0xffffff
+		this.place.x=20
+		this.place.y=22
 
-		this.avatar=new PIXI.Sprite();
-		this.avatar.x=43;
-		this.avatar.y=14;
-		this.avatar.width=this.avatar.height=44;
+		this.avatar=new PIXI.Graphics()
+		this.avatar.x=43
+		this.avatar.y=13
+		this.avatar.w=this.avatar.h=44
+		this.avatar.width=this.avatar.height=44
 
+		this.name=new PIXI.BitmapText('', {fontName: 'bahnschrift48',fontSize: 25,align: 'center'})
+		this.name.tint=0xcceeff
+		this.name.x=105
+		this.name.y=22
 
-		this.name=new PIXI.BitmapText('', {fontName: 'mfont',fontSize: 25,align: 'center'});
-		this.name.tint=0xcceeff;
-		this.name.x=105;
-		this.name.y=22;
+		this.rating=new PIXI.BitmapText('', {fontName: 'bahnschrift48',fontSize: 25,align: 'center'})
+		this.rating.x=303
+		this.rating.tint=0xFFFF00
+		this.rating.y=22
 
-		this.rating=new PIXI.BitmapText('', {fontName: 'mfont',fontSize: 25,align: 'center'});
-		this.rating.x=298;
-		this.rating.tint=0xFFFF00;
-		this.rating.y=22;
-
-		this.addChild(this.bcg,this.place, this.avatar, this.name, this.rating);
+		this.addChild(this.bcg,this.place, this.avatar, this.name, this.rating)
 	}
 
 
 }
 
 class chat_record_class extends PIXI.Container {
-	
-	constructor() {
-		
-		super();
-		
-		this.tm=0;
-		this.index=0;
-		this.uid='';		
-		
 
-		
+	constructor() {
+
+		super();
+
+		this.tm=0;
+		this.uid='';
+
+
+
 		this.avatar = new PIXI.Graphics();
 		this.avatar.w=50;
 		this.avatar.h=50;
 		this.avatar.x=30;
-		this.avatar.y=13;		
-				
+		this.avatar.y=13;
+
 		this.avatar_bcg = new PIXI.Sprite(assets.chat_avatar_bcg_img);
 		this.avatar_bcg.width=70;
 		this.avatar_bcg.height=70;
 		this.avatar_bcg.x=this.avatar.x-10;
 		this.avatar_bcg.y=this.avatar.y-10;
 		this.avatar_bcg.interactive=true;
-		this.avatar_bcg.pointerdown=()=>chat.avatar_down(this);		
-					
+		this.avatar_bcg.pointerdown=()=>chat.avatar_down(this);
+
 		this.avatar_frame = new PIXI.Sprite(assets.chat_avatar_frame_img);
 		this.avatar_frame.width=70;
 		this.avatar_frame.height=70;
 		this.avatar_frame.x=this.avatar.x-10;
 		this.avatar_frame.y=this.avatar.y-10;
-		
-		this.name = new PIXI.BitmapText('Имя Фамил', {fontName: 'mfont',fontSize: 17});
+
+		this.name = new PIXI.BitmapText('Имя Фамил', {fontName: 'bahnschrift48',fontSize: 17});
 		this.name.anchor.set(0,0.5);
 		this.name.x=this.avatar.x+72;
-		this.name.y=this.avatar.y-1;	
+		this.name.y=this.avatar.y-1;
 		this.name.tint=0xFBE5D6;
-		
+
 		this.gif=new PIXI.Sprite();
-		this.gif.x=this.avatar.x+65;	
+		this.gif.x=this.avatar.x+65;
 		this.gif.y=22;
-		
+
 		this.gif_bcg=new PIXI.Graphics();
 		this.gif_bcg.beginFill(0x111111)
 		this.gif_bcg.drawRect(0,0,1,1);
-		this.gif_bcg.x=this.gif.x+3;	
+		this.gif_bcg.x=this.gif.x+3;
 		this.gif_bcg.y=this.gif.y+3;
 		this.gif_bcg.alpha=0.5;
-		
-		
-				
+
+
+
 		this.msg_bcg = new PIXI.NineSlicePlane(assets.msg_bcg,50,18,50,28);
 		//this.msg_bcg.width=160;
-		//this.msg_bcg.height=65;	
-		this.msg_bcg.scale_xy=0.66666;		
-		this.msg_bcg.x=this.avatar.x+45;	
+		//this.msg_bcg.height=65;
+		this.msg_bcg.scale_xy=0.66666;
+		this.msg_bcg.x=this.avatar.x+45;
 		this.msg_bcg.y=this.avatar.y+2;
-		
-		this.msg = new PIXI.BitmapText('Имя Фамил', {fontName: 'mfont',fontSize: 19,lineSpacing:55,align: 'left'}); 
+
+		this.msg = new PIXI.BitmapText('Имя Фамил', {fontName: 'bahnschrift48',fontSize: 19,lineSpacing:55,align: 'left'});
 		this.msg.x=this.avatar.x+75;
 		this.msg.y=this.avatar.y+30;
 		this.msg.maxWidth=450;
 		this.msg.anchor.set(0,0.5);
 		this.msg.tint = 0xffffff;
-		
-		this.msg_tm = new PIXI.BitmapText('28.11.22 12:31', {fontName: 'mfont',fontSize: 15}); 		
+
+		this.msg_tm = new PIXI.BitmapText('28.11.22 12:31', {fontName: 'bahnschrift48',fontSize: 15});
 		this.msg_tm.tint=0x999999;
 		this.msg_tm.anchor.set(1,0);
-		
+
 		this.visible = false;
 		this.addChild(this.msg_bcg,this.gif_bcg,this.gif,this.avatar_bcg,this.avatar,this.avatar_frame,this.name,this.msg,this.msg_tm);
-		
+
 	}
-		
+
 	nameToColor(name) {
 		  // Create a hash from the name
-		  let hash = 0;
-		  for (let i = 0; i < name.length; i++) {
-			hash = name.charCodeAt(i) + ((hash << 5) - hash);
-			hash = hash & hash; // Convert to 32bit integer
-		  }
+		  let hash = hf.hash(name)
 
 		  // Generate a color from the hash
 		  let color = ((hash >> 24) & 0xFF).toString(16) +
@@ -261,76 +258,83 @@ class chat_record_class extends PIXI.Container {
 
 		  return (r << 16) + (g << 8) + b;
 	}
-		
-	async update_avatar(uid, tar_sprite) {		
-	
+
+	update_avatar(uid, tar_sprite) {
+
 		//определяем pic_url
-		await players_cache.update(uid);
-		await players_cache.update_avatar(uid);
-		tar_sprite.set_texture(players_cache.players[uid].texture);	
+		const pdata=players_cache.get_pdata(uid)
+		if(pdata)
+			tar_sprite.set_texture(pdata.texture)
+		else
+			players_cache.update(uid,{source:'chat'})
 	}
-	
+
 	async set(msg_data) {
-						
+
 		//получаем pic_url из фб
 		this.avatar.set_texture(PIXI.Texture.WHITE);
-				
-		await this.update_avatar(msg_data.uid, this.avatar);
+
+		if (msg_data.uid==='admin'){
+			this.msg_bcg.tint=0x55ff55;
+			this.avatar.set_texture(assets.pc_icon);
+		}else{
+			this.msg_bcg.tint=0xffffff;
+			this.update_avatar(msg_data.uid, this.avatar);
+		}
 
 		this.uid=msg_data.uid;
-		this.tm = msg_data.tm;			
-		this.index = msg_data.index;		
-		
+		this.tm=msg_data.tm;
+
 		this.name.set2(msg_data.name,150);
 		this.name.tint=this.nameToColor(msg_data.name);
 		this.msg_tm.text = new Date(msg_data.tm).toLocaleString();
-		this.msg.text=msg_data.msg;
-		this.visible = true;
 		
-		if (msg_data.msg.startsWith('GIF')){			
-			
-			const mp4BaseT=await new Promise((resolve, reject)=>{
-				const baseTexture = PIXI.BaseTexture.from('https://akukamil.github.io/common/gifs/'+msg_data.msg+'.mp4');
-				if (baseTexture.width>1) resolve(baseTexture);
-				baseTexture.on('loaded', () => resolve(baseTexture));
-				baseTexture.on('error', (error) => resolve(null));
-			});
-			
-			if (!mp4BaseT) {
+		this.visible = true;
+
+		if (msg_data.gif_id){
+
+			const base_t=await gif_sel.load_gif(`${COM_URL}/gifs/${msg_data.gif_id}.mp4`)
+
+			if (!base_t) {
+				console.log(`Не получилось загрузить гифку ${msg_data.gif_id}`)
 				this.visible=false;
 				return 0;
 			}
+
+			base_t.resource.source.play()
+			base_t.resource.source.loop=true
 			
-			mp4BaseT.resource.source.play();
-			mp4BaseT.resource.source.loop=true;
-			
-			this.gif.texture=PIXI.Texture.from(mp4BaseT);
-			this.gif.visible=true;	
-			const aspect_ratio=mp4BaseT.width/mp4BaseT.height;
-			this.gif.height=90;
-			this.gif.width=this.gif.height*aspect_ratio;
-			this.msg_bcg.visible=false;
-			this.msg.visible=false;
-			this.msg_tm.anchor.set(0,0);
-			this.msg_tm.y=this.gif.height+9;
-			this.msg_tm.x=this.gif.width+102;
-			
-			this.gif_bcg.visible=true;
-			this.gif_bcg.height=this.gif.height;
-			this.gif_bcg.width=	this.gif.width;
-			return this.gif.height+30;
-			
+			this.msg.text=''
+
+			this.gif.texture=PIXI.Texture.from(base_t)
+			this.gif.visible=true
+			const aspect_ratio=base_t.width/base_t.height
+			this.gif.height=90
+			this.gif.width=this.gif.height*aspect_ratio
+			this.msg_bcg.visible=false
+			this.msg.visible=false
+			this.msg_tm.anchor.set(0,0)
+			this.msg_tm.y=this.gif.height+9
+			this.msg_tm.x=this.gif.width+102
+
+			this.gif_bcg.visible=true
+			this.gif_bcg.height=this.gif.height
+			this.gif_bcg.width=	this.gif.width
+			return this.gif.height+30
+
 		}else{
-			
+
 			this.gif_bcg.visible=false;
-			this.gif.visible=false;	
+			this.gif.visible=false;
 			this.msg_bcg.visible=true;
 			this.msg.visible=true;
+
+			this.msg.text=msg_data.msg;
 			
 			//бэкграунд сообщения в зависимости от длины
-			const msg_bcg_width=Math.max(this.msg.width,100)+100;			
-			this.msg_bcg.width=msg_bcg_width*1.5;				
-					
+			const msg_bcg_width=Math.max(this.msg.width,100)+100;
+			this.msg_bcg.width=msg_bcg_width*1.5;
+
 			if (msg_bcg_width>300){
 				this.msg_tm.anchor.set(1,0);
 				this.msg_tm.y=this.avatar.y+52;
@@ -339,11 +343,11 @@ class chat_record_class extends PIXI.Container {
 				this.msg_tm.anchor.set(0,0);
 				this.msg_tm.y=this.avatar.y+37;
 				this.msg_tm.x=msg_bcg_width+62;
-			}	
-			
+			}
+
 			return 70;
-		}		
-	}		
+		}
+	}
 
 }
 
@@ -352,11 +356,11 @@ class feedback_record_class extends PIXI.Container {
 	constructor() {
 
 		super();
-		this.text=new PIXI.BitmapText('', {fontName: 'mfont',fontSize: 19,align: 'left',lineSpacing:38})
+		this.text=new PIXI.BitmapText('', {fontName: 'bahnschrift48',fontSize: 19,align: 'left',lineSpacing:38})
 		this.text.maxWidth=290
 		this.text.tint=0xFFFF00
 
-		this.name_text=new PIXI.BitmapText('', {fontName: 'mfont',fontSize: 19,align: 'left'})
+		this.name_text=new PIXI.BitmapText('', {fontName: 'bahnschrift48',fontSize: 19,align: 'left'})
 		this.name_text.tint=0xFFFFFF
 
 
@@ -553,116 +557,111 @@ sound={
 			this.on=1;
 			objects.pref_info.text=['Звуки включены','Sounds is on'][LANG];
 		}
-		anim2.add(objects.pref_info,{alpha:[0,1]}, false, 3,'easeBridge',false);		
+		anim3.add(objects.pref_info,{alpha:[0,1]}, false, 3,'easeBridge',false);		
 		
 	}
 	
 }
 
-message =  {
-	
+pmsg={
+
 	promise_resolve :0,
-	
-	add : async function(text) {
-		
+
+	async add({t='text', timeout=3000,snd='message',online=0}={}) {
+
 		if (this.promise_resolve!==0)
-			this.promise_resolve("forced");
-		
+			this.promise_resolve("forced")
+			
 		//воспроизводим звук
-		sound.play('block_wall');
+		sound.play(snd);
 
-		objects.message_text.text=text;
+		objects.pmsg_text.text=t
+		const anim_res=await anim3.add(objects.pmsg_cont,{x:[-200,objects.pmsg_cont.sx,'easeOutBack']}, true, 0.25);
 
-		await anim2.add(objects.message_cont,{x:[-200,objects.message_cont.sx]}, true, 0.5,'easeOutBack');
-
-		let res = await new Promise((resolve, reject) => {
-				message.promise_resolve = resolve;
-				setTimeout(resolve, 3000)
-			}
-		);
+		if (anim_res===2) return
 		
-		if (res === "forced")
-			return;
+		const res = await new Promise(res => {
+			pmsg.promise_resolve = res;
+			setTimeout(res, timeout)
+		})
 
-		anim2.add(objects.message_cont,{x:[objects.message_cont.sx, -200]}, false, 0.5,'easeInBack');			
+		if (res==="forced") return
+
+		anim3.add(objects.pmsg_cont,{x:[objects.pmsg_cont.sx, -200,'easeInBack']}, false, 0.25);
+	},
+	
+	no_in_chat_down(){
+		pmsg.promise_resolve()
+		mp_game.no_in_chat_cmd()
+	},
+
+	clicked() {
+		pmsg.promise_resolve()
 	}
 
 }
 
-anim2 = {
-		
+anim3={
+
 	c1: 1.70158,
 	c2: 1.70158 * 1.525,
 	c3: 1.70158 + 1,
 	c4: (2 * Math.PI) / 3,
 	c5: (2 * Math.PI) / 4.5,
-	empty_spr : {x:0, visible:false, ready:true, alpha:0},
-		
-	slot: Array(30).fill(null),
-			
-	any_on() {		
-		for (let s of this.slot)
-			if (s !== null&&s.block)
+	empty_spr : {x:0,visible:false,ready:true, alpha:0},
+
+	slots: new Array(50).fill().map(u => ({obj:{},on:0,block:true,params_num:0,p_resolve:0,progress:0,vis_on_end:false,tm:0,params:new Array(10).fill().map(u => ({param:'x',s:0,f:0,d:0,func:this.linear}))})),
+
+	any_on() {
+
+		for (let s of this.slots)
+			if (s.on&&s.block)
 				return true
-		return false;			
+		return false;
 	},
-	
+
+	wait(seconds){
+		return this.add(this.empty_spr,{x:[0,1,'linear']}, false, seconds);
+	},
+
 	linear(x) {
 		return x
 	},
-	
+
 	kill_anim(obj) {
-		
-		for (var i=0;i<this.slot.length;i++)
-			if (this.slot[i]!==null)
-				if (this.slot[i].obj===obj){
-					this.slot[i].p_resolve('finished');		
-					this.slot[i].obj.ready=true;					
-					this.slot[i]=null;	
-				}
-	
+
+		for (let i=0;i<this.slots.length;i++){
+			const slot=this.slots[i];
+			if (slot.on&&slot.obj===obj){
+				this.finish_slot(slot)
+				slot.p_resolve(2)
+			}
+		}
 	},
 	
-	flick(x){
-		
-		return Math.abs(Math.sin(x*6.5*3.141593));
-		
+	finish_all_slots(){		
+		for (let i=0;i<this.slots.length;i++){
+			const slot=this.slots[i];
+			if (slot.on){
+				this.finish_slot(slot)
+				slot.p_resolve(3)
+			}
+		}
 	},
-	
+
 	easeBridge(x){
-		
+
 		if(x<0.1)
 			return x*10;
 		if(x>0.9)
 			return (1-x)*10;
-		return 1		
+		return 1
 	},
-	
-	ease3peaks(x){
 
-		if (x < 0.16666) {
-			return x / 0.16666;
-		} else if (x < 0.33326) {
-			return 1-(x - 0.16666) / 0.16666;
-		} else if (x < 0.49986) {
-			return (x - 0.3326) / 0.16666;
-		} else if (x < 0.66646) {
-			return 1-(x - 0.49986) / 0.16666;
-		} else if (x < 0.83306) {
-			return (x - 0.6649) / 0.16666;
-		} else if (x >= 0.83306) {
-			return 1-(x - 0.83306) / 0.16666;
-		}		
-	},
-	
 	easeOutBack(x) {
 		return 1 + this.c3 * Math.pow(x - 1, 3) + this.c1 * Math.pow(x - 1, 2);
 	},
-	
-	easeOutBack2(x) {
-		return -5.875*Math.pow(x, 2)+6.875*x;
-	},
-	
+
 	easeOutElastic(x) {
 		return x === 0
 			? 0
@@ -670,23 +669,42 @@ anim2 = {
 			? 1
 			: Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * this.c4) + 1;
 	},
-	
+
 	easeOutSine(x) {
 		return Math.sin( x * Math.PI * 0.5);
 	},
-	
+
+	easeOutQuart(x){
+		return 1 - Math.pow(1 - x, 4);
+	},
+
 	easeOutCubic(x) {
 		return 1 - Math.pow(1 - x, 3);
 	},
-	
+
+	easeTwiceBlink(x){
+
+		if(x<0.333)
+			return 1;
+		if(x>0.666)
+			return 1;
+		return 0
+	},
+
+	flick(x){
+
+		return Math.abs(Math.sin(x*6.5*3.141593));
+
+	},
+
 	easeInBack(x) {
 		return this.c3 * x * x * x - this.c1 * x * x;
 	},
-	
+
 	easeInQuad(x) {
 		return x * x;
 	},
-	
+
 	easeOutBounce(x) {
 		const n1 = 7.5625;
 		const d1 = 2.75;
@@ -701,131 +719,171 @@ anim2 = {
 			return n1 * (x -= 2.625 / d1) * x + 0.984375;
 		}
 	},
-	
+
 	easeInCubic(x) {
 		return x * x * x;
 	},
-	
+
+	ease3peaks(x){
+
+		if (x < 0.16666) {
+			return x / 0.16666;
+		} else if (x < 0.33326) {
+			return 1-(x - 0.16666) / 0.16666;
+		} else if (x < 0.49986) {
+			return (x - 0.3326) / 0.16666;
+		} else if (x < 0.66646) {
+			return 1-(x - 0.49986) / 0.16666;
+		} else if (x < 0.83306) {
+			return (x - 0.6649) / 0.16666;
+		} else if (x >= 0.83306) {
+			return 1-(x - 0.83306) / 0.16666;
+		}
+	},
+
 	ease2back(x) {
 		return Math.sin(x*Math.PI);
 	},
-	
+
 	easeInOutCubic(x) {
-		
+
 		return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 	},
-	
+
+	easeInOutBack(x) {
+
+		return x < 0.5
+		  ? (Math.pow(2 * x, 2) * ((this.c2 + 1) * 2 * x - this.c2)) / 2
+		  : (Math.pow(2 * x - 2, 2) * ((this.c2 + 1) * (x * 2 - 2) + this.c2) + 2) / 2;
+	},
+
 	shake(x) {
-		
-		return Math.sin(x*2 * Math.PI);	
-		
-	},	
-	
-	add (obj, params, vis_on_end, time, func, block=true) {
-				
+
+		return Math.sin(x*2 * Math.PI);
+
+
+	},
+
+	add (obj, inp_params, vis_on_end, time, block) {
+
 		//если уже идет анимация данного спрайта то отменяем ее
-		anim2.kill_anim(obj);
+		anim3.kill_anim(obj)
+		
+		if(document.hidden){
+			this.finish_obj(obj,inp_params,vis_on_end)
+			return
+		}
+		
 
-		let f=0;
+		let found=false;
 		//ищем свободный слот для анимации
-		for (var i = 0; i < this.slot.length; i++) {
+		for (let i = 0; i < this.slots.length; i++) {
 
-			if (this.slot[i] === null) {
-				
-				obj.visible = true;
-				obj.ready = false;
+			const slot=this.slots[i];
+			if (slot.on) continue;
 
-				//добавляем дельту к параметрам и устанавливаем начальное положение
-				for (let key in params) {
-					if (params[key][0]===undefined){
-						params[key][0]=obj[key];
-					}
-					params[key][2]=params[key][1]-params[key][0];					
-					obj[key]=params[key][0];
-				}
-				
-				//для возвратных функцие конечное значение равно начальному
-				if (func === 'ease2back' || func === 'shake' || func === 'ease3peaks')
-					for (let key in params)
-						params[key][1]=params[key][0];				
-					
-				this.slot[i] = {
-					obj,
-					block,
-					params,
-					vis_on_end,
-					func: this[func].bind(anim2),
-					speed: 0.01818 / time,
-					progress: 0
-				};
-				f = 1;
-				break;
+			found=true;
+
+			obj.visible = true
+			obj.ready = false
+
+			//заносим базовые параметры слота
+			slot.on=1;
+			slot.params_num=Object.keys(inp_params).length;
+			slot.obj=obj;
+			slot.vis_on_end=vis_on_end;
+			slot.block=block===undefined;
+			slot.t1=TM.s
+			slot.t=time
+
+			//добавляем дельту к параметрам и устанавливаем начальное положение
+			let ind=0;
+			for (const param in inp_params) {
+
+				const s=inp_params[param][0];
+				let f=inp_params[param][1];
+				const d=f-s;
+
+
+				//для возвратных функцие конечное значение равно начальному что в конце правильные значения присвоить
+				const func_name=inp_params[param][2];
+				const func=anim3[func_name].bind(anim3);
+				if (func_name === 'ease2back'||func_name==='shake') f=s;
+
+				slot.params[ind].param=param;
+				slot.params[ind].s=s;
+				slot.params[ind].f=f;
+				slot.params[ind].d=d;
+				slot.params[ind].func=func;
+				ind++;
+
+				//фиксируем начальное значение параметра
+				obj[param]=s;
 			}
-		}
-		
-		if (f===0) {
-			console.log("Кончились слоты анимации");	
-			
-			
-			//сразу записываем конечные параметры анимации
-			for (let key in params)				
-				obj[key]=params[key][1];			
-			obj.visible=vis_on_end;
-			obj.alpha = 1;
-			obj.ready=true;
-			
-			
-			return new Promise(function(resolve, reject){					
-			  resolve();	  		  
-			});	
-		}
-		else {
-			return new Promise(function(resolve, reject){					
-			  anim2.slot[i].p_resolve = resolve;	  		  
-			});			
-			
+
+			return new Promise(resolve=>{
+				slot.p_resolve = resolve;
+			});
 		}
 
-		
-		
+		console.log("Кончились слоты анимации");
+		this.finish_obj(obj,inp_params,vis_on_end)
 
-	},	
-		
-	process() {
-		
-		for (var i = 0; i < this.slot.length; i++)
-		{
-			if (this.slot[i] !== null) {
-				
-				let s=this.slot[i];
-				
-				s.progress+=s.speed;		
-				
-				for (let key in s.params)				
-					s.obj[key]=s.params[key][0]+s.params[key][2]*s.func(s.progress);		
-				
-				//если анимация завершилась то удаляем слот
-				if (s.progress>=0.999) {
-					for (let key in s.params)				
-						s.obj[key]=s.params[key][1];
-									
-					s.obj.visible=s.vis_on_end;
-					if (s.vis_on_end === false)
-						s.obj.alpha = 1;
-					
-					s.obj.ready=true;					
-					s.p_resolve('finished');
-					this.slot[i] = null;
-				}
-			}			
-		}
-		
+
+
 	},
 	
-	async wait(time) {
+	finish_obj(obj,params,vis_on_end){
 		
-		await this.add(this.empty_spr,{x:[0, 1]}, false, time,'linear');	
+		//сразу записываем конечные параметры объекта
+		for (const param in params)
+			obj[param]=params[param][1]
+		obj.ready=true		
+		obj.visible=vis_on_end		
+		if(!vis_on_end) obj.alpha=1	
+	},
+	
+	finish_slot(slot){
 		
+		//заносим конечные параметры
+		for (let i=0;i<slot.params_num;i++){
+			const param=slot.params[i].param;
+			const f=slot.params[i].f;
+			slot.obj[param]=f;
+		}
+		
+		slot.on = 0
+		slot.obj.ready=true
+		slot.obj.visible=slot.vis_on_end;
+		if(!slot.vis_on_end) slot.obj.alpha=1;
+	},
+
+	process () {
+
+		for (let i = 0; i < this.slots.length; i++) {
+			const slot=this.slots[i];
+			const obj=slot.obj;
+			if (slot.on) {
+
+				const progress=(TM.s-slot.t1)/slot.t
+
+				for (let i=0;i<slot.params_num;i++){
+
+					const param_data=slot.params[i]
+					const param=param_data.param
+					const s=param_data.s
+					const d=param_data.d
+					const func=param_data.func
+					slot.obj[param]=s+d*func(progress)
+				}
+
+				//если анимация завершилась то удаляем слот
+				if (progress>=0.999) {
+					this.finish_slot(slot)
+					slot.p_resolve(1)
+				}
+			}
+		}
 	}
 }
 
@@ -836,14 +894,14 @@ big_message = {
 	show(t1,t2, feedback_on) {
 				
 		if (t2!==undefined || t2!=="")
-			objects.big_message_text2.text=t2;
+			objects.big_msg_text2.text=t2;
 		else
-			objects.big_message_text2.text='**********';
+			objects.big_msg_text2.text='**********';
 		
-		objects.feedback_button.visible = feedback_on;
+		objects.feedback_btn.visible = feedback_on;
 
-		objects.big_message_text.text=t1;
-		anim2.add(objects.big_message_cont,{y:[-180,objects.big_message_cont.sy]}, true, 0.6,'easeOutBack');		
+		objects.big_msg_text.text=t1;
+		anim3.add(objects.big_msg_cont,{y:[-180,objects.big_msg_cont.sy,'easeOutBack']}, true, 0.6);		
 				
 		return new Promise(function(resolve, reject){					
 			big_message.p_resolve = resolve;	  		  
@@ -852,13 +910,13 @@ big_message = {
 
 	async feedback_down() {
 		
-		if (objects.big_message_cont.ready===false) {
+		if (objects.big_msg_cont.ready===false) {
 			sound.play('locked');
 			return;			
 		}
 
 		const opp_uid=opp_data.uid
-		anim2.add(objects.big_message_cont,{y:[objects.big_message_cont.sy,450]}, false, 0.4,'easeInBack');	
+		anim3.add(objects.big_msg_cont,{y:[objects.big_msg_cont.sy,450,'easeInBack']}, false, 0.4);	
 		
 		//пишем отзыв и отправляем его
 		const fb = await keyboard.read();
@@ -871,11 +929,11 @@ big_message = {
 
 	close () {
 		
-		if (objects.big_message_cont.ready===false)
+		if (objects.big_msg_cont.ready===false)
 			return;
 
 		sound.play('close_it');
-		anim2.add(objects.big_message_cont,{y:[objects.big_message_cont.sy,450]}, false, 0.4,'easeInBack');		
+		anim3.add(objects.big_msg_cont,{y:[objects.big_msg_cont.sy,450,'easeInBack']}, false, 0.4);		
 		this.p_resolve("close");			
 	}
 
@@ -892,6 +950,7 @@ online_game = {
 	disconnect_time : 0,
 	no_incoming_move : 0,
 	write_fb_timer:0,
+	on:0,
 	
 	calc_new_rating(old_rating, game_result) {
 				
@@ -905,24 +964,20 @@ online_game = {
 	
 	async activate(r) {
 		
-		this.me_conf_play = 0;
-		this.opp_conf_play = 0;
-		
+		this.me_conf_play = 0
+		this.opp_conf_play = 0
+		this.on=1
+				
 		//устанавливаем статус в базе данных а если мы не видны то установливаем только скрытое состояние
-		set_state({state : 'p'});
+		set_state({state:'p'})
 
 		//получаем информацию о фишке соперника
-		const opp_chip = await fbs_once('players/'+opp_data.uid+'/chip')||0
-		objects.opp_icon.texture = assets['chip'+opp_chip]
-		
-		//это если фишки совпадают
-		if (opp_chip===my_data.chip)
-			objects.opp_icon.tint=0xff8800;
-		else
-			objects.opp_icon.tint=0xffffff;
+		opp_data.chip=await fbs_once('players/'+opp_data.uid+'/chip')||0		
 		
 		//показываем кнопки
-		objects.game_buttons_cont.visible = true;
+		objects.chat_btn.visible=true
+		objects.send_sticker_btn.visible=true
+		objects.giveup_btn.visible=true
 
 		//счетчик времени
 		this.prv_tick_time=Date.now();
@@ -935,9 +990,9 @@ online_game = {
 		this.start_time = Date.now();
 		
 		//вычиcляем рейтинг при проигрыше и устанавливаем его в базу он потом изменится
-		let lose_rating = this.calc_new_rating(my_data.rating, LOSE);
-		if (lose_rating >100 && lose_rating<9999)
-			firebase.database().ref("players/"+my_data.uid+"/rating").set(lose_rating);
+		opp_data.rating=players_cache[opp_data.uid]?.rating||1400
+		const lose_rating = this.calc_new_rating(my_data.rating, LOSE);
+		fbs.ref('players/'+my_data.uid+'/rating').set(lose_rating);
 	
 	},
 		
@@ -952,6 +1007,61 @@ online_game = {
 		
 		//также фиксируем данные стола
 		firebase.database().ref('tables/'+game_id).set({uid:my_data.uid,f_str:ffunc.get_minified_field(game.field),tm:firebase.database.ServerValue.TIMESTAMP});
+
+	},
+	
+	giveup_down() {
+				
+		if (!this.on||objects.big_msg_cont.visible || objects.req_cont.visible) {
+			sound.play('bad_move');
+			return;			
+		}
+		
+		if (anim3.any_on()){
+			sound.play('locked')
+			return
+		}
+		
+		//отправляем сопернику что мы сдались
+		firebase.database().ref("inbox/"+opp_data.uid).set({sender:my_data.uid,message:"GIVEUP",tm:Date.now()});
+		game.stop('my_giveup')		
+		
+	},
+	
+	async chat_down() {
+
+		if (!this.on||objects.big_msg_cont.visible || objects.req_cont.visible) {
+			sound.play('bad_move');
+			return;			
+		}
+
+		if (my_data.blocked){
+			pmsg.add({t:'Вы не можете писать в чат, так как вы находитесь в черном списке',snd:'locked'});
+			return;
+		}
+		
+		if (anim3.any_on()){
+			sound.play('locked')
+			return
+		}
+
+		sound.play('click');
+		const msg=await keyboard.read();
+
+		if (msg) {
+			fbs.ref('inbox/'+opp_data.uid).set({sender:my_data.uid,message:'CHAT',tm:Date.now(),data:msg});		
+			pmsg.add({t:['Сообщение отправлено!','message sent!'][LANG],timeout:3000})
+		}
+	},
+	
+	chat(data) {
+
+		if (objects.big_msg_cont.visible || objects.req_cont.visible) {
+			sound.play('locked');
+			return;			
+		}
+
+		pmsg.add({t:data,timeout:10000,snd:'online_msg'});
 
 	},
 	
@@ -1029,7 +1139,9 @@ online_game = {
 	},
 	
 	async stop(result) {
-					
+		
+		this.on=0
+		
 		const res_array = [
 			['my_timeout',LOSE, ['Вы проиграли!\nУ вас закончилось время','You have lost!\nYou have run out of time']],
 			['opp_timeout',WIN , ['Вы выиграли!\nУ соперника закончилось время','You won!\nThe opponent has run out of time']],
@@ -1060,14 +1172,8 @@ online_game = {
 		firebase.database().ref("players/"+my_data.uid+"/rating").set(my_data.rating);
 	
 		//также фиксируем данные стола
-		firebase.database().ref("tables/"+game_id).set({uid:my_data.uid,fin_flag:1,tm:firebase.database.ServerValue.TIMESTAMP});
-		
-		//убираем элементы
-		objects.timer_cont.visible = false;
-		
-		//убираем кнопки
-		objects.game_buttons_cont.visible = false;
-		
+		fbs.ref("tables/"+game_id).set({uid:my_data.uid,fin_flag:1,tm:firebase.database.ServerValue.TIMESTAMP});
+						
 		//воспроизводим звук
 		if (result_number === DRAW || result_number === LOSE || result_number === NOSYNC ) {
 			sound.play('lose');
@@ -1080,17 +1186,16 @@ online_game = {
 			sound.play('win');			
 		}
 	
-
 		//если игра результативна то записываем дополнительные данные
 		if (result_number === DRAW || result_number === LOSE || result_number === WIN) {
 			
 			//увеличиваем количество игр
 			my_data.games++;
-			firebase.database().ref("players/"+[my_data.uid]+"/games").set(my_data.games);		
+			fbs.ref("players/"+[my_data.uid]+"/games").set(my_data.games);		
 
 			//записываем результат в базу данных
 			let duration = ~~((Date.now() - this.start_time)*0.001);
-			firebase.database().ref("finishes/"+game_id + my_role).set({'player1':objects.my_card_name.text,'player2':objects.opp_card_name.text, 'res':result_number,'fin_type':result_str,'duration':duration, 'ts':firebase.database.ServerValue.TIMESTAMP});
+			fbs.ref("finishes/"+game_id + my_role).set({'player1':objects.my_card_name.text,'player2':objects.opp_card_name.text, 'res':result_number,'fin_type':result_str,'duration':duration, 'ts':firebase.database.ServerValue.TIMESTAMP});
 			
 		}
 		
@@ -1109,7 +1214,29 @@ bot_player = {
 	move_time_left : 0,
 	search_start_time : 0,
 	no_incoming_move : 0,
+	on:0,
 		
+	async activate() {		
+				
+		set_state({state : 'b'});	
+		
+		//чип бота
+		opp_data.uid='bot'
+		opp_data.chip=hf.randIntInc(0,19)		
+		
+		this.on=1
+		
+		//показываем кнопку стоп
+		objects.stop_bot_btn.visible = true
+		objects.stop_bot_btn.pointerdown=function(){game.stop_down()}
+		
+		
+		//Ход вместо таймера...........................
+		this.reset_timer();
+		objects.timer_cont.visible = true;
+		objects.timer_text.text  = ['мой ход','my turn'][LANG];
+	},
+			
 	async send_move() {
 		
 		let root_node = new node_class(game.field, MY_ID, 0);
@@ -1119,40 +1246,9 @@ bot_player = {
 		
 	},
 	
-	async activate() {
-		
-				
-		set_state({state : 'b'});	
-		
-		opp_data.uid='bot'
-
-		//показываем кнопку стоп
-		objects.stop_bot_button.visible = true;
-		objects.stop_bot_button.pointerdown=function(){game.stop_down()};
-		
-		const opp_chip=irnd(0,17);
-		objects.opp_icon.texture = assets['chip'+opp_chip];	
-		
-		objects.opp_card_name.text='Bot';
-		objects.opp_card_rating.text='1400'
-		objects.opp_avatar.texture=assets.pc_icon;			
-			
-		
-		//это если фишки совпадают
-		if (opp_chip===my_data.chip)
-			objects.opp_icon.tint=0x88ff88;
-		else
-			objects.opp_icon.tint=0xffffff;
-		
-		//Ход вместо таймера...........................
-		this.reset_timer();
-		objects.timer_cont.visible = true;
-		objects.timer_text.text  = ['мой ход','my turn'][LANG];
-	},
-	
 	async stop(result) {
 		
-		let res_array = [
+		const res_array = [
 			['my_stop' ,DRAW, ['Вы отменили игру!','You canceled the game']],
 			['both_finished',DRAW, 'Ничья'],
 			['my_finished_first',WIN , ['Вы выиграли!\nБыстрее соперника добрались до цели','You have won!\nGot to the goal faster than the opponent']],
@@ -1164,13 +1260,9 @@ bot_player = {
 						
 		this.no_incoming_move = 1;
 		
-		let result_number = res_array.find( p => p[0] === result)[1];
-		let result_info = res_array.find( p => p[0] === result)[2][LANG];				
-			
-		//убираем кнопку стоп и таймер
-		objects.stop_bot_button.visible=false;
-		objects.timer_cont.visible=false;
-				
+		const result_number = res_array.find( p => p[0] === result)[1];
+		const result_info = res_array.find( p => p[0] === result)[2][LANG];				
+							
 		//воспроизводим звук
 		if (result_number === DRAW || result_number === LOSE)
 			sound.play('lose');
@@ -1185,7 +1277,7 @@ bot_player = {
 		
 		
 		//убираем кнопку стоп
-		objects.stop_bot_button.visible=false;
+		objects.stop_bot_btn.visible=false;
 		
 		
 	},
@@ -1224,7 +1316,7 @@ bot_player = {
 					
 					
 					//экстренный выход
-					if (objects.big_message_cont.visible === true)
+					if (objects.big_msg_cont.visible === true)
 						return;
 										
 					let d_for_my = ffunc.get_shortest_distance_to_target(c2.field,MY_ID,ROW0);
@@ -1251,9 +1343,7 @@ bot_player = {
 		return best_child;
 		
 	}
-	
-
-	
+		
 };
 
 keyboard={
@@ -1269,24 +1359,22 @@ keyboard={
 	read(max_symb){
 		
 		this.MAX_SYMBOLS=max_symb||60;
-		
-		
+				
 		if (LANG===1){
 			this.layout=this.en_keys;
 			objects.chat_keyboard.texture=assets.eng_layout;
 		}else{
 			this.layout=this.ru_keys;
 			objects.chat_keyboard.texture=assets.rus_layout;
-		}
-		
+		}		
 
 		//если какой-то ресолвер открыт
-		if(this.resolver) this.resolver('');
+		if(this.resolver) this.resolver(0);
 		
 		objects.chat_keyboard_text.text ='';
 		objects.chat_keyboard_control.text = this.MAX_SYMBOLS;
 				
-		anim2.add(objects.chat_keyboard_cont,{y:[450, objects.chat_keyboard_cont.sy],alpha:[0,1]}, true, 0.2,'linear');	
+		anim3.add(objects.chat_keyboard_cont,{y:[450, objects.chat_keyboard_cont.sy,'linear'],alpha:[0,1,'linear']}, true, 0.2);	
 
 
 		return new Promise(resolve=>{			
@@ -1337,7 +1425,7 @@ keyboard={
 		objects.chat_keyboard_hl.x = x+objects.chat_keyboard.x-10;
 		objects.chat_keyboard_hl.y = y+objects.chat_keyboard.y-11;	
 		
-		anim2.add(objects.chat_keyboard_hl,{alpha:[1, 0]}, false, 0.5,'linear');
+		anim3.add(objects.chat_keyboard_hl,{alpha:[1, 0,'linear']}, false, 0.5);
 		
 	},	
 	
@@ -1419,7 +1507,7 @@ keyboard={
 		
 		//на всякий случай уничтожаем резолвер
 		if (this.resolver) this.resolver(0);
-		anim2.add(objects.chat_keyboard_cont,{y:[objects.chat_keyboard_cont.y,450],alpha:[1,0]}, false, 0.2,'linear');		
+		anim3.add(objects.chat_keyboard_cont,{y:[objects.chat_keyboard_cont.y,450,'linear'],alpha:[1,0,'linear']}, false, 0.2);		
 		
 	},
 	
@@ -2328,6 +2416,139 @@ ffunc = {
 
 }
 
+gif_sel={
+	
+	updating:0,
+	sel_id:-1,
+	prv_send:0,
+	ids:0,
+	
+	activate(){
+		
+		if (!this.ids) this.ids=this.get_unique_int(100,typeof MAX_GIF_ID_INC !== 'undefined' ? MAX_GIF_ID_INC : 200,new Date(SERVER_TM).getDate(),my_data.uid)
+		this.sel_id=-1
+		objects.gif_sel_hl.visible=false
+		objects.gif_sel_send_btn.visible=false
+		anim3.add(objects.gif_sel_cont,{x:[800, objects.gif_sel_cont.sx,'linear']}, true, 0.1);
+		this.update()
+		
+	},
+	
+	async update(){
+	
+		if (this.updating) return
+		this.updating=1
+	
+		for (let i=0;i<4;i++){
+			
+			const gif_id=this.ids[i]
+			const gif_sprite=objects.gifs[i]
+			const base_t=await this.load_gif(`${COM_URL}/gifs/${gif_id}.mp4`)
+			
+			if(!base_t) continue
+			base_t.resource.source.play();
+			base_t.resource.source.loop=true;
+
+			gif_sprite.texture=PIXI.Texture.from(base_t)
+			
+			const scaleX = 140 / base_t.width
+			const scaleY = 110 / base_t.height
+			const scale = Math.min(scaleX, scaleY)
+				
+			gif_sprite.width = base_t.width * scale;
+			gif_sprite.height = base_t.height * scale;
+		}
+		this.updating=0
+		
+	},
+	
+	load_gif(url){
+		
+		return new Promise(res=>{
+			
+			const timeout = setTimeout(()=>{res(0)},2500)
+
+			//если уже загружали неправильную текстуру
+			if(PIXI.utils.BaseTextureCache[url]&&!PIXI.utils.BaseTextureCache[url].valid) {
+				res(0)
+				clearTimeout(timeout)
+			}
+			const bt = PIXI.BaseTexture.from(url)
+			
+			if (bt.width) {res(bt);clearTimeout(timeout)}
+			bt.on('loaded', ()=>{res(bt);clearTimeout(timeout)})
+			bt.on('error', e=>{res(0);clearTimeout(timeout)})
+		});
+			
+	},
+	
+	close_btn_down(){
+		
+		if (anim3.any_on()) return
+		this.close()
+		
+	},
+	
+	gif_down(id){
+		
+		if (this.sel_id===-1)
+			anim3.add(objects.gif_sel_send_btn,{alpha:[0,1,'linear']}, true, 0.1)
+		
+		this.sel_id=id
+		const gif_sprite=objects.gifs[id]
+		objects.gif_sel_hl.x=gif_sprite.x
+		objects.gif_sel_hl.y=gif_sprite.y
+		objects.gif_sel_hl.visible=true
+		
+	},
+		
+	get_unique_int(min, max,day,uid) {//inclusive
+		
+		let seed = hf.hash(`${day}-${uid}`);
+
+		function random() {
+			seed |= 0;
+			seed = seed + 0x6D2B79F5 | 0;
+			let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+			t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+			return ((t ^ t >>> 14) >>> 0) / 4294967296;
+		}
+
+		const size = max - min + 1;
+
+		// Build [min ... max]
+		const arr = Array.from({ length: size }, (_, i) => i + min);
+
+		// Partial Fisher–Yates (only 4 picks)
+		for (let i = 0; i < 4; i++) {
+			const j = i + Math.floor(random() * (size - i));
+			[arr[i], arr[j]] = [arr[j], arr[i]];
+		}
+
+		return arr.slice(0, 4);
+	},
+	
+	send_btn_down(){
+
+		const sec_to_wait=Math.round(60-(TM.s-this.prv_send))
+
+		if (sec_to_wait>0){
+			pmsg.add({t:[`Подождите\n${sec_to_wait} сек.`,`Wait\n${sec_to_wait} sec.`][LANG]})
+			return
+		}
+
+		this.prv_send=TM.s
+		//console.log(`чуть не отправили ${this.sel_id}`)
+		const gif_id=this.ids[this.sel_id]
+		my_ws.safe_send({cmd:'push',path:'chat',val:{uid:my_data.uid,name:my_data.name,msg:'',gif_id,tm:'TMS'}})
+	},
+	
+	close(){
+		anim3.add(objects.gif_sel_cont,{x:[objects.gif_sel_cont.x,800,'linear']}, false, 0.1);
+	}	
+		
+}
+
 game = {
 	
 	opponent : {},
@@ -2340,74 +2561,74 @@ game = {
 	av_moves: [],
 	
 	async activate(role, opponent) {
-					
-		//если это переход из бот игры
-		if (state === 'b') {
-			this.opponent.silent_stop();
-		}
-			
-		//если открыт чат то закрываем его
-		if (objects.chat_cont.visible===true)
-			chat.close();				
-		
-		//если открыт просмотр игры
-		if (game_watching.on===true)
-			game_watching.close();
-		
-		//если открыт туториал
-		if (game_tutor.on)
-			game_tutor.close();
-		
+						
 		//включаем кнопки так как они были отключены в туториале
-		objects.move_confirm_button.interactive=true;
-		objects.move_decline_button.interactive=true;
+		objects.move_confirm_btn.interactive=true;
+		objects.move_decline_btn.interactive=true;
+		
+		//закрываем то что открыто
+		if (bot_player.on) bot_player.silent_stop()		
+		if (objects.chat_cont.visible) chat.close()			
+		if (game_watching.on) game_watching.close()
+		if (lobby.on) lobby.close()
+		if (game_tutor.on) game_tutor.close()		
+		if (objects.maze_logo.visible) main_menu.close()		
+		if (objects.lb_1_cont.visible) lb.close()
 		
 		//это если обработка стен
 		this.stop_wall_processing();
 				
-		my_role=role;
+		my_role=role
 		this.opponent = opponent;
 		
 		if (my_role === 'master') {
-			my_turn = 1;			
-			message.add(['Вы ходите первым. Последний ход за соперником.','You go first. The last move is for the opponent'][LANG]);
-
+			my_turn = 1	
+			pmsg.add({t:['Вы ходите первым. Последний ход за соперником.','You go first. The last move is for the opponent'][LANG]})
 		} else {
-			my_turn = 0;			
-			message.add(['Вы ходите вторым. Последний ход за Вами.','You go second. The last move is yours'][LANG])
+			my_turn = 0			
+			pmsg.add({t:['Вы ходите вторым. Последний ход за Вами.','You go second. The last move is yours'][LANG]})
 		}
-		
-		
-		objects.my_icon.texture = assets['chip'+my_data.chip];
-		objects.opp_icon.tint=0x88ff88;
 		
 		//это то что могло остаться от игры с ботом
 		objects.move_opt_cont.visible=false;
-		objects.my_icon.alpha=1;
+
+		//убираем элементы
+		objects.timer_cont.visible=false
+
 		some_process.player_selected_processing = function(){};
 				
 		//инициируем все что связано с оппонентом
-		await this.opponent.activate(my_role);
-				
-		//если открыт лидерборд то закрываем его
-		if (objects.lb_1_cont.visible===true)
-			lb.close();
+		await this.opponent.activate(my_role)		
+		
+		objects.opp_icon.texture = assets.chips[opp_data.chip]	
+		objects.opp_icon.alpha=1	
+		
+		objects.my_icon.texture = assets.chips[my_data.chip]						
+		objects.my_icon.alpha=1				
+		
+		//это если фишки совпадают
+		if (opp_data.chip===my_data.chip)
+			objects.opp_icon.tint=0x88ff88
+		else
+			objects.opp_icon.tint=0xffffff			
+	
 				
 		//воспроизводим звук о начале игры
-		sound.play('game_start');
+		sound.play('game_start')		
 		
-				
-		//восстанавливаем мое имя так как оно могло меняться
-		objects.my_card_name.set2(my_data.name,150);
-		objects.my_card_rating.text = my_data.rating;
-				
-		//показываем карточки игроков		
-		objects.my_card_cont.visible = true;
-		objects.opp_card_cont.visible = true;		
+		//заполняем мою карточку
+		objects.my_card_cont.visible = true
+		objects.my_avatar.texture=players_cache[my_data.uid].texture
+		objects.my_card_name.set2(my_data.name,150)
+		objects.my_card_rating.text = my_data.rating	
 		
-		//устанавливаем мою аватарку
-		objects.my_avatar.texture=players_cache.players[my_data.uid].texture;
-		
+		//заполняем карточку соперника
+		const opp_data_cache=players_cache[opp_data.uid]
+		objects.opp_card_cont.visible = true
+		objects.opp_avatar.texture=opp_data_cache.texture
+		objects.opp_card_name.set2(opp_data_cache.name,150)
+		objects.opp_card_rating.text = opp_data_cache.rating
+						
 		//отключаем взаимодейтсвие с доской
 		objects.field.pointerdown = this.mouse_down.bind(game);		
 			
@@ -2417,7 +2638,6 @@ game = {
 		//показываем игровое поле
 		objects.field.visible = true;		
 		
-
 		//обозначаем какой сейчас ход
 		made_moves = 0;
 		objects.cur_move_text.visible = true;
@@ -2432,8 +2652,8 @@ game = {
 		objects.my_icon.x = objects.field.x + FIELD_MARGIN_X + 4 * 50;
 		objects.opp_icon.x = objects.field.x + FIELD_MARGIN_X + 4 * 50;
 		
-		anim2.add(objects.my_icon,{y:[450, 400]}, true, 0.5,'linear');	
-		await anim2.add(objects.opp_icon,{y:[-50, 0]}, true, 0.5,'linear');	
+		anim3.add(objects.my_icon,{y:[450, 400,'linear']}, true, 0.5);	
+		await anim3.add(objects.opp_icon,{y:[-50, 0,'linear']}, true, 0.5);	
 		
 		//обновляем поле
 		ffunc.draw(this.field)	
@@ -2445,17 +2665,17 @@ game = {
 	async stop(result) {
 						
 		//отключаем взаимодейтсвие с доской
-		objects.field.pointerdown = function() {};
+		objects.field.pointerdown = function() {}
 		
 		//отключаем процессинги
-		some_process.player_selected_processing = function(){};
-		some_process.wall_processing = function(){};	
+		some_process.player_selected_processing = function(){}
+		some_process.wall_processing = function(){}
 
 
 		//включаем запрет входящих ходов - это также остановит расчет бота если он идет
 		this.opponent.no_incoming_move = 1;
 				
-		objects.move_buttons_cont.visible = false;
+		objects.move_btns_cont.visible=false
 				
 		//сначала завершаем все что связано с оппонентом
 		await this.opponent.stop(result);		
@@ -2468,43 +2688,34 @@ game = {
 		objects.opp_icon.visible = false;
 		objects.h_wall.visible = false;
 		objects.v_wall.visible = false;
-		
 		objects.cur_move_text.visible = false;
+		objects.timer_cont.visible=false;		
+		
+		//убираем кнопки
+		objects.chat_btn.visible=false
+		objects.send_sticker_btn.visible=false
+		objects.giveup_btn.visible=false
+		objects.stop_bot_btn.visible=false;
 		
 		//убираем ходы если они остались
-		this.show_my_moves(0);
+		this.show_my_moves(0)
 				
-		opp_data.uid = '';
+		opp_data.uid=''
 						
 		//показыаем рекламу		
-		ad.show();
+		ad.show()
 		
 		//устанавливаем статус в базе данных а если мы не видны то установливаем только скрытое состояние
-		set_state({state : 'o'});		
+		set_state({state:'o'})	
 		
-		main_menu.activate();
+		//показываем главное меню
+		main_menu.activate()
 			
 	},
-	
-	giveup_down() {
 		
+	stop_down() {		
 		
-		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true) {
-			sound.play('bad_move');
-			return;			
-		}
-		
-		//отправляем сопернику что мы сдались
-		firebase.database().ref("inbox/"+opp_data.uid).set({sender:my_data.uid,message:"GIVEUP",tm:Date.now()});
-		this.stop('my_giveup')
-		
-		
-	},
-	
-	stop_down() {
-		
-		
-		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true) {
+		if (objects.big_msg_cont.visible || objects.req_cont.visible) {
 			sound.play('bad_move');
 			return;			
 		}
@@ -2515,12 +2726,12 @@ game = {
 	
 	async mouse_down(e) {
 		
-		if (my_turn === 0) {
-			message.add(['Не твоя очередь','Not you turn'][LANG])
+		if (!my_turn) {
+			pmsg.add({t:['Не твоя очередь','Not you turn'][LANG]})
 			return;
 		}
 				
-		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true || objects.req_cont.visible === true || objects.my_icon.ready === false) {
+		if (objects.big_msg_cont.visible|| objects.req_cont.visible|| !objects.my_icon.ready) {
 			sound.play('bad_move');
 			return;			
 		}
@@ -2543,7 +2754,7 @@ game = {
 			sound.play('checker_tap');
 			
 			//если происходит строительство стены то отменяем
-			if (objects.move_buttons_cont.visible === true)
+			if (objects.move_btns_cont.visible)
 				this.decline_move();
 					
 			this.selected = 'me';	
@@ -2565,28 +2776,28 @@ game = {
 			}
 						
 			//выбрали новую ячейку - проверяем можно или нет
-			let s_move =_r.toString() + _c.toString();
+			let s_move =_r.toString() + _c.toString()
 			if (!this.av_moves.includes(s_move)) {
-				message.add(['Сюда нелья ходить','Invalid move'][LANG]);
-				return;				
+				pmsg.add({t:['Сюда нелья ходить','Invalid move'][LANG]})
+				return;			
 			}
 
 			sound.play('checker_tap');			
 						
 			//убираем выделение
-			this.selected = null;
+			this.selected = null
 
 			//убираем варианты движения
 			this.show_my_moves(0);	
 			
 			//плавно переставляем и ждем завершения
-			await this.update_player_pos(objects.my_icon, p.r, p.c, _r, _c);	
+			await this.update_player_pos(objects.my_icon, p.r, p.c, _r, _c)	
 			
 			//обновляем движение на поле
 			ffunc.make_move(this.field, p.r, p.c, _r , _c )
 			
 			//обновляем поле
-			ffunc.draw(this.field);			
+			ffunc.draw(this.field);		
 								
 			//отправляем ход сопернику перевернув			
 			this.process_move({type: 'move',r0 : 8 - p.r, c0 : 8 - p.c, r1: 8 - _r, c1: 8 - _c});
@@ -2597,7 +2808,7 @@ game = {
 		if (player_cell_selected === false) {
 			
 			if (this.field.pos[MY_ID].walls === 0) {
-				message.add(['Больше построить стену нельзя','You have no walls'][LANG]);
+				pmsg.add({t:['Больше построить стену нельзя','You have no walls'][LANG]})
 				return;
 			}
 			
@@ -2605,7 +2816,7 @@ game = {
 			
 			const wall_ok = this.show_wall_opt();
 			if (wall_ok === 1) {
-				objects.move_buttons_cont.visible = true;				
+				objects.move_btns_cont.visible = true;				
 				some_process.wall_processing=this.wall_processing;	
 			}
 
@@ -2615,16 +2826,16 @@ game = {
 	
 	player_selected_processing() {
 		
-		objects.my_icon.alpha = Math.abs(Math.sin(game_tick * 5));
+		objects.my_icon.alpha = Math.abs(Math.sin(TM.s * 5));
 		
 	},
 	
 	wall_processing () {
 		
 		if (objects.h_wall.visible === true)
-			objects.h_wall.alpha = Math.abs(Math.sin(game_tick * 5));
+			objects.h_wall.alpha = Math.abs(Math.sin(TM.s * 5));
 		if (objects.v_wall.visible === true)
-			objects.v_wall.alpha = Math.abs(Math.sin(game_tick * 5));
+			objects.v_wall.alpha = Math.abs(Math.sin(TM.s * 5));
 	},
 	
 	async update_player_pos(sprite, r1, c1, r2, c2) {
@@ -2634,7 +2845,7 @@ game = {
 		let x2 = objects.field.x + FIELD_MARGIN_X + c2 * 50;
 		let y2 = objects.field.y + FIELD_MARGIN_Y + r2 * 50;
 									
-		await anim2.add(sprite,{x:[x1, x2],y:[y1,y2]}, true, 0.25,'linear');
+		await anim3.add(sprite,{x:[x1, x2,'linear'],y:[y1,y2,'linear']}, true, 0.25);
 		sprite.alpha = 1;
 		
 	},
@@ -2650,7 +2861,7 @@ game = {
 		pf.f[pw.r][pw.c].wall_type = pw.wall_type;
 		
 		if (ffunc.blocked_way(pf, pf.pos[OPP_ID].r, pf.pos[OPP_ID].c, ROW8, 1) === 1) {
-			message.add(['Нельзя полностью блокировать соперника','Cannot completely block opponent'][LANG]);
+			pmsg.add({t:['Нельзя полностью блокировать соперника','Cannot completely block opponent'][LANG]});
 			return;
 		}	
 		
@@ -2658,7 +2869,7 @@ game = {
 		pf.f[pw.r][pw.c].wall_type = pw.wall_type;
 		
 		if (ffunc.blocked_way(pf, pf.pos[MY_ID].r, pf.pos[MY_ID].c, ROW0, 1) === 1) {
-			message.add(['Так у вас не будет пути до финиша','So you wanna block yourself?'][LANG]);
+			pmsg.add({t:['Так у вас не будет пути до финиша','So you wanna block yourself?'][LANG]})
 			return;
 		}
 		
@@ -2767,7 +2978,7 @@ game = {
 		objects.h_wall.visible = false;
 		objects.v_wall.visible = false;
 		this.sel_cell_wall_iter = [0,0];
-		objects.move_buttons_cont.visible = false;
+		objects.move_btns_cont.visible = false;
 		some_process.wall_processing = function(){};
 	},
 			
@@ -2789,7 +3000,7 @@ game = {
 			this.sel_cell_wall_iter[1] = 0;	
 			
 			//убираем кнопку подтверждения так как пока не понятно найдутся ли стены для данной ячейки
-			objects.move_buttons_cont.visible = false;
+			objects.move_btns_cont.visible = false;
 		}
 		
 		let g_pos = this.sel_cell_wall_iter[1];
@@ -2911,7 +3122,7 @@ game = {
 		
 		//уведомление что игра скоро закончиться
 		if (made_moves>(MAX_MOVES-5)) {
-			message.add([`После ${MAX_MOVES} хода выиграет тот кто ближе к цели`,`After ${MAX_MOVES} move the one who is closer to the goal will win`][LANG]);
+			pmsg.add({t:[`После ${MAX_MOVES} хода выиграет тот кто ближе к цели`,`After ${MAX_MOVES} move the one who is closer to the goal will win`][LANG]});
 		}
 		
 		this.update_moves_to_win(this.field);		
@@ -2924,19 +3135,19 @@ game_watching={
 	
 	game_id:0,
 	field:{},
-	on:false,
+	on:0,
 	anchor_uid:'',
 	master_uid:'',
 	slave_uid:'',
 	
 	async activate(card_data){
 		
-		this.on=true;
-		ffunc.init(this.field);	
-		objects.field.visible = true;	
-		objects.my_icon.visible = true;	
-		objects.opp_icon.visible = true;	
-		objects.stop_gw_button.visible = true;	
+		this.on=1
+		ffunc.init(this.field)
+		objects.field.visible = true
+		objects.my_icon.visible = true
+		objects.opp_icon.visible = true
+		objects.stop_gw_btn.visible = true
 		
 		this.anchor_uid=card_data.uid1;
 		
@@ -2944,12 +3155,12 @@ game_watching={
 		
 		
 		//показываем карточки игроков		
-		objects.my_card_cont.visible = true;
-		objects.opp_card_cont.visible = true;	
+		objects.my_card_cont.visible=true
+		objects.opp_card_cont.visible=true	
 		
 		//получаем остальные данные об игроке
-		const chip1 = await fbs_once('players/'+card_data.uid1+'/chip')||0;
-		const chip2 = await fbs_once('players/'+card_data.uid2+'/chip')||0;
+		const chip1=await fbs_once('players/'+card_data.uid1+'/chip')||0
+		const chip2=await fbs_once('players/'+card_data.uid2+'/chip')||0
 			
 		
 		//фишки
@@ -2960,16 +3171,16 @@ game_watching={
 		else
 			objects.picon1.tint=objects.opp_icon.tint=0xffffff;
 		
-		objects.my_icon.texture =objects.picon0.texture=assets['chip'+chip1];
-		objects.opp_icon.texture =objects.picon1.texture=assets['chip'+chip2];
+		objects.my_icon.texture =objects.picon0.texture=assets.chips[chip1]
+		objects.opp_icon.texture =objects.picon1.texture=assets.chips[chip2]
 		
 		objects.picon0.visible=objects.picon1.visible=true;
 		
 		//аватарки		
 		const main_data=await fbs_once('tables/'+this.game_id);
 		
-		const master_data=players_cache.players[card_data.uid1];
-		const slave_data=players_cache.players[card_data.uid2];
+		const master_data=players_cache[card_data.uid1];
+		const slave_data=players_cache[card_data.uid2];
 		objects.my_avatar.texture=master_data.texture;
 		objects.opp_avatar.texture=slave_data.texture;	
 		
@@ -2994,20 +3205,29 @@ game_watching={
 	},
 	
 	stop_and_return(){
+		
+		if (anim3.any_on()) {
+			sound.play('locked');
+			return;
+		}
+		sound.play('close_it');
+		
 		this.close();
 		lobby.activate();		
 	},
 	
 	async new_move(data){
 		
-		if(data===null || data===undefined)
+		if(data===null || data===undefined || objects.big_msg_cont.visible)
 			return;
-		
-		if(data.fin_flag){
+			
+		if(data.fin_flag){			
 			await big_message.show("This game is finished",")))",false);
 			this.stop_and_return();
 			return;
 		}
+		
+		sound.play('gw_move')
 		
 		
 		//обновляем доску
@@ -3077,16 +3297,16 @@ game_watching={
 	
 	close(){
 		
-		objects.field.visible = false;	
-		objects.my_icon.visible = false;	
-		objects.opp_icon.visible = false;	
-		objects.my_card_cont.visible = false;
-		objects.stop_gw_button.visible = false;	
-		objects.opp_card_cont.visible = false;	
-		objects.walls.forEach(w=>{w.visible=false});
-		objects.picon0.visible=objects.picon1.visible=false;
-		firebase.database().ref("tables/"+this.game_id).off();		
-		this.on=false;
+		objects.field.visible = false;
+		objects.my_icon.visible = false
+		objects.opp_icon.visible = false
+		objects.my_card_cont.visible = false
+		objects.stop_gw_btn.visible = false
+		objects.opp_card_cont.visible = false
+		objects.walls.forEach(w=>{w.visible=false})
+		objects.picon0.visible=objects.picon1.visible=false
+		firebase.database().ref("tables/"+this.game_id).off()	
+		this.on=0
 
 	}
 	
@@ -3120,27 +3340,27 @@ game_tutor={
 		
 		this.on=1;
 		
-		objects.my_icon.texture = assets['chip4'];
-		objects.opp_icon.texture = assets['chip5'];
+		objects.my_icon.texture = assets.chips[4]
+		objects.opp_icon.texture = assets.chips[5]
 		
 		//это то что могло остаться от игры с ботом
 		objects.move_opt_cont.visible=false;
-		objects.stop_bot_button.visible=true;
-		objects.stop_bot_button.pointerdown=function(){game_tutor.stop()};
+		objects.stop_bot_btn.visible=true;
+		objects.stop_bot_btn.pointerdown=function(){game_tutor.stop()};
 		some_process.player_selected_processing = function(){};
 		
-		objects.move_confirm_button.interactive=false;
-		objects.move_decline_button.interactive=false;
+		objects.move_confirm_btn.interactive=false;
+		objects.move_decline_btn.interactive=false;
 											
 		//показываем карточки игроков		
 		objects.my_card_cont.visible = true;
 		objects.my_card_name.text=['Игрок 1', 'Player 1'][LANG];
-		objects.my_avatar.texture=assets['chip4'];
+		objects.my_avatar.texture=assets.chips[4];
 		objects.my_card_rating.text='-';
 		
 		objects.opp_card_cont.visible = true;		
 		objects.opp_card_name.text=['Игрок 2', 'Player 2'][LANG];
-		objects.opp_avatar.texture=assets['chip5'];
+		objects.opp_avatar.texture=assets.chips[5];
 		objects.opp_card_rating.text='-';
 		
 		//отключаем взаимодейтсвие с доской
@@ -3170,8 +3390,8 @@ game_tutor={
 		objects.opp_icon.r=0;
 		objects.opp_icon.c=4;
 		
-		anim2.add(objects.my_icon,{y:[450, 400]}, true, 0.5,'linear');	
-		anim2.add(objects.opp_icon,{y:[-50, 0]}, true, 0.5,'linear');	
+		anim3.add(objects.my_icon,{y:[450, 400,'linear']}, true, 0.5);	
+		anim3.add(objects.opp_icon,{y:[-50, 0,'linear']}, true, 0.5);	
 		
 		//обновляем поле
 		ffunc.draw(game.field)		
@@ -3184,7 +3404,7 @@ game_tutor={
 	
 	stop(){
 		
-		if (anim2.any_on()) return;
+		if (anim3.any_on()) return;
 		sound.play('click')
 		this.close();
 		main_menu.activate();		
@@ -3202,12 +3422,13 @@ game_tutor={
 				if (frame){
 					
 					if (frame.type==='anim'){
-						const obj_name=frame.obj;
-						const time=frame.time;
-						const params=frame.params;
-						const func=frame.func;
-						const vis_on_end=frame.vis_on_end;
-						anim2.add(objects[obj_name],params,vis_on_end,time,func);						
+						const obj_name=frame.obj
+						const time=frame.time
+						const func=frame.func				
+						const params=frame.params
+						Object.values(params).forEach(p=>p[2]=func)
+						const vis_on_end=frame.vis_on_end
+						anim3.add(objects[obj_name],params,vis_on_end,time)						
 					}	
 					
 					if (frame.type==='event'){
@@ -3266,8 +3487,8 @@ game_tutor={
 	close(){
 		this.on=0;
 		some_process.tutor=function(){};
-		objects.move_buttons_cont.visible=false;
-		objects.stop_bot_button.visible=false;
+		objects.move_btns_cont.visible=false;
+		objects.stop_bot_btn.visible=false;
 		objects.tutor_text_bcg.visible=false;
 		objects.hand.visible=false;
 		objects.tutor_text.visible=false;	
@@ -3285,90 +3506,139 @@ game_tutor={
 }
 
 players_cache={
-	
-	players:{},
-		
-	async my_texture_from(pic_url, timeoutMs = 3000){
-		
-		// If this is a multavatar
-		if (pic_url.includes('mavatar')) pic_url = multiavatar(pic_url);
 
-		// Create a timeout promise
-		const timeoutPromise = new Promise((_, reject) =>
-		setTimeout(() => reject(new Error('Timeout: Failed to load texture within the specified time')), timeoutMs)
-		);
+	on:0,
+	loading:{},
 
-		try {
-			// Race the texture loading against the timeout
-			const texture = await Promise.race([
-			PIXI.Texture.fromURL(pic_url), // The actual texture loading
-			timeoutPromise // The timeout
-		]);
-		return texture;
-		} catch (er) {
-			console.error(er); // Optionally log the error
-			return PIXI.Texture.WHITE; // Return a default white texture on error or timeout
-		}
-
-	},
-	
 	async update(uid,params={}){
-				
-		//если игрока нет в кэше то создаем его
-		if (!this.players[uid]) this.players[uid]={}
-							
+
 		//ссылка на игрока
-		const player=this.players[uid];
-		
-		//заполняем параметры которые дали
-		for (let param in params) player[param]=params[param];
-		
-		if (!player.name) player.name=await fbs_once('players/'+uid+'/name');
-		if (!player.rating) player.rating=await fbs_once('players/'+uid+'/rating');
-	
-		//извлекаем страну если она есть в отдельную категорию и из имени убираем
-		const country =auth2.get_country_from_name(player.name);
-		if (country){			
-			player.country=country;
-			player.name=player.name.slice(0, -4);
+		this[uid]||={}
+		const player=this[uid]
+
+		if (this.loading[uid]) return
+
+
+		while(Object.keys(this.loading).length>5){
+			console.log('Много загрузок, ждем...')
+			await new Promise(r => setTimeout(r, hf.randIntInc(400,800)));
 		}
+
+		this.loading[uid]=1
+
+		//загружаем имя если нет данных
+		if (!player.name) {
+			console.log(`загружаем name для ${uid}, заявитель ${params.source}`)
+			player.name=await fbs_once('players/'+uid+'/name')
+		}
+
+		//загружаем картинку если нет данных
+		if (!player.pic_url) {
+			console.log(`загружаем pic_url для ${uid} ${player.name}, заявитель ${params.source}`)
+			player.pic_url=await fbs_once('players/'+uid+'/pic_url')
+		}
+
+		//загружаем рейтинг если нет данных
+		if (!player.rating||params.rating) {
+			console.log(`загружаем rating для ${uid} ${player.name}, заявитель ${params.source}`)
+			player.rating=await fbs_once('players/'+uid+'/rating')
+		}
+
+		//загружаем аватар если нет данных
+		if (!player.texture) {
+			console.log(`загружаем texture для ${uid} ${player.name}, заявитель ${params.source}`)
+			player.texture=await this.my_texture_from(player.pic_url)
+		}
+
+		//переносим в req_dialog
+		//req_dialog.cache_updated(uid,player)
+
+		//переносим в чат
+		chat.cache_updated(uid,player)
+
+		//переносим в чат
+		lobby.cache_updated(uid,player)
+
+		//в турнир
+		//trnm.cache_updated(uid,player)
+
+		//в игру
+		//game.cache_updated(uid,player)
+
+		delete this.loading[uid]
+
 	},
-	
-	async update_avatar(uid){
-		
-		const player=this.players[uid];
-		if(!player) alert('Не загружены базовые параметры '+uid);
-		
-		//если текстура уже есть
-		if (player.texture) return;
-		
-		//если нет URL
-		if (!player.pic_url) player.pic_url=await fbs_once('players/'+uid+'/pic_url');
-		
-		if(player.pic_url==='https://vk.com/images/camera_100.png')
-			player.pic_url='https://akukamil.github.io/domino/vk_icon.png';
-				
-		//загружаем и записываем текстуру
-		if (player.pic_url) player.texture=await this.my_texture_from(player.pic_url);		
-		
+
+	get_pdata(uid){
+
+		if (!this[uid]) return 0
+		if (!this[uid].texture) return 0
+		return this[uid]
 	},
-	
+
+	update_params(uid,params){
+
+		//ссылка на игрока
+		this[uid]||={}
+		const player=this[uid]
+
+		//загружаем картинку если нет данных
+		if (params.pic_url)
+			player.pic_url=params.pic_url
+
+		//загружаем имя если нет данных
+		if (params.name)
+			player.name=params.name
+
+		//загружаем рейтинг если нет данных
+		if (params.rating)
+			player.rating=params.rating
+
+	},
+
+	my_texture_from(pic_url){
+
+		const white_tex = PIXI.Texture.WHITE;
+
+		if (!pic_url) return white_tex
+		
+		// Handle multiavatar
+		if (pic_url.includes('mavatar')) pic_url = multiavatar(pic_url)
+		
+		return new Promise(res => {
+			const timeout = setTimeout(() => {
+			console.log('Timeout to load: ', pic_url);
+			res(white_tex);
+		}, 2000);
+
+		PIXI.Texture.fromURL(pic_url).then(t => {
+				clearTimeout(timeout);
+				res(t||white_tex);
+			})
+			.catch((error) => {
+				clearTimeout(timeout);
+				console.error('Failed to load texture:', error);
+				res(white_tex);
+			});
+		});
+	},
+
 	async update_avatar_forced(uid, pic_url){
-		
-		const player=this.players[uid];
+
+		const player=this[uid];
 		if(!player) alert('Не загружены базовые параметры '+uid);
-						
+
 		if(pic_url==='https://vk.com/images/camera_100.png')
 			pic_url='https://akukamil.github.io/domino/vk_icon.png';
-				
+
 		//сохраняем
 		player.pic_url=pic_url;
-		
+
 		//загружаем и записываем текстуру
-		if (player.pic_url) player.texture=await this.my_texture_from(player.pic_url);	
-		
+		if (player.pic_url) player.texture=await this.my_texture_from(player.pic_url);
+
 	},
-	
+
 }
 
 keep_alive = function() {
@@ -3378,13 +3648,13 @@ keep_alive = function() {
 		//убираем из списка если прошло время с момента перехода в скрытое состояние		
 		let cur_ts = Date.now();	
 		let sec_passed = (cur_ts - hidden_state_start)/1000;		
-		if ( sec_passed > 100 )	firebase.database().ref(room_name+'/'+my_data.uid).remove();
+		if ( sec_passed > 100 )	firebase.database().ref(ROOM_NAME+'/'+my_data.uid).remove();
 		return;		
 	}
 
-	firebase.database().ref("players/"+my_data.uid+"/tm").set(firebase.database.ServerValue.TIMESTAMP);
-	firebase.database().ref("inbox/"+my_data.uid).onDisconnect().remove();
-	firebase.database().ref(room_name+'/'+my_data.uid).onDisconnect().remove();
+	fbs.ref("players/"+my_data.uid+"/tm").set(firebase.database.ServerValue.TIMESTAMP);
+	fbs.ref("inbox/"+my_data.uid).onDisconnect().remove();
+	fbs.ref(ROOM_NAME+'/'+my_data.uid).onDisconnect().remove();
 
 	set_state({});
 }
@@ -3435,7 +3705,11 @@ process_new_message = function(msg) {
 			//получение сообщение об отмене игры
 			if (msg.message==="OPP_CANCEL" )
 				game.stop('OPP_CANCEL');
-								
+					
+			//получение сообщение с ходом игорка
+			if (msg.message==='CHAT')
+				online_game.chat(msg.data);
+					
 			//получение сообщение с ходом игорка
 			if (msg.message==="MOVE")
 				game.receive_move(msg.data);
@@ -3458,79 +3732,92 @@ process_new_message = function(msg) {
 		}
 		if (msg.message==="INV_REM") {
 			//запрос игры обновляет данные оппонента поэтому отказ обрабатываем только от актуального запроса
-			if (msg.sender === req_dialog._opp_data.uid)
+			if (msg.sender === req_dialog.uid)
 				req_dialog.hide(msg.sender);
 		}
 	}
 }
 
-req_dialog={
+req_dialog = {
 
-	_opp_data : {} ,
-	
+	uid:0,
+	silent_mode_tm:0,
+
 	async show(uid) {
 
-		//если нет в кэше то загружаем из фб
-		await players_cache.update(uid);
-		await players_cache.update_avatar(uid);
-		
-		const player=players_cache.players[uid];
-		
-		sound.play('receive_sticker');	
-		
-		anim2.add(objects.req_cont,{y:[-260, objects.req_cont.sy]}, true, 0.75,'easeOutElastic');
-							
-		//Отображаем  имя и фамилию в окне приглашения
-		req_dialog._opp_data.uid=uid;		
-		req_dialog._opp_data.name=player.name;		
-		req_dialog._opp_data.rating=player.rating;
-				
-		objects.req_name.set2(player.name,200);
-		objects.req_rating.text=player.rating;
-		
-		objects.req_avatar.texture=player.texture;
 
+		//если активен режим тишины
+		const tm=Date.now();
+		if(tm<this.silent_mode_tm){
+			fbs.ref('inbox/'+uid).set({sender:my_data.uid,message:'REJECT_ALL',tm:Date.now()});
+			return;
+		}
+
+		//фиксируем UID
+		this.uid=uid
+
+		//обновляем данные
+		await players_cache.update(uid,{rating:1})
+		const pdata=players_cache[uid]
+		if (uid!==this.uid) return
+
+		sound.play('receive_sticker');
+		objects.req_deny.alpha=1
+		objects.req_ok.alpha=1
+
+		//Отображаем  имя и фамилию в окне приглашения
+		objects.req_name.text=pdata.name
+		objects.req_rating.text=pdata.rating
+		objects.req_avatar.set_texture(pdata.texture)
+
+		anim3.add(objects.req_cont, {y: [-260, objects.req_cont.sy, 'easeOutElastic']}, true, 0.75);
 
 	},
 
-	reject() {
+	deny_btn_down() {
 
-		if (objects.req_cont.ready===false || objects.req_cont.visible===false)
-			return;
+		if (anim3.any_on()){
+			sound.play('locked');
+			return;			
+		}
+
 		
+		objects.req_deny.alpha=0.4
 		sound.play('close_it');
 
-		anim2.add(objects.req_cont,{y:[objects.req_cont.sy, -260]}, false, 0.5,'easeInBack');
+		//подсветка
+		//objects.req_btn_hl.x=objects.req_deny_btn.x;
+		//objects.req_btn_hl.y=objects.req_deny_btn.y;
+		//anim3.add(objects.req_btn_hl, {alpha: [0, 1, 'ease3peaks']}, false, 0.25, false);
 
-		fbs.ref("inbox/"+req_dialog._opp_data.uid).set({sender:my_data.uid,message:"REJECT",tm:Date.now()});
+		anim3.add(objects.req_cont, {y: [objects.req_cont.sy, -260, 'easeInBack']}, false, 0.5);
+
+		fbs.ref("inbox/"+req_dialog.uid).set({sender:my_data.uid,message:'REJECT',tm:Date.now()});
 	},
 
-	accept() {
 
-		if (!objects.req_cont.ready|| !objects.req_cont.visible||objects.big_message_cont.visible|| anim2.any_on())
+	accept_btn_down() {
+
+		if (anim3.any_on()||game.state==='online'||game.state==='big_msg'||game.state==='ad') {
+			sound.play('locked');
 			return;
-		
-		//только когда бот сделал ход
-		if (state ==='b' && my_turn === 0)
-			return;
-		
-		//устанавливаем окончательные данные оппонента
-		opp_data = req_dialog._opp_data;	
-	
-		anim2.add(objects.req_cont,{y:[objects.req_cont.sy, -260]}, false, 0.5,'easeInBack');
+		}
+
+		//подсветка
+		objects.req_ok.alpha=0.4
+
+		//фиксируем ИД соперника
+		opp_data.uid=this.uid
+
+		anim3.add(objects.req_cont, {y: [objects.req_cont.sy, -260, 'easeInBack']}, false, 0.5);
 
 		//отправляем информацию о согласии играть с идентификатором игры
 		game_id=~~(Math.random()*99999);
-		firebase.database().ref("inbox/"+opp_data.uid).set({sender:my_data.uid,message:"ACCEPT",tm:Date.now(),game_id});
+		fbs.ref('inbox/'+opp_data.uid).set({sender:my_data.uid,message:'ACCEPT',tm:Date.now(),game_id:game_id});
 
-		//заполняем карточку оппонента
-		objects.opp_card_name.set2(opp_data.name,150);
-		objects.opp_card_rating.text=objects.req_rating.text;
-		objects.opp_avatar.texture=objects.req_avatar.texture;
-
-		main_menu.close();
 		lobby.close();
 		game.activate("slave" , online_game );
+		//game2.activate('slave');
 
 	},
 
@@ -3539,8 +3826,8 @@ req_dialog={
 		//если диалог не открыт то ничего не делаем
 		if (objects.req_cont.ready === false || objects.req_cont.visible === false)
 			return;
-	
-		anim2.add(objects.req_cont,{y:[objects.req_cont.sy, -260]}, false, 0.5,'easeInBack');
+
+		anim3.add(objects.req_cont, {y: [objects.req_cont.sy, -260, 'easeInBack']}, false, 0.5);
 
 	}
 
@@ -3603,7 +3890,7 @@ pref={
 				
 		//заполняем имя и аватар
 		objects.pref_name.set2(my_data.name,260);
-		objects.pref_avatar.set_texture(players_cache.players[my_data.uid].texture);	
+		objects.pref_avatar.set_texture(players_cache[my_data.uid].texture);	
 		objects.pref_rating.text=['Рейтинг: ','Rating: '][LANG]+my_data.rating;
 		objects.pref_games.text=['Игры: ','Games: '][LANG]+my_data.games;
 		
@@ -3618,9 +3905,9 @@ pref={
 		const tm=Date.now();
 		if (tm-this.last_serv_tm_check<30000) return;
 		this.last_serv_tm_check=tm;		
-		serv_tm=await my_ws.get_tms()||serv_tm;
+		SERVER_TM||=await my_ws.get_tms()
 		
-		if (!serv_tm){
+		if (!SERVER_TM){
 			this.send_info(['Ошибка получения серверного времени(((','Server time error!'][LANG]);
 			this.update_buttons();
 			return;
@@ -3635,13 +3922,13 @@ pref={
 		let lastDigit = hours % 10;
 
 		if (hours > 10 && hours < 20) {
-			return 'часов';
+			return 'hours';
 		} else if (lastDigit == 1) {
-			return 'час';
+			return 'hour';
 		} else if (lastDigit >= 2 && lastDigit <= 4) {
-			return 'часа';
+			return 'hours';
 		} else {
-			return 'часов';
+			return 'hours';
 		}
 	},
 		
@@ -3650,24 +3937,24 @@ pref={
 		objects.pref_conf_photo_btn.visible=false;
 		
 		//сколько осталось до изменения
-		this.hours_to_nick_change=Math.max(0,Math.floor(720-(serv_tm-my_data.nick_tm)*0.001/3600));
-		this.hours_to_photo_change=Math.max(0,Math.floor(720-(serv_tm-my_data.avatar_tm)*0.001/3600));
+		this.hours_to_nick_change=Math.max(0,Math.floor(720-(SERVER_TM-my_data.nick_tm)*0.001/3600));
+		this.hours_to_photo_change=Math.max(0,Math.floor(720-(SERVER_TM-my_data.avatar_tm)*0.001/3600));
 		
 		//определяем какие кнопки доступны
-		objects.pref_change_name_btn.alpha=(this.hours_to_nick_change>0||my_data.games<200||!serv_tm)?0.5:1;
-		objects.pref_arrow_left.alpha=(this.hours_to_photo_change>0||!serv_tm)?0.5:1;
-		objects.pref_arrow_right.alpha=(this.hours_to_photo_change>0||!serv_tm)?0.5:1;	
-		objects.pref_reset_avatar_btn.alpha=(this.hours_to_photo_change>0||!serv_tm)?0.5:1;	
+		objects.pref_change_name_btn.alpha=(this.hours_to_nick_change>0||my_data.games<200||!SERVER_TM)?0.5:1;
+		objects.pref_arrow_left.alpha=(this.hours_to_photo_change>0||!SERVER_TM)?0.5:1;
+		objects.pref_arrow_right.alpha=(this.hours_to_photo_change>0||!SERVER_TM)?0.5:1;	
+		objects.pref_reset_avatar_btn.alpha=(this.hours_to_photo_change>0||!SERVER_TM)?0.5:1;	
 		
 	},
 	
 	send_info(msg,timeout){
 		
 		objects.pref_info.text=msg;
-		anim2.add(objects.pref_info,{alpha:[0,1]}, true, 0.25,'linear',false);
+		anim3.add(objects.pref_info,{alpha:[0,1,'linear']}, true, 0.25,false);
 		clearTimeout(this.info_timer);
 		this.info_timer=setTimeout(()=>{
-			anim2.add(objects.pref_info,{alpha:[1,0]}, false, 0.25,'linear',false);	
+			anim3.add(objects.pref_info,{alpha:[1,0,'linear']}, false, 0.25,false);	
 		},timeout||3000);	
 	},
 	
@@ -3684,7 +3971,7 @@ pref={
 		
 		if (days_befor_change>0){
 			objects.pref_info.text=[`Поменять можно через ${days_befor_change} ${day_str}`,`Wait ${days_befor_change} days`][LANG];
-			anim2.add(objects.pref_info,{alpha:[0,1]}, false, 3,'easeBridge',false);	
+			anim3.add(objects.pref_info,{alpha:[0,1,'easeBridge']}, false, 3,false);	
 			sound.play('locked');
 			return 0;
 		}
@@ -3694,7 +3981,7 @@ pref={
 	
 	async change_name_down(){
 		
-		if (!serv_tm){
+		if (!SERVER_TM){
 			this.send_info(['Ошибка получения серверного времени(((','Server time error!'][LANG]);
 			sound.play('locked');
 			return;
@@ -3708,7 +3995,7 @@ pref={
 				
 		//провряем можно ли менять ник
 		if(this.hours_to_nick_change>0){
-			this.send_info(`Имя можно поменять через ${this.hours_to_nick_change} ${this.getHoursEnding(this.hours_to_nick_change)}.`);
+			this.send_info(`Wait  ${this.hours_to_nick_change} ${this.getHoursEnding(this.hours_to_nick_change)}.`);
 			sound.play('locked');
 			return;
 		} 
@@ -3721,7 +4008,7 @@ pref={
 		if (name&&name.replace(/\s/g, '').length>3){			
 			
 			//обновляем данные о времени
-			my_data.nick_tm=serv_tm;
+			my_data.nick_tm=SERVER_TM;
 			fbs.ref(`players/${my_data.uid}/nick_tm`).set(my_data.nick_tm);	
 						
 			my_data.name=name;	
@@ -3735,19 +4022,19 @@ pref={
 			
 		}else{			
 			this.send_info(['Неправильное имя(((','Invalid name!'][LANG]);
-			anim2.add(objects.pref_info,{alpha:[0,1]}, false, 3,'easeBridge',false);			
+			anim3.add(objects.pref_info,{alpha:[0,1,'easeBridge']}, false, 3,false);			
 		}		
 	},
 	
 	async reset_avatar_down(){
 				
-		if (!serv_tm){
+		if (!SERVER_TM){
 			this.send_info(['Ошибка получения серверного времени(((','Server time error!'][LANG]);
 			sound.play('locked');
 			return;
 		}
 								
-		if (anim2.any_on()||this.tex_loading) {
+		if (anim3.any_on()||this.tex_loading) {
 			sound.play('blocked');
 			return;
 		}
@@ -3772,7 +4059,7 @@ pref={
 	
 	conf_photo_down(){
 		
-		my_data.avatar_tm=serv_tm;		
+		my_data.avatar_tm=SERVER_TM;		
 		fbs.ref(`players/${my_data.uid}/pic_url`).set(this.cur_pic_url);
 		fbs.ref(`players/${my_data.uid}/avatar_tm`).set(my_data.avatar_tm);			
 			
@@ -3784,20 +4071,20 @@ pref={
 		//обновляем аватар в кэше
 		players_cache.update_avatar_forced(my_data.uid,this.cur_pic_url).then(()=>{
 			const my_card=objects.mini_cards.find(card=>card.uid===my_data.uid);
-			my_card.avatar.set_texture(players_cache.players[my_data.uid].texture);				
+			my_card.avatar.set_texture(players_cache[my_data.uid].texture);				
 		})	
 			
 	},
 		
 	async arrow_down(dir){
 		
-		if (!serv_tm){
+		if (!SERVER_TM){
 			this.send_info(['Ошибка получения серверного времени(((','Server time error!'][LANG]);
 			sound.play('locked');
 			return;
 		}
 		
-		if (anim2.any_on()||this.tex_loading) {
+		if (anim3.any_on()||this.tex_loading) {
 			sound.play('blocked');
 			return;
 		}				
@@ -3814,7 +4101,7 @@ pref={
 		//перелистываем аватары
 		this.avatar_swtich_cur+=dir;
 		if (this.avatar_swtich_cur===this.avatar_switch_center){
-			this.cur_pic_url=players_cache.players[my_data.uid].pic_url
+			this.cur_pic_url=players_cache[my_data.uid].pic_url
 		}else{
 			this.cur_pic_url='mavatar'+this.avatar_swtich_cur;
 		}		
@@ -3830,7 +4117,7 @@ pref={
 		
 	sound_btn_down(){
 		
-		if(anim2.any_on()){
+		if(anim3.any_on()){
 			sound.play('locked');
 			return;			
 		}
@@ -3838,7 +4125,7 @@ pref={
 		sound.switch();
 		sound.play('click');
 		const tar_x=sound.on?370:323; //-38
-		anim2.add(objects.pref_sound_slider,{x:[objects.pref_sound_slider.x,tar_x]}, true, 0.1,'linear');	
+		anim3.add(objects.pref_sound_slider,{x:[objects.pref_sound_slider.x,tar_x,'linear']}, true, 0.1);	
 		
 	},
 		
@@ -3847,22 +4134,22 @@ pref={
 		this.close();
 		
 		//показываем лобби
-		anim2.add(objects.cards_cont,{x:[800,0]}, true, 0.2,'linear');		
-		anim2.add(objects.lobby_footer_cont,{y:[450,objects.lobby_footer_cont.sy]}, true, 0.2,'linear');
+		anim3.add(objects.cards_cont,{x:[800,0,'linear']}, true, 0.2);		
+		anim3.add(objects.lobby_footer_cont,{y:[450,objects.lobby_footer_cont.sy,'linear']}, true, 0.2);
 		
 	},
 	
 	close(){
 		
 		//убираем контейнер
-		anim2.add(objects.pref_cont,{x:[objects.pref_cont.x,-800]}, false, 0.2,'linear');
-		anim2.add(objects.pref_footer_cont,{y:[objects.pref_footer_cont.y,450]}, false, 0.2,'linear');	
+		anim3.add(objects.pref_cont,{x:[objects.pref_cont.x,-800,'linear']}, false, 0.2);
+		anim3.add(objects.pref_footer_cont,{y:[objects.pref_footer_cont.y,450,'linear']}, false, 0.2);	
 		
 	},
 	
 	ok_btn_down(button_data){
 		
-		if(anim2.any_on()){
+		if(anim3.any_on()){
 			sound.play('locked');
 			return;			
 		}
@@ -3880,7 +4167,7 @@ pref={
 			objects.chip_sel_frame.alpha=0.4;
 			sound.play('note');	
 			const chip_spr=objects.pref_chip_icons[my_data.chip];
-			anim2.add(chip_spr,{scale_xy:[0.666, 1],angle:[0,10]}, true, 0.5,'ease2back');	
+			anim3.add(chip_spr,{scale_xy:[0.666, 1,'ease2back'],angle:[0,10,'ease2back']}, true, 0.5);	
 		}else{
 			sound.play('locked');	
 			this.send_info(['Это ваша текущая фишка!','This is your current chip!'][LANG]);
@@ -3894,7 +4181,7 @@ pref={
 		const req=pref.ICONS_DATA[this.chip_id];
 		if(my_data.rating<req.rating&&my_data.games<req.games){		
 			sound.play('locked');	
-			anim2.add(objects.pref_info,{alpha:[0,1]}, false, 3,'easeBridge',false);	
+			anim3.add(objects.pref_info,{alpha:[0,1,'easeBridge']}, false, 3,false);	
 			objects.pref_info.text=[`Нужно: рейтинг>${req.rating} или игры>${req.games}`,`Need: rating>${req.rating} or games>${req.games}`][LANG];
 			return;
 		}		
@@ -3998,94 +4285,91 @@ ad={
 }
 
 stickers={
-	
+
 	promise_resolve_send :0,
 	promise_resolve_recive :0,
 
-	show_panel: function() {
+	show_panel() {
 
-		
-		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true || objects.stickers_cont.ready===false) {
-			sound.play('bad_move');
-			return;			
+
+		if (!online_game.on || objects.req_cont.visible || !objects.stickers_cont.ready || state!=="p") {
+			sound.play('locked')
+			return
 		}
-
-		sound.play('click');
-
-		//ничего не делаем если панель еще не готова
-		if (objects.stickers_cont.ready===false || objects.stickers_cont.visible===true || state!=="p")
-			return;
+		
+		sound.play('click')
 
 		//анимационное появление панели стикеров
-		anim2.add(objects.stickers_cont,{y:[450, objects.stickers_cont.sy]}, true, 0.5,'easeOutBack');
+		anim3.add(objects.stickers_cont,{y:[450, objects.stickers_cont.sy,'easeOutBack']}, true, 0.5);
 
 	},
 
-	hide_panel: function() {
+	hide_panel() {
+
+		//game_res.resources.close.sound.play();
 
 		if (objects.stickers_cont.ready===false)
 			return;
 
 		//анимационное появление панели стикеров
-		anim2.add(objects.stickers_cont,{y:[objects.stickers_cont.sy, -450]}, false, 0.5,'easeInBack');
+		anim3.add(objects.stickers_cont,{y:[objects.stickers_cont.sy, -450,'easeInBack']}, false, 0.5);
 
 	},
 
-	send : async function(id) {
+	async send(id) {
 
-		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true || objects.stickers_cont.ready===false) {
-			sound.play('bad_move');
-			return;			
+		if (!online_game.on || objects.req_cont.visible || !objects.stickers_cont.ready || state!=="p") {
+			sound.play('locked')
+			return
 		}
-		
+
 		if (this.promise_resolve_send!==0)
 			this.promise_resolve_send("forced");
 
 		this.hide_panel();
 
-		firebase.database().ref("inbox/"+opp_data.uid).set({sender:my_data.uid,message:"MSG",tm:Date.now(),data:id});
-		message.add(['Стикер отправлен сопернику','Sticker was sent to the opponent'][LANG]);
+		fbs.ref('inbox/'+opp_data.uid).set({sender:my_data.uid,message:"MSG",tm:Date.now(),data:id});
+		pmsg.add({t:['Стикер отправлен сопернику','Sticker sent!'][LANG]})
 
 		//показываем какой стикер мы отправили
-		objects.sent_sticker_area.texture=assets['sticker_texture_'+id];
-		
-		await anim2.add(objects.sent_sticker_area,{alpha:[0, 0.5]}, true, 0.5,'linear');
-		
+		//objects.sent_sticker_area.texture=assets['sticker_texture_'+id];
+		//await anim3.add(objects.sent_sticker_area,{alpha:[0, 0.5]}, true, 0.5,'linear');
+
 		let res = await new Promise((resolve, reject) => {
 				stickers.promise_resolve_send = resolve;
 				setTimeout(resolve, 2000)
 			}
 		);
-		
+
 		if (res === "forced")
 			return;
 
-		await anim2.add(objects.sent_sticker_area,{alpha:[0.5, 0]}, false, 0.5,'linear');
+		//await anim3.add(objects.sent_sticker_area,{alpha:[0.5, 0]}, false, 0.5,'linear');
 	},
 
-	receive: async function(id) {
+	async receive(id) {
 
-		
+
 		if (this.promise_resolve_recive!==0)
 			this.promise_resolve_recive("forced");
 
 		//воспроизводим соответствующий звук
-		sound.play('receive_sticker');
+		sound.play('receive_sticker')
 
 		objects.rec_sticker_area.texture=assets['sticker_texture_'+id];
-	
-		await anim2.add(objects.rec_sticker_area,{x:[-150, objects.rec_sticker_area.sx]}, true, 0.5,'easeOutBack');
+
+		await anim3.add(objects.rec_sticker_area,{x:[-150, objects.rec_sticker_area.sx,'easeOutBack']}, true, 0.5);
 
 		let res = await new Promise((resolve, reject) => {
 				stickers.promise_resolve_recive = resolve;
 				setTimeout(resolve, 2000)
 			}
 		);
-		
+
 		if (res === "forced")
 			return;
 
-		anim2.add(objects.rec_sticker_area,{x:[objects.rec_sticker_area.sx, -150]}, false, 0.5,'easeInBack');
+		anim3.add(objects.rec_sticker_area,{x:[objects.rec_sticker_area.sx, -150,'easeInBack']}, false, 0.5);
 
 	}
 
@@ -4098,17 +4382,16 @@ main_menu={
 	
 	activate() {
 		
-		//objects.tutor_button.visible=false;
 		//просто добавляем контейнер с кнопками
-		objects.desktop.texture=assets.desktop;
-		objects.desktop.visible = true;
+		objects.bcg.texture=assets.bcg;
+		objects.bcg.visible = true;
 		
-		//anim2.add(objects.maze_logo_top,{alpha: [0,1]}, true, 1,'easeInOutCubic');
-		anim2.add(objects.maze_logo,{alpha: [0,1],y:[-200, objects.maze_logo.sy]}, true, 1,'linear');
-		anim2.add(objects.main_buttons_cont,{y:[450, objects.main_buttons_cont.sy],alpha: [0,1]}, true, 0.75,'linear');
+		//anim3.add(objects.maze_logo_top,{alpha: [0,1]}, true, 1,'easeInOutCubic');
+		anim3.add(objects.maze_logo,{alpha: [0,1,'linear'],y:[-200, objects.maze_logo.sy,'linear']}, true, 1);
+		anim3.add(objects.main_btns_cont,{y:[450, objects.main_btns_cont.sy,'linear'],alpha: [0,1,'linear']}, true, 0.75);
 				
-		anim2.add(objects.flame_0,{alpha: [0,1]}, true, 0.5,'linear');
-		anim2.add(objects.flame_1,{alpha: [0,1]}, true, 0.2,'linear');
+		anim3.add(objects.flame_0,{alpha: [0,1,'linear']}, true, 0.5);
+		anim3.add(objects.flame_1,{alpha: [0,1,'linear']}, true, 0.2);
 		
 		objects.flame_0.play();
 		objects.flame_1.play();
@@ -4119,15 +4402,15 @@ main_menu={
 
 	async close() {
 
-		anim2.add(objects.maze_logo,{alpha: [1,0]}, false, 0.5,'linear');
-		anim2.add(objects.main_buttons_cont,{y:[ objects.main_buttons_cont.y, 450],alpha: [1,0]}, true, 0.5,'linear');
-		anim2.add(objects.flame_0,{alpha: [1,0]}, false, 0.5,'linear');
-		anim2.add(objects.flame_1,{alpha: [1,0]}, false, 0.2,'linear');
+		anim3.add(objects.maze_logo,{alpha: [1,0,'linear']}, false, 0.5);
+		anim3.add(objects.main_btns_cont,{y:[ objects.main_btns_cont.y, 450,'linear'],alpha: [1,0,'linear']}, true, 0.5);
+		anim3.add(objects.flame_0,{alpha: [1,0,'linear']}, false, 0.5);
+		anim3.add(objects.flame_1,{alpha: [1,0,'linear']}, false, 0.2);
 	},
 
-	play_button_down: async function () {
+	play_btn_down: async function () {
 
-		if (objects.big_message_cont.visible === true || objects.id_cont.visible === true || objects.req_cont.visible === true ||  objects.main_buttons_cont.ready === false) {
+		if (objects.big_msg_cont.visible === true || objects.id_cont.visible === true || objects.req_cont.visible === true ||  objects.main_btns_cont.ready === false) {
 			sound.play('bad_move');
 			return;			
 		}
@@ -4140,9 +4423,9 @@ main_menu={
 
 	},
 
-	lb_button_down () {
+	lb_btn_down () {
 
-		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.main_buttons_cont.ready === false) {
+		if (objects.big_msg_cont.visible === true || objects.req_cont.visible === true ||  objects.main_btns_cont.ready === false) {
 			sound.play('bad_move');
 			return;			
 		}
@@ -4154,9 +4437,9 @@ main_menu={
 
 	},
 
-	rules_button_down () {
+	rules_btn_down () {
 
-		if (objects.big_message_cont.visible|| objects.req_cont.visible|| !objects.main_buttons_cont.ready||!objects.rules_cont.ready) {
+		if (objects.big_msg_cont.visible|| objects.req_cont.visible|| !objects.main_btns_cont.ready||!objects.rules_cont.ready) {
 			sound.play('bad_move');
 			return;			
 		}
@@ -4168,13 +4451,13 @@ main_menu={
 		objects.chip_sel_frame.x=objects.chip_icons[my_data.chip].x-10;
 		objects.chip_sel_frame.y=objects.chip_icons[my_data.chip].y-10;
 	
-		anim2.add(objects.rules_cont,{y:[-450, objects.rules_cont.sy]}, true, 0.5,'easeOutBack');
+		anim3.add(objects.rules_cont,{y:[-450, objects.rules_cont.sy,'easeOutBack']}, true, 0.5);
 
 	},
 
-	tutor_button_down(){
+	tutor_btn_down(){
 		
-		if (objects.big_message_cont.visible|| objects.req_cont.visible||anim2.any_on()) {
+		if (objects.big_msg_cont.visible|| objects.req_cont.visible||anim3.any_on()) {
 			sound.play('locked');
 			return
 		};
@@ -4187,7 +4470,7 @@ main_menu={
 
 	rules_ok_down () {
 		
-		if (objects.big_message_cont.visible === true || objects.req_cont.visible === true ||  objects.rules_cont.ready === false) {
+		if (objects.big_msg_cont.visible === true || objects.req_cont.visible === true ||  objects.rules_cont.ready === false) {
 			sound.play('bad_move');
 			return;			
 		}
@@ -4196,12 +4479,12 @@ main_menu={
 		
 
 		
-		anim2.add(objects.rules_cont,{y:[objects.rules_cont.y,-450, ]}, false, 0.5,'easeInBack');
+		anim3.add(objects.rules_cont,{y:[objects.rules_cont.y,-450,'easeInBack']}, false, 0.5);
 	},
 
-	async chat_button_down() {
+	async chat_btn_down() {
 		
-		if (anim2.any_on()===true) {
+		if (anim3.any_on()===true) {
 			sound.play('locked');
 			return
 		};
@@ -4220,212 +4503,249 @@ main_menu={
 }
 
 chat={
-	
+
+	on:0,
 	last_record_end : 0,
 	drag : false,
 	data:[],
 	touch_y:0,
 	drag_chat:false,
 	drag_sx:0,
-	drag_sy:-999,	
+	drag_sy:-999,
 	recent_msg:[],
 	moderation_mode:0,
 	block_next_click:0,
 	kill_next_click:0,
 	delete_message_mode:0,
-	games_to_chat:-1,
+	games_to_chat:0,
+	games_to_gif:100,
 	payments:0,
 	processing:0,
-	
-	activate() {	
 
-		anim2.add(objects.chat_cont,{alpha:[0, 1]}, true, 0.1,'linear');
-		objects.desktop.texture=assets.lobby_bcg;
-		objects.chat_enter_btn.visible=my_data.games>=this.games_to_chat;
+	activate() {
+
+		this.on=1;
+		anim3.add(objects.chat_cont, {alpha: [0, 1, 'linear']}, true, 0.1);
 		
-		objects.chat_rules.visible=false;
-		//objects.chat_rules.text='Правила чата!\n1. Будьте вежливы: Общайтесь с другими игроками с уважением. Избегайте угроз, грубых выражений, оскорблений, конфликтов.\n2. Отправлять сообщения в чат могут игроки сыгравшие более 200 онлайн партий.\n3. За нарушение правил игрок может попасть в черный список.'
+		objects.chat_enter_btn.alpha=my_data.games>=this.games_to_chat?1:0.25
+		objects.chat_gif_btn.alpha=my_data.games>=this.games_to_gif?1:0.25
+
+		objects.bcg.interactive=true;
+		objects.bcg.pointermove=this.pointer_move.bind(this);
+		objects.bcg.pointerdown=this.pointer_down.bind(this);
+		objects.bcg.pointerup=this.pointer_up.bind(this);
+		objects.bcg.pointerupoutside=this.pointer_up.bind(this);
+
+
+		objects.chat_rules.text='Правила чата!\n1. Будьте вежливы: Общайтесь с другими игроками с уважением. Избегайте угроз, грубых выражений, оскорблений, конфликтов.\n2. Отправлять сообщения в чат могут игроки сыгравшие более 200 онлайн партий.\n3. За нарушение правил игрок может попасть в черный список.'
 		if(my_data.blocked) objects.chat_rules.text='Вы не можете писать в чат, так как вы находитесь в черном списке';
 
+		//вопроизводитим гифки
+		objects.chat_records.forEach(r=>{
+			if(r.visible&&r.gif.visible)
+				r.gif.texture.baseTexture.resource.source.play();
+		})
+
+		this.shift(-2000);
 	},
-	
+
+	new_message(data){
+
+		console.log('new_data',data);
+
+	},
+
 	async init(){
-		
+
 		this.last_record_end = 0;
-		objects.chat_msg_cont.y = objects.chat_msg_cont.sy;		
-		objects.desktop.interactive=true;
-		objects.desktop.pointermove=this.pointer_move.bind(this);
-		objects.desktop.pointerdown=this.pointer_down.bind(this);
-		objects.desktop.pointerup=this.pointer_up.bind(this);
-		objects.desktop.pointerupoutside=this.pointer_up.bind(this);
-		
+		objects.chat_msg_cont.y = objects.chat_msg_cont.sy;
+
 		for(let rec of objects.chat_records) {
-			rec.visible = false;			
-			rec.msg_id = -1;	
+			rec.visible = false;
+			rec.msg_id = -1;
 			rec.tm=0;
-		}		
+		}
 
-		this.init_yandex_payments();
+		this.init_yandex_payments()
 
-		await my_ws.init();	
+		//загружаем чат
+		const chat_data=await my_ws.get('chat',25)
 
-		//загружаем чат		
-		const chat_data=await my_ws.get('chat',25);
-		
 		await this.chat_load(chat_data);
-		
+
 		//подписываемся на новые сообщения
 		my_ws.ss_child_added('chat',chat.chat_updated.bind(chat))
-		
+
 		console.log('Чат загружен!')
-	},	
-	
+	},
+
 	init_yandex_payments(){
-				
-		if (game_platform!=='YANDEX') return;			
-				
+
+		if (game_platform!=='YANDEX') return;
+
 		if(this.payments) return;
-		
+
 		ysdk.getPayments({ signed: true }).then(_payments => {
 			chat.payments = _payments;
-		}).catch(err => {})			
-		
-	},	
+		}).catch(err => {})
 
-	fix_name(uid){
+	},
+
+	gif_btn_down(){
 		
-		fbs.ref('players/'+uid+'/name').set(auth.get_random_name(uid));
-		fbs.ref('players/'+uid+'/nick_tm').set(2728556930444);
+		if (anim3.any_on()) {
+			sound.play('locked');
+			return
+		}
 		
+		if (my_data.games<this.games_to_gif){
+			const left_to_play=this.games_to_gif-my_data.games
+			pmsg.add({t:`Need to play ${this.games_to_gif} games.\Left to play: ${left_to_play}`,snd:'locked'})
+			return
+		}
+		
+		if (!SERVER_TM) {
+			pmsg.add({t:'Locked!',snd:'locked'})
+			return
+		}
+		gif_sel.activate()
 	},
 
 	get_oldest_index () {
-		
-		let oldest = {tm:9671801786406 ,visible:true};		
+
+		let oldest = {tm:9671801786406 ,visible:true};
 		for(let rec of objects.chat_records)
 			if (rec.tm < oldest.tm)
-				oldest = rec;	
-		return oldest.index;		
-		
+				oldest = rec;
+		return oldest.index;
+
 	},
-	
+
 	get_oldest_or_free_msg () {
-		
+
 		//проверяем пустые записи чата
 		for(let rec of objects.chat_records)
 			if (!rec.visible)
 				return rec;
-		
+
 		//если пустых нет то выбираем самое старое
-		let oldest = {tm:9671801786406};		
+		let oldest = {tm:9671801786406};
 		for(let rec of objects.chat_records)
 			if (rec.visible===true && rec.tm < oldest.tm)
-				oldest = rec;	
-		return oldest;		
-		
+				oldest = rec;
+		return oldest;
+
 	},
-		
-	block_player(uid){
-		
+
+	async block_player(uid){
+
 		fbs.ref('blocked/'+uid).set(Date.now());
 		fbs.ref('inbox/'+uid).set({message:'CHAT_BLOCK',tm:Date.now()});
-		
+		const name=await fbs_once(`players/${uid}/name`);
+		const msg=`Игрок ${name} занесен в черный список.`;
+		my_ws.socket.send(JSON.stringify({cmd:'push',path:'chat',val:{uid:'admin',name:'Админ',msg,tm:'TMS'}}));
+
 		//увеличиваем количество блокировок
 		fbs.ref('players/'+uid+'/block_num').transaction(val=> {return (val || 0) + 1});
-		
+
 	},
-		
+
 	async chat_load(data) {
-		
-		if (data === null) return;
-		
+
+		if (!data) return;
+
 		//превращаем в массив
 		data = Object.keys(data).map((key) => data[key]);
-		
+
 		//сортируем сообщения от старых к новым
 		data.sort(function(a, b) {	return a.tm - b.tm;});
-			
+
 		//покаываем несколько последних сообщений
 		for (let c of data)
-			await this.chat_updated(c,true);	
-		
-	},	
-				
-	async chat_updated(data, first_load) {		
-	
-		//console.log('receive message',data)
-		if(data===undefined||!data.msg||!data.name||!data.uid) return;
-				
+			await this.chat_updated(c,true);
+	},
+
+	async chat_updated(data, first_load) {
+
+		//console.log('chat_updated:',JSON.stringify(data).length);
+		if(data===undefined||!data.name||!data.uid) return
+
 		//ждем пока процессинг пройдет
-		for (let i=0;i<10;i++){			
+		for (let i=0;i<10;i++){
 			if (this.processing)
-				await new Promise(resolve => setTimeout(resolve, 250));				
+				await new Promise(resolve => setTimeout(resolve, 250));
 			else
-				break;				
+				break;
 		}
 		if (this.processing) return;
-		
+
 		this.processing=1;
-		
+
 		//выбираем номер сообщения
 		const new_rec=this.get_oldest_or_free_msg();
 		const y_shift=await new_rec.set(data);
 		new_rec.y=this.last_record_end;
-		
-		this.last_record_end += y_shift;		
+
+		this.last_record_end += y_shift;
 
 		if (!first_load)
 			lobby.inst_message(data);
-		
+
 		//смещаем на одно сообщение (если чат не видим то без твина)
 		if (objects.chat_cont.visible)
-			await anim2.add(objects.chat_msg_cont,{y:[objects.chat_msg_cont.y,objects.chat_msg_cont.y-y_shift]},true, 0.05,'linear');		
+			await anim3.add(objects.chat_msg_cont, {y: [objects.chat_msg_cont.y, objects.chat_msg_cont.y-y_shift, 'linear']}, true, 0.05);
 		else
 			objects.chat_msg_cont.y-=y_shift
-		
+
 		this.processing=0;
-		
+
 	},
-						
+
+	cache_updated(uid,pdata){
+
+		//if (!this.on) return
+		for(let rec of objects.chat_records)
+			if (rec.visible&&rec.uid===uid)
+				rec.avatar.set_texture(pdata.texture)
+	},
+
 	avatar_down(player_data){
-		
+
+		if (player_data.uid==='admin')
+			return;
+
 		if (this.moderation_mode){
 			console.log(player_data.index,player_data.uid,player_data.name.text,player_data.msg.text);
 			fbs_once('players/'+player_data.uid+'/games').then((data)=>{
 				console.log('сыграно игр: ',data)
 			})
 		}
-		
-		if (this.block_next_click){			
+
+		if (this.block_next_click){
 			this.block_player(player_data.uid);
 			console.log('Игрок заблокирован: ',player_data.uid);
 			this.block_next_click=0;
 		}
-		
-		if (this.kill_next_click){			
-			fbs.ref('inbox/'+player_data.uid).set({message:'CLIEND_ID',tm:Date.now(),client_id:999999});
+
+		if (this.kill_next_click){
+			fbs.ref('inbox/'+player_data.uid).set({message:'client_id',tm:Date.now(),client_id:999999});
 			console.log('Игрок убит: ',player_data.uid);
 			this.kill_next_click=0;
 		}
-		
-		if(this.delete_message_mode){			
-			fbs.ref(`${chat_path}/${player_data.index}`).remove();
-			console.log(`сообщение ${player_data.index} удалено`)
-		}
-		
-		
+
+
 		if(this.moderation_mode||this.block_next_click||this.kill_next_click||this.delete_message_mode) return;
-		
-		if (objects.chat_keyboard_cont.visible)		
+
+		if (objects.chat_keyboard_cont.visible)
 			keyboard.response_message(player_data.uid,player_data.name.text);
 		else
-			lobby.show_invite_dialog_from_chat(player_data.uid,player_data.name.text);
-		
-		
+			lobby.show_invite_dlg_from_chat(player_data.uid);
+
+
 	},
-			
+
 	get_abs_top_bottom(){
-		
+
 		let top_y=999999;
 		let bot_y=-999999
 		for(let rec of objects.chat_records){
@@ -4434,167 +4754,169 @@ chat={
 				const cur_abs_bot=objects.chat_msg_cont.y+rec.y+rec.height;
 				if (cur_abs_top<top_y) top_y=cur_abs_top;
 				if (cur_abs_bot>bot_y) bot_y=cur_abs_bot;
-			}		
+			}
 		}
-		
-		return [top_y,bot_y];				
-		
+
+		return [top_y,bot_y];
+
 	},
-	
+
 	back_btn_down(){
-		
-		if (anim2.any_on()===true) {
+
+		if (anim3.any_on()) {
 			sound.play('locked');
 			return
 		};
-		
-		sound.play('click');
+
+		sound.play('close_it');
 		this.close();
 		lobby.activate();
-		
+
 	},
-	
-	pointer_move(e){		
-	
+
+	pointer_move(e){
+
 		if (!this.drag_chat) return;
 		const mx = e.data.global.x/app.stage.scale.x;
 		const my = e.data.global.y/app.stage.scale.y;
-		
-		const dy=my-this.drag_sy;		
+
+		const dy=my-this.drag_sy;
 		this.drag_sy=my;
-		
+
 		this.shift(dy);
 
 	},
-	
+
 	pointer_down(e){
-		
+
 		const px=e.data.global.x/app.stage.scale.x;
 		this.drag_sy=e.data.global.y/app.stage.scale.y;
-		
+
 		this.drag_chat=true;
-		objects.chat_cont.by=objects.chat_cont.y;				
+		objects.chat_cont.by=objects.chat_cont.y;
 
 	},
-	
+
 	pointer_up(){
-		
+
 		this.drag_chat=false;
-		
+
 	},
-	
-	shift(dy) {				
-		
+
+	shift(dy) {
+
 		const [top_y,bot_y]=this.get_abs_top_bottom();
-		
+
 		//проверяем движение чата вверх
 		if (dy<0){
 			const new_bottom=bot_y+dy;
 			const overlap=435-new_bottom;
 			if (new_bottom<435) dy+=overlap;
 		}
-	
+
 		//проверяем движение чата вниз
 		if (dy>0){
 			const new_top=top_y+dy;
 			if (new_top>50)
 				return;
 		}
-		
+
 		objects.chat_msg_cont.y+=dy;
-		
+
 	},
-		
+
 	wheel_event(delta) {
-		
-		objects.chat_msg_cont.y-=delta*50;	
-		const chat_bottom = this.last_record_end;
-		const chat_top = this.last_record_end - objects.chat_records.filter(obj => obj.visible === true).length*70;
-		
-		if (objects.chat_msg_cont.y+chat_bottom<430)
-			objects.chat_msg_cont.y = 430-chat_bottom;
-		
-		if (objects.chat_msg_cont.y+chat_top>0)
-			objects.chat_msg_cont.y=-chat_top;
-		
+
+		this.shift(-delta*30)
+
 	},
-		
+
 	async write_btn_down(){
-		
-		if (anim2.any_on()===true) {
-			sound.play('locked');
+
+		if (anim3.any_on()) {
+			sound.play('locked')
 			return
 		};
-		
-		
+
+		if (my_data.games<this.games_to_chat){
+			const left_to_play=this.games_to_chat-my_data.games
+			pmsg.add({t:`Need to play ${this.games_to_chat} games.\nLeft to play: ${left_to_play}`,snd:'locked'})
+			return
+		}
+
 		//оплата разблокировки чата
-		if (my_data.blocked){	
-		
+		if (my_data.blocked){
+
 			let block_num=await fbs_once('players/'+my_data.uid+'/block_num');
 			block_num=block_num||1;
-			block_num=Math.min(6,block_num);
-		
+			block_num=Math.min(9,block_num);
+			const item_id='unblock'+block_num
+			
 			if(game_platform==='YANDEX'){
 				
-				this.payments.purchase({ id: 'unblock'+block_num}).then(purchase => {
-					this.unblock_chat();
+				
+				this.payments.purchase({id:item_id}).then(purchase => {
+					this.unblock_chat(block_num)
+					my_ws.safe_send({cmd:'log_inst',logger:'payments',data:{game_name,uid:my_data.uid,name:my_data.name,item_id}});
 				}).catch(err => {
-					message.add('Ошибка при покупке!');
-				})				
+					pmsg.add({t:'Ошибка при покупке!'});
+				})
 			}
-			
+
 			if (game_platform==='VK') {
-				
-				vkBridge.send('VKWebAppShowOrderBox', { type: 'item', item: 'unblock'+block_num}).then(data =>{
-					this.unblock_chat();
+
+				vkBridge.send('VKWebAppShowOrderBox', {type:'item',item:item_id}).then(data =>{
+					this.unblock_chat(block_num)
+					my_ws.safe_send({cmd:'log_inst',logger:'payments',data:{game_name,uid:my_data.uid,name:my_data.name,item_id}});
 				}).catch((err) => {
-					message.add('Ошибка при покупке!');
-				});			
-			
-			};			
-				
+					pmsg.add({t:'Ошибка при покупке!'});
+				});
+
+			};
+
 			return;
 		}
-		
-		
+
+
 		sound.play('click');
-		
+
 		//убираем метки старых сообщений
 		const cur_dt=Date.now();
 		this.recent_msg = this.recent_msg.filter(d =>cur_dt-d<60000);
-				
+
 		if (this.recent_msg.length>3){
-			message.add('Подождите 1 минуту')
+			pmsg.add({t:['Подождите 1 минуту','Wait 1 minute...'][LANG]})
 			return;
-		}		
-		
+		}
+
 		//добавляем отметку о сообщении
 		this.recent_msg.push(Date.now());
-		
-		//пишем сообщение в чат и отправляем его		
-		const msg = await keyboard.read(70);		
-		if (msg)			
-			my_ws.safe_send({cmd:'push',path:'chat',val:{uid:my_data.uid,name:my_data.name,msg,tm:'TMS'}});
-		
-		
+
+		//пишем сообщение в чат и отправляем его
+		const msg = await keyboard.read(70);
+		if (msg)
+			my_ws.safe_send({cmd:'push',path:'chat',val:{uid:my_data.uid,name:my_data.name,msg,tm:'TMS'}})
 	},
-	
+
 	unblock_chat(){
 		objects.chat_rules.text='Правила чата!\n1. Будьте вежливы: Общайтесь с другими игроками с уважением. Избегайте угроз, грубых выражений, оскорблений, конфликтов.\n2. Отправлять сообщения в чат могут игроки сыгравшие более 200 онлайн партий.\n3. За нарушение правил игрок может попасть в черный список.'
-		objects.chat_enter_button.texture=assets.chat_enter_img;	
+		objects.chat_enter_btn.texture=assets.chat_enter_img;
 		fbs.ref('blocked/'+my_data.uid).remove();
 		my_data.blocked=0;
-		message.add('Вы разблокировали чат');
-		sound.play('mini_dialog');	
+		pmsg.add({t:'Вы разблокировали чат'});
+		sound.play('mini_dialog');
 	},
-		
+
 	close() {
-		
-		anim2.add(objects.chat_cont,{alpha:[1, 0]}, false, 0.1,'linear');
-		if (objects.chat_keyboard_cont.visible)
-			keyboard.close();
+
+		this.on=0;
+		anim3.add(objects.chat_cont,{alpha:[1, 0,'linear']}, false, 0.1);
+		if (objects.chat_keyboard_cont.visible)	keyboard.close()
+		if (objects.invite_cont.visible) objects.invite_cont.visible=false
+		if (objects.gif_sel_cont.visible) gif_sel.close()	
+
 	}
-		
+
 }
 
 lb={
@@ -4604,16 +4926,16 @@ lb={
 
 	show() {
 
-		objects.desktop.texture=assets.lb_bcg;
-		anim2.add(objects.desktop,{alpha:[0,1]}, true, 0.5,'linear');
-		
-		anim2.add(objects.lb_1_cont,{x:[-150, objects.lb_1_cont.sx]}, true, 0.5,'easeOutBack');
-		anim2.add(objects.lb_2_cont,{x:[-150, objects.lb_2_cont.sx]}, true, 0.5,'easeOutBack');
-		anim2.add(objects.lb_3_cont,{x:[-150, objects.lb_3_cont.sx]}, true, 0.5,'easeOutBack');
-		anim2.add(objects.lb_cards_cont,{x:[450, 0]}, true, 0.5,'easeOutCubic');
-				
+		objects.bcg.texture=assets.lb_bcg;
+		anim3.add(objects.bcg,{alpha:[0,1,'linear']}, true, 0.5);
+
+		anim3.add(objects.lb_1_cont,{x:[-150, objects.lb_1_cont.sx,'easeOutBack']}, true, 0.5);
+		anim3.add(objects.lb_2_cont,{x:[-150, objects.lb_2_cont.sx,'easeOutBack']}, true, 0.5);
+		anim3.add(objects.lb_3_cont,{x:[-150, objects.lb_3_cont.sx,'easeOutBack']}, true, 0.5);
+		anim3.add(objects.lb_cards_cont,{x:[450, 0,'easeOutCubic']}, true, 0.5);
+
 		objects.lb_cards_cont.visible=true;
-		objects.lb_back_button.visible=true;
+		objects.lb_back_btn.visible=true;
 
 		for (let i=0;i<7;i++) {
 			objects.lb_cards[i].x=this.cards_pos[i][0];
@@ -4637,19 +4959,20 @@ lb={
 		objects.lb_2_cont.visible=false;
 		objects.lb_3_cont.visible=false;
 		objects.lb_cards_cont.visible=false;
-		objects.lb_back_button.visible=false;
+		objects.lb_back_btn.visible=false;
+		objects.bcg.texture=assets.bcg;
 
 	},
 
 	back_btn_down() {
 
-		if (anim2.any_on()===true) {
+		if (anim3.any_on()===true) {
 			sound.play('locked');
 			return
 		};
 
 
-		sound.play('click');
+		sound.play('close_it');
 		this.close();
 		main_menu.activate();
 
@@ -4663,75 +4986,76 @@ lb={
 		const top={
 			0:{t_name:objects.lb_1_name,t_rating:objects.lb_1_rating,avatar:objects.lb_1_avatar},
 			1:{t_name:objects.lb_2_name,t_rating:objects.lb_2_rating,avatar:objects.lb_2_avatar},
-			2:{t_name:objects.lb_3_name,t_rating:objects.lb_3_rating,avatar:objects.lb_3_avatar},			
+			2:{t_name:objects.lb_3_name,t_rating:objects.lb_3_rating,avatar:objects.lb_3_avatar},
 		}
-		
-		for (let i=0;i<7;i++){	
+
+		for (let i=0;i<7;i++){
 			top[i+3]={};
 			top[i+3].t_name=objects.lb_cards[i].name;
 			top[i+3].t_rating=objects.lb_cards[i].rating;
 			top[i+3].avatar=objects.lb_cards[i].avatar;
-		}		
-		
+		}
+
 		//создаем сортированный массив лидеров
 		const leaders_array=[];
-		Object.keys(leaders).forEach(uid => {
-			
+		for (const uid in leaders){
+
 			const leader_data=leaders[uid];
 			const leader_params={uid,name:leader_data.name, rating:leader_data.rating, pic_url:leader_data.pic_url};
 			leaders_array.push(leader_params);
-			
-			//добавляем в кэш
-			players_cache.update(uid,leader_params);			
-		});
+		};
 		
+
 		//сортируем....
 		leaders_array.sort(function(a,b) {return b.rating - a.rating});
-				
+
+		
 		//заполняем имя и рейтинг
 		for (let place in top){
 			const target=top[place];
 			const leader=leaders_array[place];
+			players_cache.update_params(leader.uid,leader);
 			target.t_name.set2(leader.name,place>2?190:130);
-			target.t_rating.text=leader.rating;			
-		}
+			target.t_rating.text=leader.rating;
+		}	
 		
-		//заполняем аватар
-		for (let place in top){			
-			const target=top[place];
-			const leader=leaders_array[place];
-			await players_cache.update_avatar(leader.uid);			
-			target.avatar.texture=players_cache.players[leader.uid].texture;		
+		//заполняем аватар		
+		for (let i=0;i<10;i++){
+			const leader=leaders_array[i];
+			await players_cache.update(leader.uid,{source:'lb'});
+			const target=top[i];
+			target.avatar.set_texture(players_cache[leader.uid].texture)
 		}
-	
+
 	}
 
 
 }
 
 lobby={
-	
-	state_tint :{},
-	_opp_data : {},
+
 	activated:false,
 	rejected_invites:{},
 	fb_cache:{},
-	first_run:0,
+	opp_uid:0,
 	bot_on:1,
 	on:0,
 	global_players:{},
-		
-	activate(room,bot_on) {
-		
+	state_listener_on:0,
+	state_listener_timeout:0,
+	perm_room:'',
+
+	activate() {
+
 		//первый запуск лобби
-		if (!this.activated){			
-			//расставляем по соответствующим координатам
+		if (!this.activated){
 			
+			//расставляем по соответствующим координатам
 			for(let i=0;i<objects.mini_cards.length;i++) {
 
 				const iy=i%4;
-				objects.mini_cards[i].y=46+iy*83;
-			
+				objects.mini_cards[i].y=50+iy*80;
+
 				let ix;
 				if (i>15) {
 					ix=~~((i-16)/4)
@@ -4740,291 +5064,226 @@ lobby={
 					ix=~~((i)/4)
 					objects.mini_cards[i].x=15+ix*190;
 				}
-			}		
+			}
 
 			this.activated=true;
+
 		}
-		
-		objects.desktop.texture=assets.lobby_bcg;
-		anim2.add(objects.cards_cont,{alpha:[0, 1]}, true, 0.1,'linear');
-		anim2.add(objects.lobby_footer_cont,{y:[450, objects.lobby_footer_cont.sy]}, true, 0.1,'linear');
-		anim2.add(objects.lobby_header_cont,{y:[-50, objects.lobby_header_cont.sy]}, true, 0.1,'linear');
+
+		anim3.add(objects.cards_cont, {alpha: [0, 1, 'linear']}, true, 0.1);
+		anim3.add(objects.lobby_footer_cont, {y: [450, objects.lobby_footer_cont.sy, 'linear']}, true, 0.1);
+		anim3.add(objects.lobby_header_cont, {y: [-50, objects.lobby_header_cont.sy, 'linear']}, true, 0.1);
 		objects.cards_cont.x=0;
 		this.on=1;
-		
+
 		//отключаем все карточки
 		for(let i=0;i<objects.mini_cards.length;i++)
-			objects.mini_cards[i].visible=false;
-				
-		//процессинг
-		some_process.lobby=function(){lobby.process()};
+			objects.mini_cards[i].visible=false
 
 		//добавляем карточку бота если надо
-		if (bot_on!==undefined) this.bot_on=bot_on;
-		this.starting_card=0;
-		if (this.bot_on){
-			this.starting_card=1;
-			this.add_card_ai();			
-		}
-		
-		
-		//убираем старое и подписываемся на новую комнату
-		if (room){			
-			if(room_name){
-				fbs.ref(room_name).off('value');
-				fbs.ref(room_name+'/'+my_data.uid).remove();
-			}
-			room_name=room;	
+		this.starting_card=0
+		if (!this.perm_room){
+			this.starting_card=1
+			this.add_card_ai()
 		}
 				
-		fbs.ref(room_name).on('child_changed', snapshot => {	
-			const val=snapshot.val()
-			//console.log('child_changed',snapshot.key,val,JSON.stringify(val).length)
-			this.global_players[snapshot.key]=val;
-			lobby.players_list_updated(this.global_players);
-		});
-		fbs.ref(room_name).on('child_added', snapshot => {			
-			const val=snapshot.val()
-			//console.log('child_added',snapshot.key,val,JSON.stringify(val).length)
-			this.global_players[snapshot.key]=val;
-			lobby.players_list_updated(this.global_players);
-		});
-		fbs.ref(room_name).on('child_removed', snapshot => {			
-			const val=snapshot.val()
-			//console.log('child_removed',snapshot.key,val,JSON.stringify(val).length)
-			delete this.global_players[snapshot.key];
-			lobby.players_list_updated(this.global_players);
-		});
-		
 
-		fbs.ref(room_name+'/'+my_data.uid).onDisconnect().remove();		
-		
-		set_state({state : 'o'});
-		
-		//создаем заголовки
-		const room_desc=['КОМНАТА #1','ROOM #1'][LANG];
-		objects.t_room_name.text=room_desc;				
+		//включаем прослушивание если надо
+		if (!this.state_listener_on) this.connect()
+
+		//удаляем таймаут слушателя комнаты
+		clearTimeout(this.state_listener_timeout);
+
+		this.players_list_updated(this.global_players)
+
+		set_state({state:'o'})
 
 	},
-	
-	change_room(new_room){
-				
-		//создаем заголовки
-		const room_desc='КОМНАТА #'+new_room.slice(6);
-		objects.t_room_name.text=room_desc;
-		
-		//отписываемся от изменений текущей комнаты
-		fbs.ref(room_name).off('value');
-		
-		//анимации разные
-		anim2.add(objects.cards_cont,{alpha:[0, 1]}, true, 0.1,'linear');
-		anim2.add(objects.lobby_footer_cont,{y:[450, objects.lobby_footer_cont.sy]}, true, 0.1,'linear');
-		anim2.add(objects.lobby_header_cont,{y:[-50, objects.lobby_header_cont.sy]}, true, 0.1,'linear');
-		objects.cards_cont.x=0;
-		
-		//отключаем все карточки
-		objects.mini_cards.forEach(c=>c.visible=false);
-		
-		room_name=new_room;
-		
-		set_state ({state : 'o'});
-		
-		//бота нету
-		this.bot_on=0;
-		
-		//подписываемся на изменения состояний пользователей
-		fbs.ref(room_name).on('value', snapshot => {lobby.players_list_updated(snapshot.val());});
-		
-	},
-		
+
 	pref_btn_down(){
-		
+
 		//если какая-то анимация
-		if (anim2.any_on()) {
+		if (anim3.any_on()) {
 			sound.play('locked');
 			return
 		};
-		
+
 		sound.play('click');
-		
+
 		//подсветка
 		objects.lobby_btn_hl.x=objects.lobby_pref_btn.x;
 		objects.lobby_btn_hl.y=objects.lobby_pref_btn.y;
-		anim2.add(objects.lobby_btn_hl,{alpha:[0,1]}, false, 0.25,'ease3peaks',false);	
-		
+		anim3.add(objects.lobby_btn_hl, {alpha: [0, 1, 'ease3peaks']}, false, 0.25, false);
+
 		//убираем контейнер
-		anim2.add(objects.cards_cont,{x:[objects.cards_cont.x,800]}, false, 0.2,'linear');
-		anim2.add(objects.pref_cont,{x:[-800,objects.pref_cont.sx]}, true, 0.2,'linear');
-		
+		anim3.add(objects.cards_cont, {x: [objects.cards_cont.x, 800, 'linear']}, false, 0.2);
+		anim3.add(objects.pref_cont, {x: [-800, objects.pref_cont.sx, 'linear']}, true, 0.2);
+
 		//меняем футер
-		anim2.add(objects.lobby_footer_cont,{y:[objects.lobby_footer_cont.y,450]}, false, 0.2,'linear');
-		anim2.add(objects.pref_footer_cont,{y:[450,objects.pref_footer_cont.sy]}, true, 0.2,'linear');
+		anim3.add(objects.lobby_footer_cont, {y: [objects.lobby_footer_cont.y, 450, 'linear']}, false, 0.2);
+		anim3.add(objects.pref_footer_cont, {y: [450, objects.pref_footer_cont.sy, 'linear']}, true, 0.2);
 		pref.activate();
-		
+
 	},
 
 	players_list_updated(players) {
 
-		//если мы в игре то пока не обновляем карточки
-		if (state==='p'||state==='b')
-			return;				
-
 		//это столы
 		let tables = {};
-		
+
 		//это свободные игроки
 		let single = {};
-		
+
+		//конвертируем сокращенные данные начали 25.06.2025, нужно позже перейти полностью на сокращенный режим
+		for (let uid in players){
+			const player=players[uid]
+			if (player.n)	player.name=player.n
+			if (player.r)	player.rating=player.r
+			if (player.s)	player.state=player.s
+			if (player.h)	player.hidden=player.h
+			if (player.g)	player.game_id=player.g
+		}
+
 		//удаляем инвалидных игроков
-		for (let uid in players){	
+		for (let uid in players){
 			if(!players[uid].name||!players[uid].rating||!players[uid].state)
 				delete players[uid];
 		}
 
 		//делаем дополнительный объект с игроками и расширяем id соперника
 		let p_data = JSON.parse(JSON.stringify(players));
-		
+
 		//создаем массив свободных игроков и обновляем кэш
-		for (let uid in players){	
+		for (let uid in players){
 
-			const player=players[uid];
+			const pdata=players[uid]
+			
+			//обновляем кэш с первыми данными
+			players_cache.update_params(uid,pdata)
 
-			//обновляем кэш с первыми данными			
-			players_cache.update(uid,{name:player.name,rating:player.rating,hidden:player.hidden});
-			
-			const country =auth2.get_country_from_name(player.name);
-			if (country)		
-				player.name=player.name.slice(0, -4);
-			
-			if (player.state!=='p'&&!player.hidden)
-				single[uid] = player.name;						
+			if (pdata.state!=='p'&&!pdata.hidden)
+				single[uid] = pdata.name;
 		}
-		
-		//console.table(single);
-		
+
 		//оставляем только тех кто за столом
 		for (let uid in p_data)
 			if (p_data[uid].state !== 'p')
-				delete p_data[uid];		
-		
+				delete p_data[uid];
+
 		//дополняем полными ид оппонента
-		for (let uid in p_data) {			
-			const small_opp_id = p_data[uid].opp_id;			
+		for (let uid in p_data) {
+			const small_opp_id = p_data[uid].opp_id;
 			//проходимся по соперникам
-			for (let uid2 in players) {	
-				let s_id=uid2.substring(0,10);				
+			for (let uid2 in players) {
+				let s_id=uid2.substring(0,10);
 				if (small_opp_id === s_id) {
 					//дополняем полным id
 					p_data[uid].opp_id = uid2;
-				}							
-			}			
+				}
+			}
 		}
-				
-		
+
 		//определяем столы
 		for (let uid in p_data) {
-			const opp_id = p_data[uid].opp_id;		
-			if (p_data[opp_id]) {				
-				if (uid === p_data[opp_id].opp_id && !tables[uid]) {					
-					tables[uid] = opp_id;					
-					delete p_data[opp_id];				
-				}				
-			}		
-		}							
-					
+			const opp_id = p_data[uid].opp_id;
+			if (p_data[opp_id]) {
+				if (uid === p_data[opp_id].opp_id && !tables[uid]) {
+					tables[uid] = opp_id;
+					delete p_data[opp_id];
+				}
+			}
+		}
+
 		//считаем сколько одиночных игроков и сколько столов
 		const num_of_single = Object.keys(single).length;
 		const num_of_tables = Object.keys(tables).length;
 		const num_of_cards = num_of_single + num_of_tables;
-		
+
 		//если карточек слишком много то убираем столы
 		if (num_of_cards > objects.mini_cards.length) {
-			const num_of_tables_cut = num_of_tables - (num_of_cards - objects.mini_cards.length);			
+			const num_of_tables_cut = num_of_tables - (num_of_cards - objects.mini_cards.length);
 			const num_of_tables_to_cut = num_of_tables - num_of_tables_cut;
-			
+
 			//удаляем столы которые не помещаются
 			const t_keys = Object.keys(tables);
 			for (let i = 0 ; i < num_of_tables_to_cut ; i++) {
 				delete tables[t_keys[i]];
 			}
 		}
-		
+
 		//убираем карточки пропавших игроков и обновляем карточки оставшихся
-		for(let i=this.starting_card;i<objects.mini_cards.length;i++) {			
-			if (objects.mini_cards[i].visible === true && objects.mini_cards[i].type === 'single') {				
-				const card_uid = objects.mini_cards[i].uid;				
-				if (single[card_uid] === undefined)					
+		for(let i=this.starting_card;i<objects.mini_cards.length;i++) {
+			if (objects.mini_cards[i].visible === true && objects.mini_cards[i].type === 'single') {
+				const card_uid = objects.mini_cards[i].uid;
+				if (single[card_uid] === undefined)
 					objects.mini_cards[i].visible = false;
 				else
 					this.update_existing_card({id:i, state:players[card_uid].state, rating:players[card_uid].rating, name:players[card_uid].name});
 			}
 		}
-		
+
 		//определяем новых игроков которых нужно добавить
-		new_single = {};		
-		
+		new_single = {};
+
 		for (let p in single) {
-			
-			let found = 0;
-			for(let i=0;i<objects.mini_cards.length;i++) {			
-			
-				if (objects.mini_cards[i].visible === true && objects.mini_cards[i].type === 'single') {					
-					if (p ===  objects.mini_cards[i].uid) {						
-						found = 1;							
-					}	
-				}				
-			}		
-			
-			if (found === 0)
+
+			let found=0;
+			for(let i=0;i<objects.mini_cards.length;i++) {
+				if (objects.mini_cards[i].visible===true && objects.mini_cards[i].type==='single') {
+					if (p===objects.mini_cards[i].uid)
+						found=1
+				}
+			}
+
+			if (found===0)
 				new_single[p] = single[p];
 		}
-				
+
 		//убираем исчезнувшие столы (если их нет в новом перечне) и оставляем новые
-		for(let i=this.starting_card;i<objects.mini_cards.length;i++) {			
-		
+		for(let i=this.starting_card;i<objects.mini_cards.length;i++) {
 			if (objects.mini_cards[i].visible && objects.mini_cards[i].type === 'table') {
-				
-				const uid1 = objects.mini_cards[i].uid1;	
-				const uid2 = objects.mini_cards[i].uid2;	
-				
+
+				const uid1 = objects.mini_cards[i].uid1;
+				const uid2 = objects.mini_cards[i].uid2;
+
 				let found = 0;
-				
-				for (let t in tables) {					
+
+				for (let t in tables) {
 					const t_uid1 = t;
-					const t_uid2 = tables[t];									
+					const t_uid2 = tables[t];
 					if (uid1 === t_uid1 && uid2 === t_uid2) {
 						delete tables[t];
-						found = 1;						
-					}							
+						found = 1;
+					}
 				}
-								
+
 				if (found === 0)
 					objects.mini_cards[i].visible = false;
-			}	
+			}
 		}
-				
+
 		//размещаем на свободных ячейках новых игроков
-		for (let uid in new_single)			
-			this.place_new_card({uid, state:players[uid].state, name : players[uid].name,  rating : players[uid].rating});
+		for (let uid in new_single)
+			this.place_new_card({uid,state:players[uid].state, name:players[uid].name, rating:players[uid].rating});
 
 		//размещаем НОВЫЕ столы где свободно
-		for (let uid in tables) {			
+		for (let uid in tables) {
 			const name1=players[uid].name
 			const name2=players[tables[uid]].name
-			
+
 			const rating1= players[uid].rating
 			const rating2= players[tables[uid]].rating
-			
+
 			const game_id=players[uid].game_id;
 			this.place_table({uid1:uid,uid2:tables[uid],name1, name2, rating1, rating2,game_id});
 		}
-		
+
 	},
 
 	add_card_ai() {
-		
+
 		const card=objects.mini_cards[0]
-		
+
 		//убираем элементы стола так как они не нужны
 		card.rating_text1.visible = false;
 		card.rating_text2.visible = false;
@@ -5039,21 +5298,22 @@ lobby={
 		card.uid='bot';
 		card.name=card.name_text.text=['Бот','Bot'][LANG];
 
-		card.rating=1400;		
+		card.rating=1400;
 		card.rating_text.text = card.rating;
 		card.avatar.set_texture(assets.pc_icon);
-		
+
 		//также сразу включаем его в кэш
-		if(!players_cache.players.bot){
-			players_cache.players.bot={};
-			players_cache.players.bot.name=card.name;
-			players_cache.players.bot.rating=1400;
-			players_cache.players.bot.texture=assets.pc_icon;			
+		if(!players_cache.bot){
+			players_cache.bot={};
+			players_cache.bot.name=['Бот','Bot'][LANG];
+			players_cache.bot.rating=1400;
+			players_cache.bot.texture=assets.pc_icon;
 		}
 	},
-	
+
 	get_state_texture(s,uid) {
-		
+
+
 		switch(s) {
 
 			case 'o':
@@ -5067,19 +5327,19 @@ lobby={
 			case 'p':
 				return assets.mini_player_card;
 			break;
-			
+
 			case 'b':
 				return assets.mini_player_card;
 			break;
 
 		}
 	},
-	
+
 	place_table(params={uid1:0,uid2:0,name1: 'X',name2:'X', rating1: 1400, rating2: 1400,game_id:0}) {
-				
-				
+
+
 		for(let i=this.starting_card;i<objects.mini_cards.length;i++) {
-			
+
 			const card=objects.mini_cards[i];
 
 			//это если есть вакантная карточка
@@ -5089,15 +5349,15 @@ lobby={
 				card.bcg.texture=this.get_state_texture(params.state);
 				card.state=params.state;
 
-				card.type = "table";				
-				
+				card.type = "table";
+
 				card.bcg.texture = assets.mini_player_card_table;
-				
+
 				//присваиваем карточке данные
 				//card.uid=params.uid;
 				card.uid1=params.uid1;
 				card.uid2=params.uid2;
-												
+
 				//убираем элементы свободного стола
 				card.rating_text.visible = false;
 				card.avatar.visible = false;
@@ -5105,9 +5365,8 @@ lobby={
 				card.avatar1_frame.visible = false;
 				card.avatar2_frame.visible = false;
 				card.name_text.visible = false;
-				card.t_country.visible = false;
 
-				//Включаем элементы стола 
+				//Включаем элементы стола
 				card.table_rating_hl.visible=true;
 				card.rating_text1.visible = true;
 				card.rating_text2.visible = true;
@@ -5119,13 +5378,13 @@ lobby={
 
 				card.rating_text1.text = params.rating1;
 				card.rating_text2.text = params.rating2;
-				
+
 				card.name1 = params.name1;
 				card.name2 = params.name2;
 
 				//получаем аватар и загружаем его
 				this.load_avatar2({uid:params.uid1, tar_obj:card.avatar1});
-				
+
 				//получаем аватар и загружаем его
 				this.load_avatar2({uid:params.uid2, tar_obj:card.avatar2});
 
@@ -5136,7 +5395,7 @@ lobby={
 				break;
 			}
 		}
-		
+
 	},
 
 	update_existing_card(params={id:0, state:'o' , rating:1400, name:''}) {
@@ -5159,244 +5418,278 @@ lobby={
 			//ссылка на карточку
 			const card=objects.mini_cards[i];
 
-			//это если есть вакантная карточка
-			if (!card.visible) {
+			if (card.visible) continue
 
-				//устанавливаем цвет карточки в зависимости от состояния
-				card.bcg.texture=this.get_state_texture(params.state,params.uid);
-				card.state=params.state;
+			//устанавливаем цвет карточки в зависимости от состояния
+			card.bcg.texture=this.get_state_texture(params.state,params.uid);
+			card.state=params.state;
 
-				card.type = 'single';
-				
-				//присваиваем карточке данные
-				card.uid=params.uid;
+			card.type = 'single';
 
-				//убираем элементы стола так как они не нужны
-				card.rating_text1.visible = false;
-				card.rating_text2.visible = false;
-				card.avatar1.visible = false;
-				card.avatar2.visible = false;
-				card.avatar1_frame.visible = false;
-				card.avatar2_frame.visible = false;
-				card.table_rating_hl.visible=false;
-				
-				//включаем элементы одиночной карточки
-				card.rating_text.visible = true;
-				card.avatar.visible = true;
-				card.avatar_frame.visible = true;
-				card.name_text.visible = true;
-				card.t_country.visible = true;
+			//присваиваем карточке данные
+			card.uid=params.uid;
 
+			//убираем элементы стола так как они не нужны
+			card.rating_text1.visible = false
+			card.rating_text2.visible = false
+			card.avatar1.visible = false
+			card.avatar2.visible = false
+			card.avatar1_frame.visible = false
+			card.avatar2_frame.visible = false
+			card.table_rating_hl.visible=false
 
-				//добавляем страну и имя из кэша
-				const cached_player=players_cache.players[params.uid];
-				card.t_country.text = cached_player.country||'';;
-				card.name=params.name;
-				card.name_text.set2(params.name,105);
-				card.rating=params.rating;
-				card.rating_text.text=params.rating;
+			//включаем элементы одиночной карточки
+			card.rating_text.visible = true
+			card.avatar.visible = true
+			card.avatar_frame.visible = true
+			card.name_text.visible = true
 
-				card.visible=true;
-				
+			card.name=params.name
+			card.name_text.set2(params.name,105)
+			card.rating=params.rating
+			card.rating_text.text=params.rating
 
-				//стираем старые данные
-				card.avatar.set_texture();
+			card.visible=true
 
-				//получаем аватар и загружаем его
-				this.load_avatar2({uid:params.uid, tar_obj:card.avatar});
+			const a_tex=players_cache[card.uid].texture
+			if (a_tex)
+				card.avatar.set_texture(a_tex)
+			else
+				players_cache.update(card.uid)
 
-				//console.log(`новая карточка ${i} ${params.uid}`)
-				return;
-			}
+			//console.log(`новая карточка ${i} ${params.uid}`)
+			return;
 		}
 
 	},
 
-	async load_avatar2 (params={}) {		
+	place_table(params={uid1:0,uid2:0,name1: 'X',name2:'X', rating1: 1400, rating2: 1400,game_id:0}) {
+
+		for(let i=this.starting_card;i<objects.mini_cards.length;i++) {
+
+			const card=objects.mini_cards[i];
+
+			//это если есть вакантная карточка
+			if (card.visible) continue
+
+			//устанавливаем цвет карточки в зависимости от состояния
+			card.bcg.texture=this.get_state_texture(params.state);
+			card.state=params.state;
+
+			card.type = "table";
+
+			card.bcg.texture = assets.mini_player_card_table;
+
+			//присваиваем карточке данные
+			//card.uid=params.uid;
+			card.uid1=params.uid1;
+			card.uid2=params.uid2;
+
+			//убираем элементы свободного стола
+			card.rating_text.visible = false;
+			card.avatar.visible = false;
+			card.avatar_frame.visible = false;
+			card.avatar1_frame.visible = false;
+			card.avatar2_frame.visible = false;
+			card.name_text.visible = false;
+
+			//Включаем элементы стола
+			card.table_rating_hl.visible=true;
+			card.rating_text1.visible = true;
+			card.rating_text2.visible = true;
+			card.avatar1.visible = true;
+			card.avatar2.visible = true;
+			card.avatar1_frame.visible = true;
+			card.avatar2_frame.visible = true;
+			//card.rating_bcg.visible = true;
+
+			card.rating_text1.text = params.rating1
+			card.rating_text2.text = params.rating2
+
+			card.name1 = params.name1;
+			card.name2 = params.name2;
+
+
+			const a_tex1=players_cache[card.uid1].texture
+			if (a_tex1)
+				card.avatar1.set_texture(a_tex1)
+			else
+				players_cache.update(card.uid1)
+
+
+			const a_tex2=players_cache[card.uid2].texture
+			if (a_tex2)
+				card.avatar2.set_texture(a_tex2)
+			else
+				players_cache.update(card.uid2)
+
+
+			card.visible=true;
+			card.game_id=params.game_id;
+
+			return
+		}
+
+	},
+
+	cache_updated(uid,pdata){
+
+		for (const card of objects.mini_cards){
+			if (!card.visible) continue
+
+			if (card.type==='single')
+				if (card.uid===uid)
+					card.avatar.set_texture(pdata.texture)
+
+			if (card.type==='table'){
+				if (card.uid1===uid)
+					card.avatar1.set_texture(pdata.texture)
+
+				if (card.uid2===uid)
+					card.avatar2.set_texture(pdata.texture)
+			}
+		}
 		
-		//обновляем или загружаем аватарку
-		await players_cache.update_avatar(params.uid);
 		
-		//устанавливаем если это еще та же карточка
-		params.tar_obj.set_texture(players_cache.players[params.uid].texture);			
+		//обновляем сообщение
+		if(objects.inst_msg_cont.visible&&objects.inst_msg_cont.uid===uid)
+			objects.inst_msg_avatar.set_texture(pdata.texture||PIXI.Texture.WHITE)
 	},
 
 	card_down(card_id) {
+
+		const card=objects.mini_cards[card_id]
 		
 		if (objects.mini_cards[card_id].type === 'single')
-			this.show_invite_dialog(card_id);
+			this.show_invite_dlg(card.uid)
 		
 		if (objects.mini_cards[card_id].type === 'table')
-			this.show_table_dialog(card_id);
-				
+			this.show_table_dialog(card_id)
+
 	},
-	
+
 	show_table_dialog(card_id) {
-					
-		
+
+
 		//если какая-то анимация или открыт диалог
-		if (anim2.any_on() || pending_player!=='') {
+		if (anim3.any_on() || pending_player!=='') {
+			sound.play('locked');
+			return
+		};
+
+		sound.play('click');
+		//закрываем диалог стола если он открыт
+		if(objects.invite_cont.visible) this.close_invite_dialog();
+
+		anim3.add(objects.td_cont, {x: [800, objects.td_cont.sx, 'linear']}, true, 0.1);
+
+		const card=objects.mini_cards[card_id];
+
+		objects.td_cont.card=card;
+
+		objects.td_avatar1.set_texture(players_cache[card.uid1].texture);
+		objects.td_avatar2.set_texture(players_cache[card.uid2].texture);
+
+		objects.td_rating1.text = card.rating_text1.text;
+		objects.td_rating2.text = card.rating_text2.text;
+
+		objects.td_name1.set2(card.name1, 240);
+		objects.td_name2.set2(card.name2, 240);
+
+	},
+
+	close_table_dialog() {
+		
+		if (anim3.any_on()) {
 			sound.play('locked');
 			return
 		};
 		
+		sound.play('close_it')
+		anim3.add(objects.td_cont, {x: [objects.td_cont.x, 800, 'linear']}, false, 0.1);
+	},
+
+	show_invite_dlg(uid) {
+
+		//если какая-то анимация или уже сделали запрос
+		if (anim3.any_on() || pending_player!=='') {
+			sound.play('locked');
+			return
+		};
+
+		//закрываем диалог стола если он открыт
+		if(objects.td_cont.visible) this.close_table_dialog();
+
+		pending_player="";
+
 		sound.play('click');
-		//закрываем диалог стола если он открыт
-		if(objects.invite_cont.visible) this.close_invite_dialog();
-		
-		anim2.add(objects.td_cont,{x:[800, objects.td_cont.sx]}, true, 0.1,'linear');
-		
-		const card=objects.mini_cards[card_id];
-		
-		objects.td_cont.card=card;
-		
-		objects.td_avatar1.set_texture(players_cache.players[card.uid1].texture);
-		objects.td_avatar2.set_texture(players_cache.players[card.uid2].texture);
-		
-		objects.td_rating1.text = card.rating_text1.text;
-		objects.td_rating2.text = card.rating_text2.text;
-		
-		objects.td_name1.set2(card.name1, 240);
-		objects.td_name2.set2(card.name2, 240);
-		
-	},
-	
-	close_table_dialog() {
-		sound.play('close_it');
-		anim2.add(objects.td_cont,{x:[objects.td_cont.x, 800]}, false, 0.1,'linear');
-	},
 
-	show_invite_dialog(card_id) {
-
-		//если какая-то анимация или уже сделали запрос
-		if (anim2.any_on() || pending_player!=='') {
-			sound.play('locked');
-			return
-		};		
-				
-		//закрываем диалог стола если он открыт
-		if(objects.td_cont.visible) this.close_table_dialog();
-
-		pending_player="";
-
-		sound.play('click');			
-		
 		objects.invite_feedback.text = '';
 
 		//показыаем кнопку приглашения
-		objects.invite_button.texture=assets.invite_button;
-	
-		anim2.add(objects.invite_cont,{x:[800, objects.invite_cont.sx]}, true, 0.15,'linear');
-		
-		const card=objects.mini_cards[card_id];
-		
-		//копируем предварительные данные
-		lobby._opp_data = {uid:card.uid,name:card.name,rating:card.rating};
-			
-		
-		this.show_feedbacks(lobby._opp_data.uid);
-		
+		objects.invite_btn.texture=assets.invite_btn;
 
-		let invite_available=lobby._opp_data.uid !== my_data.uid;
-		invite_available=invite_available && (card.state==="o" || card.state==="b");
-		invite_available=invite_available || lobby._opp_data.uid==='bot';
-		
+		anim3.add(objects.invite_cont, {x: [800, objects.invite_cont.sx, 'linear']}, true, 0.15);
+
+		//предварительные данные
+		lobby.opp_uid=uid
+		const opp_data=players_cache[uid]
+
+
+		this.show_feedbacks(uid);
+
+		let invite_available=uid !== my_data.uid;
+		invite_available=invite_available || lobby.opp_uid==='bot';
+		invite_available=invite_available && opp_data.rating >= 50 && my_data.rating >= 50;
+
 		//на моей карточке показываем стастику
-		if(lobby._opp_data.uid===my_data.uid){
-			objects.invite_my_stat.text=`Рейтинг: ${my_data.rating}\nИгры: ${my_data.games}`;
-			objects.invite_my_stat.visible=true;
-		}else{
-			objects.invite_my_stat.visible=false;
-		}
-		
-		//кнопка удаления комментариев
-		objects.fb_delete_button.visible=my_data.uid===lobby._opp_data.uid;
-		
-		//если мы в списке игроков которые нас недавно отврегли
-		if (this.rejected_invites[lobby._opp_data.uid] && Date.now()-this.rejected_invites[lobby._opp_data.uid]<60000) invite_available=false;
-
-		//показыаем кнопку приглашения только если это допустимо
-		objects.invite_button.visible=invite_available;
-
-		//заполняем карточу приглашения данными		
-		objects.invite_avatar.set_texture(players_cache.players[card.uid].texture);
-		objects.invite_name.set2(lobby._opp_data.name,230);
-		objects.invite_rating.text=card.rating_text.text;
-				
-	},
-	
-	fb_delete_down(){
-		
-		objects.fb_delete_button.visible=false;
-		fbs.ref('fb/' + my_data.uid).remove();
-		this.fb_cache[my_data.uid].fb_obj={0:['*** empty ***',999,' ']};
-		this.fb_cache[my_data.uid].tm=Date.now();
-		objects.feedback_records.forEach(fb=>fb.visible=false);
-		
-		message.add(['Отзывы удалены','Removed!'][LANG])
-		
-	},
-	
-	async show_invite_dialog_from_chat(uid,name) {
-
-		//если какая-то анимация или уже сделали запрос
-		if (anim2.any_on() || pending_player!=='') {
-			sound.play('locked');
-			return
-		};		
-				
-		//закрываем диалог стола если он открыт
-		if(objects.td_cont.visible) this.close_table_dialog();
-
-		pending_player="";
-
-		sound.play('click');			
-		
-		objects.invite_feedback.text = '';
-
-		//показыаем кнопку приглашения
-		objects.invite_button.texture=assets.invite_button;
-	
-		anim2.add(objects.invite_cont,{x:[800, objects.invite_cont.sx]}, true, 0.15,'linear');
-		
-		let player_data={uid};
-		//await this.update_players_cache_data(uid);
-					
-		//копируем предварительные данные
-		lobby._opp_data = {uid,name:players_cache.players[uid].name,rating:players_cache.players[uid].rating};
-											
-		//на моей карточке показываем стастику
-		if(lobby._opp_data.uid===my_data.uid){
-			objects.invite_my_stat.text=`Рейтинг: ${my_data.rating}\nИгры: ${my_data.games}`;
+		if(lobby.opp_uid===my_data.uid){
+			objects.invite_my_stat.text=[`Рейтинг: ${my_data.rating}\nИгры: ${my_data.games}`,`Rating: ${my_data.rating}\nGames: ${my_data.games}`][LANG]
 			objects.invite_my_stat.visible=true;
 		}else{
 			objects.invite_my_stat.visible=false;
 		}
 
-				
-		//фидбэки												
-		this.show_feedbacks(lobby._opp_data.uid);
-		
 		//кнопка удаления комментариев
-		objects.fb_delete_button.visible=false;
-		
-		let invite_available = 	lobby._opp_data.uid !== my_data.uid;
-		
+		objects.fb_delete_btn.visible=my_data.uid===lobby.opp_uid;
+
 		//если мы в списке игроков которые нас недавно отврегли
-		if (this.rejected_invites[lobby._opp_data.uid] && Date.now()-this.rejected_invites[lobby._opp_data.uid]<60000) invite_available=false;
+		if (this.rejected_invites[lobby.opp_uid] && Date.now()-this.rejected_invites[lobby.opp_uid]<60000) invite_available=false;
 
 		//показыаем кнопку приглашения только если это допустимо
-		objects.invite_button.visible=invite_available;
+		objects.invite_btn.visible=invite_available;
 
 		//заполняем карточу приглашения данными
-		objects.invite_avatar.set_texture(players_cache.players[uid].texture);
-		objects.invite_name.set2(players_cache.players[uid].name,230);
-		objects.invite_rating.text=players_cache.players[uid].rating;
+		objects.invite_avatar.set_texture(opp_data.texture)
+		objects.invite_name.set2(opp_data.name,230)
+		objects.invite_rating.text=opp_data.rating
+
 	},
 
-	async show_feedbacks(uid) {	
+	fb_delete_down(){
 
-	//получаем фидбэки сначала из кэша, если их там нет или они слишком старые то загружаем из фб
+		return
+		
+		objects.fb_delete_btn.visible=false;
+		fbs.ref('fb/' + my_data.uid).remove();
+		this.fb_cache[my_data.uid].fb_obj={0:[['***нет отзывов***','***no feedback***'][LANG],999,' ']};
+		this.fb_cache[my_data.uid].tm=Date.now();
+		objects.feedback_records.forEach(fb=>fb.visible=false);
+
+		pmsg.add({t:['Отзывы удалены','Feedbacks are removed'][LANG]})
+
+	},
+
+	async show_invite_dlg_from_chat(uid) {
+
+		if (anim3.any_on() || pending_player!=='') return
+		this.show_invite_dlg(uid)
+		
+	},
+
+	async show_feedbacks(uid) {
+
+		//получаем фидбэки сначала из кэша, если их там нет или они слишком старые то загружаем из фб
 		let fb_obj;
 		if (!this.fb_cache[uid] || (Date.now()-this.fb_cache[uid].tm)>120000) {
 
@@ -5445,153 +5738,180 @@ lobby={
 			fb_place.visible=true
 			fb_place.y=prv_fb_bottom
 			prv_fb_bottom+=fb_height
-		}			
-
+		}
 	},
 
 	async close() {
 
-		if (objects.invite_cont.visible)
-			this.close_invite_dialog();
-		
-		if (objects.td_cont.visible)
-			this.close_table_dialog();
-		
-		some_process.lobby=function(){};
-		
-		if (objects.pref_cont.visible)
-			pref.close();
+		if (objects.invite_cont.visible) this.close_invite_dialog()
+		if (objects.td_cont.visible) this.close_table_dialog()
+		if (objects.pref_cont.visible) pref.close()		
 
 		//плавно все убираем
-		anim2.add(objects.cards_cont,{alpha:[1, 0]}, false, 0.1,'linear');
-		anim2.add(objects.lobby_footer_cont,{y:[ objects.lobby_footer_cont.y,450]}, false, 0.2,'linear');
-		anim2.add(objects.lobby_header_cont,{y:[objects.lobby_header_cont.y,-50]}, false, 0.2,'linear');
-		
-		this.on=0;
-		
+		anim3.add(objects.cards_cont, {alpha: [1, 0, 'linear']}, false, 0.1)
+		anim3.add(objects.lobby_footer_cont, {y: [ objects.lobby_footer_cont.y, 450, 'linear']}, false, 0.2)
+		anim3.add(objects.lobby_header_cont, {y: [objects.lobby_header_cont.y, -50, 'linear']}, false, 0.2)
+
 		//больше ни ждем ответ ни от кого
-		pending_player="";
-		
-		//отписываемся от изменений состояний пользователей
-		fbs.ref(room_name).off();
+		pending_player=''
+		this.on=0
+
+		//отписываемся от изменений состояний пользователей через 30 секунд
+		this.state_listener_timeout=setTimeout(()=>{
+			this.disconnect();
+		},30000);
+
+	},
+
+	disconnect(){
+		console.log('lobby disconnected')
+		this.global_players={}
+		if(ROOM_NAME) fbs.ref(ROOM_NAME).off()
+		this.state_listener_on=0
+	},
+
+	connect(){
+
+		console.log('lobby connected');
+		fbs.ref(ROOM_NAME).on('child_changed', s => {
+			const val=s.val()
+			this.global_players[s.key]=val
+			lobby.players_list_updated(this.global_players)
+		});
+		fbs.ref(ROOM_NAME).on('child_added', s => {
+			const val=s.val()
+			this.global_players[s.key]=val
+			lobby.players_list_updated(this.global_players)
+		});
+		fbs.ref(ROOM_NAME).on('child_removed', s => {
+			const val=s.val()
+			delete this.global_players[s.key]
+			lobby.players_list_updated(this.global_players)
+		});
+
+		fbs.ref(ROOM_NAME+'/'+my_data.uid).onDisconnect().remove()
+		this.state_listener_on=1
 
 	},
 	
+	change_room(new_room){
+		
+		this.disconnect()
+		if(ROOM_NAME)
+			fbs.ref(ROOM_NAME+'/'+my_data.uid).remove()
+		ROOM_NAME=new_room
+		this.connect()
+		
+		//создаем заголовки
+		const room_desc=['КОМНАТА #','ROOM #'][LANG]+ROOM_NAME.slice(6)
+		objects.t_room_name.text=room_desc	
+
+		set_state({state:'o'})
+	},
+
 	async inst_message(data){
-		
-		//когда ничего не видно не принимаем сообщения
-		if(!objects.cards_cont.visible) return;		
 
-		await players_cache.update(data.uid);
-		await players_cache.update_avatar(data.uid);		
+		//когда ничего не видно не принимаем сообщения
+		if(!objects.cards_cont.visible) return
+
+		await players_cache.update(data.uid)
+
+		sound.play('inst_msg')
+		anim3.add(objects.inst_msg_cont, {alpha: [0, 1, 'linear']}, true, 0.4, false)
+		objects.inst_msg_avatar.texture=players_cache[data.uid].texture||PIXI.Texture.WHITE
+		objects.inst_msg_text.set2(data.msg,290)
+		objects.inst_msg_cont.tm=Date.now()
 		
-		sound.play('inst_msg');		
-		anim2.add(objects.inst_msg_cont,{alpha:[0, 1]},true,0.4,'linear',false);		
-		objects.inst_msg_avatar.texture=players_cache.players[data.uid].texture||PIXI.Texture.WHITE;
-		objects.inst_msg_text.set2(data.msg,290);
-		objects.inst_msg_cont.tm=Date.now();
+		clearTimeout(objects.inst_msg_cont.close_timer)
+		objects.inst_msg_cont.close_timer=setTimeout(()=>{
+			anim3.add(objects.inst_msg_cont, {alpha: [1, 0, 'linear']}, false, 0.4, false)
+		},7000)
+		
 	},
+
+	get_room_to_go(){
 	
-	get_room_index_from_rating(){		
+		return 'states'
+		
+		//московское время и ночная комната
+		if (SERVER_TM){
+			const msk_hour=+new Date(SERVER_TM).toLocaleString('en-US', {timeZone: 'Europe/Moscow',hour:'numeric',hourCycle:'h23'})
+			if (msk_hour>=0&&msk_hour<6)
+				return 'statesNIGHT'		
+		}	
+		
 		//номер комнаты в зависимости от рейтинга игрока
 		const rooms_bins=[0,1366,1437,1580,9999];
-		let room_to_go='state1';
 		for (let i=1;i<rooms_bins.length;i++){
 			const f=rooms_bins[i-1];
-			const t=rooms_bins[i];		
+			const t=rooms_bins[i];
 			if (my_data.rating>f&&my_data.rating<=t)
-				return i;
-		}				
-		return 1;
-		
-	},
-	
-	process(){
-		
-		const tm=Date.now();
-		if (objects.inst_msg_cont.visible&&objects.inst_msg_cont.ready)
-			if (tm>objects.inst_msg_cont.tm+7000)
-				anim2.add(objects.inst_msg_cont,{alpha:[1, 0]},false,0.4,'linear');
+				return 'states'+i
+		}
+		return 'states1'
 
 	},
-	
+
 	peek_down(){
-		
-		if (anim2.any_on()) {
+
+		if (anim3.any_on()) {
 			sound.play('locked');
 			return
 		};
 		sound.play('click');
-		this.close();	
-		
+		this.close();
+
 		//активируем просмотр игры
 		game_watching.activate(objects.td_cont.card);
 	},
-	
-	async switch_header(){
-		
-		await anim2.add(objects.lobby_header,{y:[objects.lobby_header.sy, -60],alpha:[1,0]},false,1,'linear',false);	
-		objects.lobby_header.text=this.sw_header.header_list[this.sw_header.index];		
-		anim2.add(objects.lobby_header,{y:[-60,objects.lobby_header.sy],alpha:[0,1]},true,1,'linear',false);	
-		
-	},
-	
+
 	wheel_event(dir) {
-		
-	},
-	
-	async fb_my_down() {
-		
-		
-		if (this._opp_data.uid !== my_data.uid || objects.feedback_cont.visible === true)
-			return;
-		
-		let fb = await feedback.show(this._opp_data.uid);
-		
-		//перезагружаем отзывы если добавили один
-		if (fb[0] === 'sent') {
-			let fb_id = irnd(0,50);			
-			await fbs.ref("fb/"+this._opp_data.uid+"/"+fb_id).set([fb[1], firebase.database.ServerValue.TIMESTAMP, my_data.name]);
-			this.show_feedbacks(this._opp_data.uid);			
-		}
-		
+
 	},
 
 	close_invite_dialog() {
 
-		sound.play('close_it');	
+		if (anim3.any_on()) {
+			sound.play('locked');
+			return
+		};
 
-		if (!objects.invite_cont.visible) return;		
-
+		if (!objects.invite_cont.visible) return;
+		
+		sound.play('close_it')
+		
 		//отправляем сообщение что мы уже не заинтересованы в игре
 		if (pending_player!=='') {
 			fbs.ref("inbox/"+pending_player).set({sender:my_data.uid,message:"INV_REM",tm:Date.now()});
 			pending_player='';
 		}
 
-		anim2.add(objects.invite_cont,{x:[objects.invite_cont.x, 800]}, false, 0.15,'linear');
+		anim3.add(objects.invite_cont, {x: [objects.invite_cont.x, 800, 'linear']}, false, 0.15);
 	},
 
 	async send_invite() {
 
-		if (!objects.invite_cont.ready||!objects.invite_cont.visible||objects.invite_button.texture===assets.invite_wait_img){
+
+		if (!objects.invite_cont.ready||!objects.invite_cont.visible||objects.invite_btn.texture===assets.invite_wait_img){
 			sound.play('locked');
 			return
 		};
 
-		if (anim2.any_on()){
+		if (anim3.any_on()){
 			sound.play('locked');
 			return
 		};
-		
-		if (lobby._opp_data.uid==='bot'){
+
+
+		if (lobby.opp_uid==='bot')
+		{
 			await this.close();	
 			game.activate('master', bot_player );
 		} else {
 			sound.play('click');
-			objects.invite_button.texture=assets.invite_wait_img;			
-			fbs.ref(`inbox/${lobby._opp_data.uid}`).set({sender:my_data.uid,message:'INV',tm:Date.now()});
-			pending_player=lobby._opp_data.uid;
+			objects.invite_btn.texture=assets.invite_wait_img;
+			fbs.ref('inbox/'+lobby.opp_uid).set({sender:my_data.uid,message:'INV',tm:Date.now()});
+			pending_player=lobby.opp_uid;
 
 		}
 
@@ -5601,54 +5921,66 @@ lobby={
 
 		this.rejected_invites[pending_player]=Date.now();
 		pending_player="";
-		lobby._opp_data={};
 		this.close_invite_dialog();
 		if(msg==='REJECT_ALL')
-			big_message.show('Соперник пока не принимает приглашения.','---','');
+			big_msg.show({t1:['Соперник пока не принимает приглашения.','The opponent refused to play.'][LANG],t2:'---',t3:'',fb:0});
 		else
-			big_message.show('Соперник отказался от игры. Повторить приглашение можно через 1 минуту.','---','');
+			big_msg.show({t1:['Соперник отказался от игры. Повторить приглашение можно через 1 минуту.','The opponent refused to play. You can repeat the invitation in 1 minute'][LANG],t2:'---',t3:'',fb:0});
+
 	},
 
 	async accepted_invite(seed) {
 
 		//убираем запрос на игру если он открыт
 		req_dialog.hide();
-		
+
 		//устанаваем окончательные данные оппонента
-		opp_data=lobby._opp_data;
-		
-		//сразу карточку оппонента
-		objects.opp_card_name.set2(opp_data.name,160);
-		objects.opp_card_rating.text=opp_data.rating;
-		objects.opp_avatar.texture=players_cache.players[opp_data.uid].texture;		
+		opp_data.uid=lobby.opp_uid;
 
 		//закрываем меню и начинаем игру
-		await lobby.close();
+		//await lobby.close();
 		game.activate('master',online_game);
-		
+		//game2.activate('master');
+
+
 	},
 
 	chat_btn_down(){
-		if (anim2.any_on()) {
+		
+		if (anim3.any_on()) {
 			sound.play('locked');
 			return
 		};
-		
+
 		sound.play('click');
-		
+
 		//подсветка
-		objects.lobby_btn_hl.x=objects.lobby_chat_btn.x;
-		objects.lobby_btn_hl.y=objects.lobby_chat_btn.y;
-		anim2.add(objects.lobby_btn_hl,{alpha:[0,1]}, false, 0.25,'ease3peaks',false);	
-		
+		//objects.lobby_btn_hl.x=objects.lobby_lb_btn.x;
+		//objects.lobby_btn_hl.y=objects.lobby_lb_btn.y;
+		//anim3.add(objects.lobby_btn_hl, {alpha: [0, 1, 'ease3peaks']}, false, 0.25, false);
+
 		this.close();
 		chat.activate();
+
+	},
+
+	bg_btn_down(){
 		
+		if (anim3.any_on()) {
+			sound.play('locked')
+			return
+		}
+
+		sound.play('click');
+
+		this.close()
+		trnm.activate()
+
 	},
 
 	async lb_btn_down() {
 
-		if (anim2.any_on()===true) {
+		if (anim3.any_on()) {
 			sound.play('locked');
 			return
 		};
@@ -5658,89 +5990,83 @@ lobby={
 		//подсветка
 		objects.lobby_btn_hl.x=objects.lobby_lb_btn.x;
 		objects.lobby_btn_hl.y=objects.lobby_lb_btn.y;
-		anim2.add(objects.lobby_btn_hl,{alpha:[0,1]}, false, 0.25,'ease3peaks',false);	
+		anim3.add(objects.lobby_btn_hl, {alpha: [0, 1, 'ease3peaks']}, false, 0.25, false);
 
 
 		await this.close();
 		lb.show();
 	},
-	
+
 	list_btn_down(dir){
-		
-		if (anim2.any_on()===true) {
+
+		if (anim3.any_on()) {
 			sound.play('locked');
 			return
 		};
-		
+
 		sound.play('click');
 		const cur_x=objects.cards_cont.x;
 		const new_x=cur_x-dir*800;
-		
-		
+
+
 		//подсветка
 		const tar_btn={'-1':objects.lobby_left_btn,'1':objects.lobby_right_btn}[dir];
 		objects.lobby_btn_hl.x=tar_btn.x;
 		objects.lobby_btn_hl.y=tar_btn.y;
-		anim2.add(objects.lobby_btn_hl,{alpha:[0,1]}, false, 0.25,'ease3peaks',false);	
-		
-		
+		anim3.add(objects.lobby_btn_hl, {alpha: [0, 1, 'ease3peaks']}, false, 0.25, false);
+
+
 		if (new_x>0 || new_x<-800) {
 			sound.play('locked');
 			return
 		}
-		
-		anim2.add(objects.cards_cont,{x:[cur_x, new_x]},true,0.2,'easeInOutCubic');
+
+		anim3.add(objects.cards_cont, {x: [cur_x, new_x, 'easeInOutCubic']}, true, 0.2);
 	},
 
-	async back_btn_down () {
+	async back_btn_down() {
 
-		if (anim2.any_on()===true) {
+		if (anim3.any_on()) {
 			sound.play('locked');
 			return
 		};
 
-		sound.play('click');
+		sound.play('close_it');
 
 		await this.close();
 		main_menu.activate();
 
 	},
-	
+
 	info_btn_down(){
-		
-		if (anim2.any_on()) {
+
+		if (anim3.any_on()) {
 			sound.play('locked');
 			return
 		};
 		sound.play('click');
-		
+
 		if(!objects.info_cont.init){
-			
-			objects.info_records[0].set({uid:'bot',name:'Админ',msg:'Новое правило - рейтинг игроков, неактивных более 5 дней, будет снижен до 2000.',tm:1734959027520})
-			objects.info_records[0].scale_xy=1.2;
-			objects.info_records[0].y=145;
-			
-			objects.info_records[1].set({uid:'bot',name:'Админ',msg:'Новое правило - не авторизованным игрокам не доступен рейтинг более 2000.',tm:1734959227520})
-			objects.info_records[1].scale_xy=1.2;
-			objects.info_records[1].y=235;
-			
+
+			objects.info_msg.text=`Новые правила:\n1.Для игроков с рейтингом выше ${MAX_NO_REP_RATING}, встречающих одного и того же соперника более 6 раз за последние 20 матчей, действует особое правило: рейтинг не будет увеличиваться при победах (однако может снижаться при поражениях), подтверждение рейтинга не будет засчитано. Эта мера поощряет разнообразие поединков и поддерживает честную соревновательную среду.\n2.Игроки с рейтингом выше ${MAX_NO_CONF_RATING} должны подтвердить свой рейтинг в течении ${DAYS_TO_CONF_RATING} дней сыграв минимум одну игру.`
+
 			objects.info_cont.init=1;
 		}
-		
-		anim2.add(objects.info_cont,{alpha:[0,1]}, true, 0.25,'linear');
+
+		anim3.add(objects.info_cont, {alpha: [0, 1, 'linear']}, true, 0.25);
 
 	},
-	
+
 	info_close_down(){
-		
-		if (anim2.any_on()) {
+
+		if (anim3.any_on()) {
 			sound.play('locked');
 			return
 		};
-		sound.play('close_it');
-		
-		anim2.add(objects.info_cont,{alpha:[1,0]}, false, 0.25,'linear');
-		
+		sound.play('close');
+
+		anim3.add(objects.info_cont, {alpha: [1, 0, 'linear']}, false, 0.25);
+
 	}
 
 }
@@ -5989,7 +6315,7 @@ function set_state(params) {
 	if (opp_data.uid!==undefined)
 		small_opp_id=opp_data.uid.substring(0,10);
 
-	firebase.database().ref(room_name+'/'+my_data.uid).set({state:state, name:my_data.name, rating : my_data.rating, hidden:h_state, opp_id : small_opp_id, game_id:game_id});
+	firebase.database().ref(ROOM_NAME+'/'+my_data.uid).set({state:state, name:my_data.name, rating : my_data.rating, hidden:h_state, opp_id : small_opp_id, game_id:game_id});
 
 }
 
@@ -6005,72 +6331,107 @@ function vis_change() {
 	set_state({hidden : document.hidden});	
 }
 
-async function load_resources() {
+main_loader={
 
-	document.getElementById("m_progress").style.display = 'flex';
+	divide_texture(t,frame_w,frame_h, names){
+		
+		const frames_x=Math.floor(t.width/frame_w)
+		const frames_y=Math.floor(t.height/frame_h)
+			
+		if (typeof(names)==='string'){
+			assets[names]=[]
+			let i=0
+			for (let y=0;y<frames_y;y++){
+				for (let x=0;x<frames_x;x++){
+					const rect=new PIXI.Rectangle(x*frame_w, y*frame_h, frame_w, frame_h)
+					assets[names][i]=new PIXI.Texture(t.baseTexture, rect)
+					i++
+				}
+			}			
+		}else{
+			
+			let i=0
+			for (let y=0;y<frames_y;y++){
+				for (let x=0;x<frames_x;x++){
+					const rect=new PIXI.Rectangle(x*frame_w, y*frame_h, frame_w, frame_h)
+					assets[names[i]]=new PIXI.Texture(t.baseTexture, rect)
+					i++
+				}
+			}			
+		}
+	},
 
-	//подпапка с ресурсами
-	let lang_pack = ['RUS','ENG'][LANG];
+	async load1(){
 
-	git_src='https://akukamil.github.io/quoridor/'
-	//git_src=''
+		document.getElementById("m_progress").style.display = 'flex';
 
+		//подпапка с ресурсами
+		let lang_pack = ['RUS','ENG'][LANG];
 
-	const loader=new PIXI.Loader();
-	loader.add("m2_font", git_src+"/fonts/Bahnschrift/font.fnt");
-
-	loader.add('click',git_src+'/sounds/click.mp3');
-	loader.add('locked',git_src+'/sounds/locked.mp3');
-	loader.add('clock',git_src+'/sounds/clock.mp3');
-	loader.add('close_it',git_src+'/sounds/close_it.mp3');
-	loader.add('game_start',git_src+'/sounds/game_start.mp3');
-	loader.add('lose',git_src+'/sounds/lose.mp3');
-	loader.add('receive_sticker',git_src+'sounds/receive_sticker.mp3');
-	loader.add('block_wall',git_src+'/sounds/block_wall.mp3');
-	loader.add('iter_wall',git_src+'/sounds/iter_wall.mp3');
-	loader.add('bad_move',git_src+'/sounds/bad_move.mp3');
-	loader.add('win',git_src+'/sounds/win.mp3');
-	loader.add('invite',git_src+'/sounds/invite.mp3');
-	loader.add('cancel_wall',git_src+'/sounds/cancel_wall.mp3');
-	loader.add('place_wall',git_src+'/sounds/place_wall.mp3');
-	loader.add('checker_tap',git_src+'/sounds/checker_tap.mp3');
-	loader.add('keypress',git_src+'sounds/keypress.mp3');
-	loader.add('note',git_src+'sounds/note.mp3');
-	
-	loader.add('multiavatar', 'https://akukamil.github.io/common/multiavatar.min.txt');	
-	
-	//добавляем текстуры стикеров
-	for (let i=0;i<16;i++)
-		loader.add("sticker_texture_"+i, git_src+"/stickers/"+i+".png");
-	
-    //добавляем из листа загрузки
-    for (let i = 0; i < load_list.length; i++)
-        if (load_list[i].class === "sprite" || load_list[i].class === "image" )
-            loader.add(load_list[i].name, git_src+'res/'+lang_pack+'/'+load_list[i].name+"."+load_list[i].image_format);		
+		git_src='https://akukamil.github.io/quoridor/'
+		git_src=''
 
 
-	loader.onProgress.add(progress);
-	function progress(l, resource) {
-		document.getElementById("m_bar").style.width =  Math.round(l.progress)+"%";
-	}	
-	
-	await new Promise((resolve, reject)=> loader.load(resolve))
-	
-	//переносим все в ассеты
-	await new Promise(res=>loader.load(res))
-	for (const res_name in loader.resources){
-		const res=loader.resources[res_name];			
-		assets[res_name]=res.texture||res.sound||res.data;			
-	}	
-	
-	
-	//добавялем библиотеку аватаров
-	const script = document.createElement('script');
-	script.textContent = assets.multiavatar;
-	document.head.appendChild(script);
-	
-	//убираем элементы загрузки
-	document.getElementById("m_progress").outerHTML = "";	
+		const loader=new PIXI.Loader();
+		loader.add("m2_font", COM_URL+"/fonts/bahnschrift48/f.fnt");
+
+		loader.add('click',git_src+'/sounds/click.mp3');
+		loader.add('locked',git_src+'/sounds/locked.mp3');
+		loader.add('clock',git_src+'/sounds/clock.mp3');
+		loader.add('close_it',git_src+'/sounds/close_it.mp3');
+		loader.add('game_start',git_src+'/sounds/game_start.mp3');
+		loader.add('lose',git_src+'/sounds/lose.mp3');
+		loader.add('receive_sticker',git_src+'sounds/receive_sticker.mp3');
+		loader.add('block_wall',git_src+'/sounds/block_wall.mp3');
+		loader.add('iter_wall',git_src+'/sounds/iter_wall.mp3');
+		loader.add('bad_move',git_src+'/sounds/bad_move.mp3');
+		loader.add('win',git_src+'/sounds/win.mp3');
+		loader.add('invite',git_src+'/sounds/invite.mp3');
+		loader.add('cancel_wall',git_src+'/sounds/cancel_wall.mp3');
+		loader.add('place_wall',git_src+'/sounds/place_wall.mp3');
+		loader.add('checker_tap',git_src+'/sounds/checker_tap.mp3');
+		loader.add('keypress',git_src+'sounds/keypress.mp3');
+		loader.add('note',git_src+'sounds/note.mp3');
+		loader.add('online_msg',git_src+'sounds/online_msg.mp3');
+		loader.add('gw_move',git_src+'sounds/gw_move.mp3');
+		
+		loader.add('multiavatar', 'https://akukamil.github.io/common/multiavatar.min.txt');	
+		
+		//добавляем текстуры стикеров
+		for (let i=0;i<16;i++)
+			loader.add("sticker_texture_"+i, git_src+"/stickers/"+i+".png");
+		
+		//добавляем из листа загрузки
+		for (let i = 0; i < load_list.length; i++)
+			if (load_list[i].class === "sprite" || load_list[i].class === "image" )
+				loader.add(load_list[i].name, git_src+'res/'+lang_pack+'/'+load_list[i].name+"."+load_list[i].image_format);		
+
+		loader.onProgress.add(l=>{
+			document.getElementById("m_bar").style.width =  Math.round(l.progress)+"%";
+		})
+		
+		await new Promise(r=> loader.load(r))
+		
+		//переносим все в ассеты
+		await new Promise(res=>loader.load(res))
+		for (const res_name in loader.resources){
+			const res=loader.resources[res_name]
+			assets[res_name]=res.texture||res.sound||res.data;		
+		}		
+		
+		this.divide_texture(assets.flame_pack,80,180,'flame')
+		this.divide_texture(assets.chips_pack,80,80,'chips')
+
+		
+		//добавялем библиотеку аватаров
+		const script = document.createElement('script')
+		script.textContent = assets.multiavatar
+		document.head.appendChild(script)
+		
+		//убираем элементы загрузки
+		document.getElementById("m_progress").outerHTML='';
+
+	}
 
 }
 
@@ -6084,7 +6445,7 @@ async function init_game_env(lng) {
 	document.body.innerHTML='<style>html,body {margin: 0;padding: 0;height: 100%;	}body {display: flex;align-items: center;justify-content: center;background-color: rgba(41,41,41,1);flex-direction: column	}#m_progress {	  background: #1a1a1a;	  justify-content: flex-start;	  border-radius: 5px;	  align-items: center;	  position: relative;	  padding: 0 5px;	  display: none;	  height: 50px;	  width: 70%;	}	#m_bar {	  box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;	  border-radius: 5px;	  background: rgb(119, 119, 119);	  height: 70%;	  width: 0%;	}	</style></div><div id="m_progress">  <div id="m_bar"></div></div>';
 				
 	//ждем когда загрузятся ресурсы
-	await load_resources();
+	await main_loader.load1();
 
 	//убираем загрузочные данные
 	//document.getElementById("m_bar").outerHTML = "";
@@ -6206,12 +6567,12 @@ async function init_game_env(lng) {
 	
 	//анимация лупы
 	some_process.loup_anim=function() {
-		objects.id_loup.x=20*Math.sin(game_tick*8)+90;
-		objects.id_loup.y=20*Math.cos(game_tick*8)+110;
+		objects.id_loup.x=20*Math.sin(TM.s*8)+90;
+		objects.id_loup.y=20*Math.cos(TM.s*8)+110;
 	}
 
 	//запускаем главный цикл
-	main_loop();
+	main_loop.start();
 
 	//показыаем основное меню
 	main_menu.activate();
@@ -6221,9 +6582,8 @@ async function init_game_env(lng) {
 	await auth2.init();		
 		
 	//получаем остальные данные об игроке
-	let snapshot = await firebase.database().ref("players/"+my_data.uid).once('value');
-	let other_data = snapshot.val();
-		
+	let other_data = await fbs_once("players/"+my_data.uid)
+
 	//делаем защиту от неопределенности
 	my_data.rating = (other_data?.rating) || 1400;	
 	my_data.games = (other_data?.games) || 0;
@@ -6233,7 +6593,7 @@ async function init_game_env(lng) {
 	my_data.avatar_tm = other_data?.avatar_tm || 0;
 	my_data.country = other_data?.country || await auth2.get_country_code() || await auth2.get_country_code2() 
 	
-	room_name='states';
+	ROOM_NAME='states';
 	
 	//правильно определяем аватарку
 	if (other_data?.pic_url && other_data.pic_url.includes('mavatar'))
@@ -6244,31 +6604,41 @@ async function init_game_env(lng) {
 	//добавляем страну к имени если ее нет
 	if (!auth2.get_country_from_name(my_data.name)&&my_data.country)
 		my_data.name=`${my_data.name} (${my_data.country})`
-	
+		
 	//загружаем мои данные в кэш
-	await players_cache.update(my_data.uid,{pic_url:my_data.pic_url,country:my_data.country,name:my_data.name,rating:my_data.rating});
-	await players_cache.update_avatar(my_data.uid);
+	players_cache.update_params(my_data.uid,{pic_url:my_data.pic_url,rating:my_data.rating,country:my_data.country,name:my_data.name});
+	await players_cache.update(my_data.uid);
 	
 	//устанавливаем фотки в попап
-	objects.my_avatar.texture=players_cache.players[my_data.uid].texture;
-	objects.id_avatar.texture=players_cache.players[my_data.uid].texture;
+	objects.my_avatar.texture=players_cache[my_data.uid].texture;
+	objects.id_avatar.texture=players_cache[my_data.uid].texture;
 	objects.id_name.set2(my_data.name,150);		
 		
 	//отключение от игры и удаление не нужного
 	firebase.database().ref("inbox/"+my_data.uid).onDisconnect().remove();
-	firebase.database().ref(room_name+'/'+my_data.uid).onDisconnect().remove();			
+	firebase.database().ref(ROOM_NAME+'/'+my_data.uid).onDisconnect().remove();			
 
 	//устанавливаем рейтинг в попап
 	objects.id_rating.text=objects.my_card_rating.text=my_data.rating;
 
 	//обновляем почтовый ящик
-	firebase.database().ref("inbox/"+my_data.uid).set({sender:"-",message:"-",tm:"-",data:{x1:0,y1:0,x2:0,y2:0,board_state:0}});
+	fbs.ref("inbox/"+my_data.uid).set({sender:"-",message:"-",tm:"-",data:{x1:0,y1:0,x2:0,y2:0,board_state:0}});
 
 	//подписываемся на новые сообщения
-	firebase.database().ref("inbox/"+my_data.uid).on('value', (snapshot) => { process_new_message(snapshot.val());});
+	fbs.ref("inbox/"+my_data.uid).on('value', s => { process_new_message(s.val())})
 
 	//обновляем данные в файербейс так как могли поменяться имя или фото
-	firebase.database().ref('players/'+my_data.uid).set({name:my_data.name,country:my_data.country, pic_url: my_data.pic_url, rating : my_data.rating, chip : my_data.chip,nick_tm:my_data.nick_tm, avatar_tm:my_data.avatar_tm, games : my_data.games, tm:firebase.database.ServerValue.TIMESTAMP});
+	fbs.ref('players/'+my_data.uid).set({
+		name:my_data.name,
+		country:my_data.country,
+		pic_url: my_data.pic_url,
+		rating : my_data.rating,
+		chip : my_data.chip,
+		nick_tm:my_data.nick_tm,
+		avatar_tm:my_data.avatar_tm,
+		games:my_data.games,
+		tm:firebase.database.ServerValue.TIMESTAMP
+	});
 
 	//сообщение для дубликатов
 	client_id = irnd(10,999999);
@@ -6286,23 +6656,26 @@ async function init_game_env(lng) {
 	//загрузка сокета
 	await auth2.load_script('https://akukamil.github.io/com/my_ws.js');	
 	
+	await my_ws.init();
+	
+	SERVER_TM||=await my_ws.get_tms()
+	
 	//ждем загрузки чата
-	chat.init();	
+	await chat.init();	
 
 	//ждем и убираем попап
-	await new Promise((resolve, reject) => setTimeout(resolve, 500));
+	await new Promise(r => setTimeout(r, 500));
 	
-	anim2.add(objects.id_cont,{y:[objects.id_cont.y, -200]}, false, 1,'easeInBack');
+	anim3.add(objects.id_cont,{y:[objects.id_cont.y, -200,'easeInBack']}, false, 0.25);
 	
-	some_process.loup_anim=function() {};
-
+	some_process.loup_anim=function() {}
 		
 	//событие ролика мыши в карточном меню
 	window.addEventListener('keydown',function(event){keyboard.keydown(event.key)});	
 	window.addEventListener('wheel', (event) => {chat.wheel_event(Math.sign(event.deltaY))}, {passive: false});	
 		
 	//контроль за присутсвием
-	var connected_control = firebase.database().ref('.info/connected');
+	const connected_control = firebase.database().ref('.info/connected');
 	connected_control.on("value", (snap) => {
 	  if (snap.val() === true) {
 		connected = 1;
@@ -6383,17 +6756,38 @@ async function define_platform_and_language() {
 
 }
 
-function main_loop() {
-
-
-	game_tick+=0.016666666;
-	anim2.process();
+main_loop={
 	
-	//обрабатываем минипроцессы
-	for (let key in some_process)
-		some_process[key]();
 
+	lastTime:0,	
 	
-	app.renderer.render(app.stage);	
-	requestAnimationFrame(main_loop);
+	start(fps){
+	
+		TM.ms = 0
+		TM.s=0
+		this.run(TM.ms)
+		
+	},
+	
+	run(t){		
+		
+		const delta = t - this.lastTime							
+		const cap_delta = Math.min(delta,16.666)	
+					
+		TM.ms=t
+		TM.s=TM.ms*0.001					
+					
+		anim3.process()
+
+		//обрабатываем минипроцессы
+		for (const key in some_process)
+			some_process[key](cap_delta)
+
+		app.renderer.render(app.stage)			
+		
+		this.lastTime = t
+		requestAnimationFrame(main_loop.run.bind(this))	
+		
+	}	
+	
 }
