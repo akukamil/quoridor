@@ -5593,8 +5593,8 @@ lobby={
 		objects.td_rating1.text = card.rating_text1.text;
 		objects.td_rating2.text = card.rating_text2.text;
 
-		objects.td_name1.set2(card.name1, 240);
-		objects.td_name2.set2(card.name2, 240);
+		objects.td_name1.set2(card.name1, 220);
+		objects.td_name2.set2(card.name2, 220);
 
 	},
 
