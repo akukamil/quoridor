@@ -1,5 +1,5 @@
 const M_WIDTH=800, M_HEIGHT=450;
-var app ={stage:{},renderer:{}}, assets={},ROOM_NAME='states1', game,SERVER_TM=0, gdata={}, objects={}, state='',my_role='',LANG = 0, game_tick=0, my_turn=0,game_id=0, h_state=0, made_moves=0,client_id, game_platform="", hidden_state_start = 0, connected = 1, players="", pending_player="",git_src,my_data={opp_id : ''},opp_data={},some_process = {},game_name='quoridor';
+let app ={stage:{},renderer:{}}, assets={},ROOM_NAME='states1', game,SERVER_TM=0, gdata={}, objects={}, state='',my_role='',LANG = 0, game_tick=0, my_turn=0,game_id=0, h_state=0, made_moves=0,client_id, game_platform="", hidden_state_start = 0, connected = 1, players="", pending_player="",git_src,my_data={opp_id : ''},opp_data={},some_process = {},game_name='quoridor';
 const V_WALL = 2, H_WALL = 1, ROW0 = 0, ROW8 = 8, MY_ID = 1, OPP_ID = 2, MAX_MOVES = 50, FIELD_MARGIN_X = 50,FIELD_MARGIN_Y = 30;
 const WIN = 1, DRAW = 0, LOSE = -1, NOSYNC = 2;
 const COM_URL='https://akukamil.github.io/com'
@@ -444,8 +444,8 @@ class node_class {
 					this.childs.push(node);
 				}
 				
-				if (ffunc.check_new_wall(game.field, r, c, H_WALL) === 1 &&
-					ffunc.check_if_wall_block (game.field, r, c, H_WALL)===0) {	
+				if (ffunc.check_new_wall(this.field, r, c, H_WALL) === 1 &&
+					ffunc.check_if_wall_block (this.field, r, c, H_WALL)===0) {	
 					
 					let node = new node_class(this.field, player_to_move, this.depth + 1);	
 					if (save_move_data === 1)
