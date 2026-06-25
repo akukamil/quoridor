@@ -1137,7 +1137,7 @@ bot_player = {
 			for (let reg of regs) 
 				await reg.unregister()					
 								
-			const registration=await navigator.serviceWorker.register(git_src+'sw.js')
+			const registration=await navigator.serviceWorker.register(git_src+'/sw.js')
 			await navigator.serviceWorker.ready
 								
 			bot_player.sw = navigator.serviceWorker.controller || registration.active;
