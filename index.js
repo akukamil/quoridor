@@ -6079,7 +6079,7 @@ auth2={
 		
 		if (game_platform === 'CRAZYGAMES') {			
 			
-			try {await this.load_script('https://sdk.crazygames.com/crazygames-sdk-v2.js')} catch (e) {alert(e)};	
+			try {await this.load_script('https://sdk.crazygames.com/crazygames-sdk-v3.js')} catch (e) {alert(e)};	
 			try {await this.load_script('https://akukamil.github.io/quoridor/jwt-decode.js')} catch (e) {alert(e)};		
 			const cg_user_data=await this.search_in_crazygames();			
 			my_data.uid = cg_user_data.userId || this.search_in_local_storage() || this.get_random_uid_for_local('CG_');
