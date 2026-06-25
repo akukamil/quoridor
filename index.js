@@ -6513,7 +6513,15 @@ async function init_game_env(lng) {
 	  }
 	});
 	
-	window.CrazyGames.SDK.game.gameplayStart()
+	
+	if (game_platform==='CRAZYGAMES'){
+		
+		window.CrazyGames.SDK.game.gameplayStart()
+		window.CrazyGames.SDK.game.addSettingsChangeListener((newSettings)=>{
+			console.log("Settings updated", newSettings);
+		});
+	}
+
 
 
 
