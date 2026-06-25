@@ -6006,14 +6006,13 @@ auth2={
 		if(!window.CrazyGames.SDK)
 			return {};
 		
-		let token='';
+		let user_data='';
 		try{
-			token = await window.CrazyGames.SDK.user.getUserToken();
+			user_data = await window.CrazyGames.SDK.user.getUser();
 		}catch(e){
 			return {};
 		}
-		const user = window.jwt_decode(token);
-		return user || {};
+		return user_data
 	},
 		
 	async init() {	
@@ -6084,11 +6083,10 @@ auth2={
 			await window.CrazyGames.SDK.init()
 
 			const cg_user_data=await this.search_in_crazygames();			
-			my_data.uid = cg_user_data.userId || this.search_in_local_storage() || this.get_random_uid_for_local('CG_');
+			my_data.uid = cg_user_data.__dangerousUserId || this.search_in_local_storage() || this.get_random_uid_for_local('CG_');
 			my_data.name = cg_user_data.username || this.get_random_name(my_data.uid);
 			my_data.orig_pic_url = cg_user_data.profilePictureUrl || ('mavatar'+my_data.uid);	
 					
-
 
 			//перезапускаем если авторизация прошла		
 			window.CrazyGames.SDK.user.addAuthListener(function(user){	
