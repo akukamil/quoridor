@@ -401,132 +401,6 @@ class node_class {
 		
 	}
 	
-	add_childs(save_move_data) {		
-		
-		let player_to_move = 3 - this.player_id;
-		
-		//добаляем ноды с ходами
-		let moves = ffunc.get_moves(this.field, player_to_move);		
-		for (let i = 0 ; i < moves.length; i++) {
-			
-			let node = new node_class(this.field, player_to_move, this.depth + 1);			
-			ffunc.make_move(node.field, moves[i].r0, moves[i].c0, moves[i].r1, moves[i].c1);
-			if (save_move_data === 1)
-				node.move_data = JSON.parse(JSON.stringify(moves[i]));	
-			this.childs.push(node);
-		}		
-		
-		//добавляем стены только которые рядом
-		if (this.field.pos[player_to_move].walls === 0)
-			return;
-		
-		//теукщее положение игрока
-		let pr = this.field.pos[this.player_id].r;
-		let pc = this.field.pos[this.player_id].c;
-		
-		let walls_pos = [[1,-1],[0,-1],[2,0],[1,0],[0,0],[-1,0],[2,1],[1,1],[0,1],[-1,1],[1,2],[0,2]]
-		
-		for (let p of walls_pos ) {
-				
-				let r = pr + p[0];
-				let c = pc + p[1];
-				
-				if (r < 1 || r > 8 || c < 1 || c > 8)
-					continue
-				
-				if (ffunc.check_new_wall(this.field, r, c, V_WALL) === 1 &&
-					ffunc.check_if_wall_block (this.field, r, c, V_WALL)===0) {	
-					
-					let node = new node_class(this.field, player_to_move, this.depth + 1);	
-					if (save_move_data === 1)
-						node.move_data = {type : 'wall', r : r, c : c, wall_type : V_WALL};	
-					node.field.f[r][c].wall_type = V_WALL;
-					this.childs.push(node);
-				}
-				
-				if (ffunc.check_new_wall(this.field, r, c, H_WALL) === 1 &&
-					ffunc.check_if_wall_block (this.field, r, c, H_WALL)===0) {	
-					
-					let node = new node_class(this.field, player_to_move, this.depth + 1);	
-					if (save_move_data === 1)
-						node.move_data = {type : 'wall', r : r, c : c, wall_type : H_WALL};	
-					node.field.f[r][c].wall_type = H_WALL;	
-					this.childs.push(node);
-				}		
-		}	
-	}
-
-	add_childs_only_moves(save_move_data) {		
-		
-		let player_to_move = 3 - this.player_id;
-		
-		//добаляем ноды с ходами
-		let moves = ffunc.get_moves(this.field, player_to_move);		
-		for (let i = 0 ; i < moves.length; i++) {
-			
-			let node = new node_class(this.field, player_to_move, this.depth + 1);			
-			ffunc.make_move(node.field, moves[i].r0, moves[i].c0, moves[i].r1, moves[i].c1);
-			if (save_move_data === 1)
-				node.move_data = JSON.parse(JSON.stringify(moves[i]));	
-			node.parent = this;
-			this.childs.push(node);
-		}		
-
-	}
-	
-	add_childs_only_walls(save_move_data) {		
-		
-		let player_to_move = 3 - this.player_id;
-		
-		
-		//добавляем стены только которые рядом
-		if (this.field.pos[player_to_move].walls === 0) {
-			this.add_childs_only_moves(save_move_data);
-			return;			
-		}
-
-		
-		//теукщее положение именно оппонента
-		let pr = this.field.pos[this.player_id].r;
-		let pc = this.field.pos[this.player_id].c;
-		
-		let walls_pos = [[1,-1],[0,-1],[2,0],[1,0],[0,0],[-1,0],[2,1],[1,1],[0,1],[-1,1],[1,2],[0,2]]
-		
-		for (let p of walls_pos ) {
-				
-			let r = pr + p[0];
-			let c = pc + p[1];
-			
-			if (r < 1 || r > 8 || c < 1 || c > 8)
-				continue
-			
-			if (ffunc.check_new_wall(this.field, r, c, V_WALL) === 1 &&
-				ffunc.check_if_wall_block (this.field, r, c, V_WALL)===0) {	
-				
-				let node = new node_class(this.field, player_to_move, this.depth + 1);	
-				if (save_move_data === 1)
-					node.move_data = {type : 'wall', r : r, c : c, wall_type : V_WALL};	
-				node.field.f[r][c].wall_type = V_WALL;
-				this.childs.push(node);
-			}
-			
-			if (ffunc.check_new_wall(game.field, r, c, H_WALL) === 1 &&
-				ffunc.check_if_wall_block (game.field, r, c, H_WALL)===0) {	
-				
-				let node = new node_class(this.field, player_to_move, this.depth + 1);	
-				if (save_move_data === 1)
-					node.move_data = {type : 'wall', r : r, c : c, wall_type : H_WALL};	
-				node.field.f[r][c].wall_type = H_WALL;	
-				this.childs.push(node);
-			}		
-		}	
-		
-		//если нету детей то возвращаем ходами
-		if (this.childs.length === 0)
-			this.add_childs_only_moves(save_move_data);
-		
-	}
-	
 }
 
 sound={	
@@ -1205,7 +1079,6 @@ online_game = {
 
 bot_player = {
 	
-	true_rating : 34634,	
 	timer : 0,
 	me_conf_play : 0,
 	opp_conf_play : 0,
@@ -1213,10 +1086,14 @@ bot_player = {
 	search_start_time : 0,
 	no_incoming_move : 0,
 	on:0,
+	sw:0,
+	sw_calc_on:0,
+	gid:0,
 		
 	async activate() {		
 				
-		set_state({state : 'b'});	
+		set_state({state :'b'});
+		this.gid=hf.randIntInc(10,999999)
 		
 		//чип бота
 		opp_data.uid='bot'
@@ -1235,13 +1112,43 @@ bot_player = {
 		objects.timer_text.text  = ['мой ход','my turn'][LANG];
 	},
 			
-	async send_move() {
+	send_move() {
 		
-		let root_node = new node_class(game.field, MY_ID, 0);
-		let best_child = await this.start_mm_search(root_node);
-		if (!best_child) return;
-		game.receive_move(best_child.move_data);
+		if (!this.sw){			
+			pmsg.add({t:['Не могу ходить!','Can not move!'][LANG],timeout:3000})
+			return
+		}
 		
+		this.sw_calc_on=1
+		this.sw.postMessage({type:'mm',f:game.field,gid:this.gid})
+	},
+	
+	inc_move(data){
+		if (data.gid!==this.gid) return		
+		this.sw_calc_on=0
+		game.receive_move(data.move_data)		
+	},
+	
+	async register_sw(){
+		
+		if ('serviceWorker' in navigator) {
+			
+			const regs=await navigator.serviceWorker.getRegistrations()
+			for (let reg of regs) 
+				await reg.unregister()					
+								
+			const registration=await navigator.serviceWorker.register('./sw.js')
+			await navigator.serviceWorker.ready
+								
+			bot_player.sw = navigator.serviceWorker.controller || registration.active;
+			console.log(bot_player.sw);
+			console.log('Service Worker is now active and ready!');
+								
+			navigator.serviceWorker.addEventListener('message', (event) => {
+				console.log('Data received from Service Worker:', event.data);
+				bot_player.inc_move(event.data)
+			});	
+		}		
 	},
 	
 	async stop(result) {
@@ -1266,17 +1173,17 @@ bot_player = {
 			sound.play('lose');
 		else
 			sound.play('win');		
+		this.gid=0		
 		
 		await big_message.show(result_info, ['Сыграйте с реальным соперником для получения рейтинга','Play online with other player to increase rating'][LANG],true)
-	
+
 	},
 	
 	silent_stop() {
-		
-		
+				
 		//убираем кнопку стоп
 		objects.stop_bot_btn.visible=false;
-		
+		this.gid=0
 		
 	},
 	
@@ -1286,62 +1193,8 @@ bot_player = {
 		objects.timer_cont.x = [650,10][my_turn];	
 		
 	},
+
 	
-	async start_mm_search(node) {
-		
-		//ходит бот
-		node.add_childs(1);
-		let max_val = -999999;
-		let best_child = {};
-		for (let c0 of node.childs) {
-			
-			
-			await new Promise((resolve, reject) => setTimeout(resolve, 50));
-			
-			//проверяем что этот ход ведет напрямую к выигрышу
-			if (ffunc.get_winner(c0.field) === OPP_ID)
-				return c0;
-						
-			//ходит игрок
-			c0.add_childs_only_moves(0);
-			let min_val1 = 99999;
-			for (let c1 of c0.childs) {
-				
-				//ходит бот
-				c1.add_childs(0);
-				let max_val2 = -99999;
-				for (let c2 of c1.childs) {
-					
-					
-					//экстренный выход
-					if (objects.big_msg_cont.visible === true)
-						return;
-										
-					let d_for_my = ffunc.get_shortest_distance_to_target(c2.field,MY_ID,ROW0);
-					let d_for_opp = ffunc.get_shortest_distance_to_target(c2.field,OPP_ID,ROW8);
-					let how_opp_faster = d_for_my - d_for_opp;
-					
-					if (how_opp_faster > max_val2)
-						max_val2 = how_opp_faster;
-				}	
-				
-
-			if (min_val1 > max_val2)
-				min_val1 = max_val2;			
-			}	
-
-		if (min_val1 > max_val) {
-			max_val = min_val1;			
-			best_child = c0;
-			
-		}
-		
-		}
-
-		return best_child;
-		
-	}
-		
 };
 
 keyboard={
@@ -2660,7 +2513,7 @@ game = {
 		
 	},
 		
-	async stop(result) {
+	async stop(result){
 						
 		//отключаем взаимодейтсвие с доской
 		objects.field.pointerdown = function() {}
@@ -2711,7 +2564,7 @@ game = {
 			
 	},
 		
-	stop_down() {		
+	stop_down(){		
 		
 		if (objects.big_msg_cont.visible || objects.req_cont.visible) {
 			sound.play('bad_move');
@@ -2722,7 +2575,7 @@ game = {
 		
 	},
 	
-	async mouse_down(e) {
+	async mouse_down(e){
 		
 		if (!my_turn) {
 			pmsg.add({t:['Не твоя очередь','Not you turn'][LANG]})
@@ -2735,19 +2588,19 @@ game = {
 		}
 		
 		//координаты указателя
-		let mx = e.data.global.x/app.stage.scale.x;
-		let my = e.data.global.y/app.stage.scale.y;
+		const mx = e.data.global.x/app.stage.scale.x;
+		const my = e.data.global.y/app.stage.scale.y;
 
 		//координаты указателя на игровой доске
-		const _c = Math.floor(9*(mx-objects.field.x-FIELD_MARGIN_X)/450);
-		const _r = Math.floor(9*(my-objects.field.y-FIELD_MARGIN_Y)/450);
+		const _c = Math.floor(9*(mx-objects.field.x-FIELD_MARGIN_X)/450)
+		const _r = Math.floor(9*(my-objects.field.y-FIELD_MARGIN_Y)/450)
 		const _id = _c + _r * 8;
 		let p = this.field.pos[MY_ID]; p ={r:p.r, c:p.c};
 		
 		const player_cell_selected = (p.r === _r && p.c === _c);
 		
 		//выбрана ячейка с игроком
-		if (player_cell_selected === true  && this.selected === null) {			
+		if (player_cell_selected&&!this.selected) {			
 						
 			sound.play('checker_tap');
 			
@@ -2803,32 +2656,36 @@ game = {
 		}
 		
 		//выбрали пустую ячейку для строительства стены
-		if (player_cell_selected === false) {
+		if (!player_cell_selected) {
 			
-			if (this.field.pos[MY_ID].walls === 0) {
+			if (this.field.pos[MY_ID].walls===0) {
 				pmsg.add({t:['Больше построить стену нельзя','You have no walls'][LANG]})
 				return;
 			}
 			
-			this.sel_cell={r: _r, c: _c};		
+			if (this.sel_cell.r!==_r||this.sel_cell.c!==_c)
+				this.sel_cell_wall_iter = 0	
 			
-			const wall_ok = this.show_wall_opt();
+			
+			this.sel_cell={r: _r, c: _c}	
+			
+			const wall_ok = this.show_wall_opt()
 			if (wall_ok === 1) {
 				objects.move_btns_cont.visible = true;				
-				some_process.wall_processing=this.wall_processing;	
+				some_process.wall_processing=this.wall_processing
 			}
 
 		}		
 	
 	},
 	
-	player_selected_processing() {
+	player_selected_processing(){
 		
 		objects.my_icon.alpha = Math.abs(Math.sin(TM.s * 5));
 		
 	},
 	
-	wall_processing () {
+	wall_processing(){
 		
 		if (objects.h_wall.visible === true)
 			objects.h_wall.alpha = Math.abs(Math.sin(TM.s * 5));
@@ -2848,7 +2705,7 @@ game = {
 		
 	},
 	
-	confirm_move  () {
+	confirm_move(){
 		
 		//короткое обращение
 		let pw = this.pending_wall;
@@ -2860,6 +2717,7 @@ game = {
 		
 		if (ffunc.blocked_way(pf, pf.pos[OPP_ID].r, pf.pos[OPP_ID].c, ROW8, 1) === 1) {
 			pmsg.add({t:['Нельзя полностью блокировать соперника','Cannot completely block opponent'][LANG]});
+			sound.play('locked')
 			return;
 		}	
 		
@@ -2867,6 +2725,7 @@ game = {
 		pf.f[pw.r][pw.c].wall_type = pw.wall_type;
 		
 		if (ffunc.blocked_way(pf, pf.pos[MY_ID].r, pf.pos[MY_ID].c, ROW0, 1) === 1) {
+			sound.play('locked')
 			pmsg.add({t:['Так у вас не будет пути до финиша','So you wanna block yourself?'][LANG]})
 			return;
 		}
@@ -2907,7 +2766,7 @@ game = {
 		
 	},
 	
-	process_move(data) {
+	process_move(data){
 				
 		//отправляем ход сопернику
 		this.opponent.send_move(data);		
@@ -2934,7 +2793,7 @@ game = {
 		
 	},	
 	
-	get_game_state  () {
+	get_game_state(){
 		
 			
 		if ( this.field.pos[MY_ID].r === ROW0 && this.field.pos[OPP_ID].r !== ROW8 )
@@ -2962,7 +2821,7 @@ game = {
 				
 	},
 	
-	decline_move () {		
+	decline_move(){		
 		
 		//воспроизводим звук
 		sound.play('cancel_wall');
@@ -2971,55 +2830,47 @@ game = {
 		
 	},
 	
-	stop_wall_processing () {
+	stop_wall_processing(){
 		
-		objects.h_wall.visible = false;
-		objects.v_wall.visible = false;
-		this.sel_cell_wall_iter = [0,0];
-		objects.move_btns_cont.visible = false;
-		some_process.wall_processing = function(){};
+		objects.h_wall.visible = false
+		objects.v_wall.visible = false
+		this.sel_cell_wall_iter = 0
+		objects.move_btns_cont.visible = false
+		some_process.wall_processing = function(){}
 	},
 			
-	show_wall_opt(id) {
+	show_wall_opt(id){
 		
 		objects.h_wall.visible=false;
 		objects.v_wall.visible=false;
-
-		sound.play('iter_wall');
 					
 		//тип стены
 		//c смещение
 		//r смещение
 		//следующая ячейка
-		let p = [[V_WALL,0,0,1],[H_WALL,0,0,2],[H_WALL,0,1,3],[V_WALL,0,1,4],[V_WALL,1,1,5],[H_WALL,1,1,6],[H_WALL,1,0,7],[V_WALL,1,0,0]]
+		const p = [[V_WALL,0,0,1],[H_WALL,0,0,2],[H_WALL,0,1,3],[V_WALL,0,1,4],[V_WALL,1,1,5],[H_WALL,1,1,6],[H_WALL,1,0,7],[V_WALL,1,0,0]]
 		
-		if (this.sel_cell_wall_iter[0] !== id) {
-			this.sel_cell_wall_iter[0] = id;
-			this.sel_cell_wall_iter[1] = 0;	
-			
-			//убираем кнопку подтверждения так как пока не понятно найдутся ли стены для данной ячейки
-			objects.move_btns_cont.visible = false;
-		}
+		//убираем кнопку подтверждения так как пока не понятно найдутся ли стены для данной ячейки
+		objects.move_btns_cont.visible = false;
+	
 		
-		let g_pos = this.sel_cell_wall_iter[1];
+		let g_pos = this.sel_cell_wall_iter
 		
 		for (let i = 0 ; i < 8 ; i++) {
 			
 			let wp = p[g_pos];			
 			
-			if (this.sel_cell_wall_iter[1] === g_pos) {
+			if (this.sel_cell_wall_iter === g_pos) {
 								
-				let r = this.sel_cell.r + wp[1];								
-				let c = this.sel_cell.c + wp[2];
+				const r = this.sel_cell.r + wp[1]								
+				const c = this.sel_cell.c + wp[2]				
 				
-				
-				this.sel_cell_wall_iter[1]++;
-				if (this.sel_cell_wall_iter[1] > 7)
-					this.sel_cell_wall_iter[1] = 0;	
-				
-				//console.log(r,c,wp[0]);												
+				this.sel_cell_wall_iter++;
+				if (this.sel_cell_wall_iter > 7)
+					this.sel_cell_wall_iter = 0	
+											
 				//если стену нельзя поставить выбираем следующую конфигурацию								
-				let check = ffunc.check_new_wall(this.field, r, c, wp[0])
+				const check = ffunc.check_new_wall(this.field, r, c, wp[0])
 				if (check ===0) {
 					g_pos= p[g_pos][3];
 					continue;
@@ -3043,15 +2894,16 @@ game = {
 				w_spr.x = c * 50 + objects.field.x + FIELD_MARGIN_X;
 
 				this.pending_wall = {r: r, c: c, wall_type: wp[0], sprite: w_spr};
-				
+				sound.play('iter_wall');
 				return 1;
 			}			
 		}
 		
-		return 0;	
+		sound.play('locked');
+		return 0
 	},
 			
-	show_my_moves(show) {
+	show_my_moves(show){
 				
 		if (show===0) {
 			objects.move_opt_cont.visible=false;
@@ -3077,7 +2929,7 @@ game = {
 
 	},
 	
-	async receive_move(data) {
+	async receive_move(data){
 		
 		if (data.type === 'move') {
 			
@@ -3793,7 +3645,6 @@ req_dialog = {
 		fbs.ref("inbox/"+req_dialog.uid).set({sender:my_data.uid,message:'REJECT',tm:Date.now()});
 	},
 
-
 	accept_btn_down() {
 
 		if (anim3.any_on()||game.state==='online'||game.state==='big_msg'||game.state==='ad') {
@@ -3810,8 +3661,8 @@ req_dialog = {
 		anim3.add(objects.req_cont, {y: [objects.req_cont.sy, -260, 'easeInBack']}, false, 0.5);
 
 		//отправляем информацию о согласии играть с идентификатором игры
-		game_id=~~(Math.random()*99999);
-		fbs.ref('inbox/'+opp_data.uid).set({sender:my_data.uid,message:'ACCEPT',tm:Date.now(),game_id:game_id});
+		game_id=~~(Math.random()*99999)
+		fbs.ref('inbox/'+opp_data.uid).set({sender:my_data.uid,message:'ACCEPT',tm:Date.now(),game_id:game_id})
 
 		lobby.close();
 		game.activate("slave" , online_game );
@@ -6378,9 +6229,7 @@ main_loader={
 		loader.add('note',git_src+'sounds/note.mp3');
 		loader.add('online_msg',git_src+'sounds/online_msg.mp3');
 		loader.add('gw_move',git_src+'sounds/gw_move.mp3');
-		
-		loader.add('multiavatar', 'https://akukamil.github.io/common/multiavatar.min.txt');	
-		
+			
 		//добавляем текстуры стикеров
 		for (let i=0;i<16;i++)
 			loader.add("sticker_texture_"+i, git_src+"/stickers/"+i+".png");
@@ -6405,12 +6254,7 @@ main_loader={
 		
 		this.divide_texture(assets.flame_pack,80,180,'flame')
 		this.divide_texture(assets.chips_pack,80,80,'chips')
-
-		
-		//добавялем библиотеку аватаров
-		const script = document.createElement('script')
-		script.textContent = assets.multiavatar
-		document.head.appendChild(script)
+	
 		
 		//убираем элементы загрузки
 		document.getElementById("m_progress").outerHTML='';
@@ -6579,6 +6423,9 @@ async function init_game_env(lng) {
 	
 	ROOM_NAME='states';
 	
+	//ии для бота
+	bot_player.register_sw()
+	
 	//правильно определяем аватарку
 	if (other_data?.pic_url && other_data.pic_url.includes('mavatar'))
 		my_data.pic_url=other_data.pic_url
@@ -6637,8 +6484,6 @@ async function init_game_env(lng) {
 	//keep-alive сервис
 	setInterval(function()	{keep_alive()}, 40000);
 
-	//загрузка сокета
-	await auth2.load_script('https://akukamil.github.io/com/my_ws.js');	
 	
 	await my_ws.init();
 	
