@@ -6512,6 +6512,8 @@ async function init_game_env(lng) {
 		connected = 0;
 	  }
 	});
+	
+	window.CrazyGames.SDK.game.gameplayStart()
 
 
 
