@@ -429,7 +429,7 @@ sound={
 			this.on=1;
 			objects.pref_info.text=['Звуки включены','Sounds is on'][LANG];
 		}
-		anim3.add(objects.pref_info,{alpha:[0,1]}, false, 3,'easeBridge',false);		
+		anim3.add(objects.pref_info,{alpha:[0,1,'easeBridge']}, false, 3,false);		
 		
 	}
 	
