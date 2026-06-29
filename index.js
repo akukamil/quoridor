@@ -4930,8 +4930,6 @@ lobby={
 		anim3.add(objects.lobby_header_cont, {y: [-50, objects.lobby_header_cont.sy, 'linear']}, true, 0.1);
 		objects.cards_cont.x=0;
 		this.on=1;
-		
-		objects.lobby_chat_btn.visible=false
 
 		//отключаем все карточки
 		for(let i=0;i<objects.mini_cards.length;i++)
