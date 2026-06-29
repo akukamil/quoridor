@@ -6095,7 +6095,6 @@ auth2={
 			my_data.name = cg_user_data.username || this.get_random_name(my_data.uid);
 			my_data.orig_pic_url = cg_user_data.profilePictureUrl || ('mavatar'+my_data.uid);	
 					
-
 			//перезапускаем если авторизация прошла		
 			window.CrazyGames.SDK.user.addAuthListener(function(user){	
 				if (user?.id&&user.id!==my_data.uid){
@@ -6103,7 +6102,10 @@ auth2={
 					location.reload();	
 				}	
 			});
-
+			
+			window.CrazyGames.SDK.game.addSettingsChangeListener((newSettings)=>{
+				console.log("Settings updated", newSettings);
+			});
 					
 			return;
 		}
@@ -6404,6 +6406,8 @@ async function init_game_env(lng) {
         }
     }
 	
+	main_menu.activate()
+	console.clear()
 	
 	//анимация лупы
 	some_process.loup_anim=function() {
@@ -6413,7 +6417,10 @@ async function init_game_env(lng) {
 
 	//запускаем главный цикл
 	main_loop.start()
-	
+
+
+	//показыаем основное меню
+
 
 		
 	//получаем остальные данные об игроке
@@ -6499,9 +6506,7 @@ async function init_game_env(lng) {
 	//ждем загрузки чата
 	await chat.init();	
 
-	//показыаем основное меню
-	main_menu.activate()
-	console.clear()
+
 
 	if (game_platform==='CRAZYGAMES')
 		window.CrazyGames.SDK.game.loadingStop();
@@ -6528,11 +6533,7 @@ async function init_game_env(lng) {
 	});
 	
 	
-	if (game_platform==='CRAZYGAMES'){		
-		window.CrazyGames.SDK.game.addSettingsChangeListener((newSettings)=>{
-			console.log("Settings updated", newSettings);
-		});
-	}
+
 
 
 
