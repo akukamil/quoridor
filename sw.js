@@ -979,7 +979,8 @@ function start_mm_search(node) {
 			const d_for_bot = ffunc.get_shortest_distance_to_target(c1.field,OPP_ID,ROW8);
 
 			//если невозможный путь то пропускаем
-			if (d_for_bot<0||d_for_my<0) continue
+			if (d_for_bot<0||d_for_my<0)
+				continue
 			
 			const how_bot_faster = d_for_my-d_for_bot;
 
