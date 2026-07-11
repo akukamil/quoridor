@@ -5940,7 +5940,7 @@ auth2={
 		
 		//сохраняем этот uid в локальном хранилище
 		try {
-			localStorage.setItem('poker_uid', uid);
+			localStorage.setItem('quoridor_uid', uid);
 		} catch (e) {alert(e)}
 					
 		return uid;
@@ -5999,7 +5999,7 @@ auth2={
 		let local_uid = null;
 		
 		try {
-			local_uid = localStorage.getItem('poker_uid');
+			local_uid = localStorage.getItem('quoridor_uid');
 		} catch (e) {alert(e)}
 				
 		if (local_uid !== null) return local_uid;
