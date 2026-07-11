@@ -6014,7 +6014,7 @@ auth2={
 		
 		let user_data='';
 		try{
-			user_data = await window.CrazyGames.SDK.user.getUser();
+			user_data = await window.CrazyGames.SDK.user.getUser()||{}
 		}catch(e){
 			return {};
 		}
