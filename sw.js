@@ -312,9 +312,7 @@ ffunc = {
 	
 	get_simple_moves_for_bfs(field, r, c) {
 		
-		
-
-		let moves = [];
+		const moves = [];
 		
 		if (ffunc.check_move.left_w(field, r, c) === 1)
 			moves.push([r, c - 1]);		
@@ -851,7 +849,6 @@ ffunc = {
 	
 	get_shortest_distance_to_target(field, player_id, target_row) {
 		
-		
 		//устанавливаем все клетки как ранее не посещенные
 		for (let r = 0; r < 9; r++ )
 			for (let c = 0; c < 9; c++ )			
@@ -861,41 +858,30 @@ ffunc = {
 		let c = field.pos[player_id].c;
 
 		if (r === target_row)
-			return 0;			
+			return 0;
 		
 		//первая ячейка с которой начинается поиск
 		field.f[r][c].visited = 1;
-		let layer = [[r, c, 0]];
+		let queue = [[r, c, 0]];
 		
 		//начинаем поиск по слоям
-		for ( let d = 0 ; d < 100 ; d++ ) {
+		while (queue.length > 0) {
 			
-			//если не нашли пути
-			if (layer.length === 0)
-				return -1;
-						
+			const cell = queue.shift();
 			
-			for (c of layer) {
-				
-				let cell = layer.shift();
-				
-				let moves = this.get_simple_moves_for_bfs(field, cell[0], cell[1]);
-				
-				for (m of moves) {
-					
-					//если нашли конец пути
-					if (m[0] === target_row)
-						return cell[2]+1;						
-					
-					if (field.f[m[0]][m[1]].visited === 0) {
-												
-						layer.push([m[0],m[1],cell[2]+1]);						
-						field.f[m[0]][m[1]].visited = 1;						
-					}					
-				}				
-			}	
-
+			const moves = this.get_simple_moves_for_bfs(field, cell[0], cell[1]);
 			
+			for (m of moves) {
+				
+				//если нашли конец пути
+				if (m[0] === target_row) return cell[2]+1
+				
+				if (field.f[m[0]][m[1]].visited === 0) {
+					field.f[m[0]][m[1]].visited = 1	
+					queue.push([m[0],m[1],cell[2]+1])
+				}					
+			}
+	
 			
 		}
 
@@ -988,33 +974,23 @@ function start_mm_search(node) {
 		c0.add_childs(0);
 		let min_val1 = 99999;
 		for (let c1 of c0.childs) {
-			
-			//ходит бот
-			/*c1.add_childs(0);
-			let max_val2 = -99999;
-			for (let c2 of c1.childs) {								
-									
-				const d_for_my = ffunc.get_shortest_distance_to_target(c2.field,MY_ID,ROW0);
-				const d_for_opp = ffunc.get_shortest_distance_to_target(c2.field,OPP_ID,ROW8);
-				const how_opp_faster = d_for_my - d_for_opp;
-				
-				if (how_opp_faster > max_val2)
-					max_val2 = how_opp_faster;
-			}	*/		
-		
+					
 			const d_for_my = ffunc.get_shortest_distance_to_target(c1.field,MY_ID,ROW0);
 			const d_for_bot = ffunc.get_shortest_distance_to_target(c1.field,OPP_ID,ROW8);
+
+			//если невозможный путь то пропускаем
+			if (d_for_bot<0||d_for_my<0) continue
+			
 			const how_bot_faster = d_for_my-d_for_bot;
 
-
 			if (min_val1 > how_bot_faster)
-				min_val1 = how_bot_faster			
+				min_val1 = how_bot_faster
 		}	
 
-	if (min_val1 > max_val) {
-		max_val = min_val1			
-		best_child = c0			
-	}
+		if (min_val1 > max_val) {
+			max_val = min_val1			
+			best_child = c0			
+		}
 	
 	}
 
