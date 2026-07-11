@@ -884,6 +884,8 @@ ffunc = {
 	
 			
 		}
+		
+		return -1
 
 	}
 
@@ -896,6 +898,10 @@ const  walls_pos = [
 
 let gid=0
 let stop_flag=0
+let prvCells=0
+let wallPlaced=0
+let skipWallProb=0
+
 class node_class {
 		
 	constructor(field, player_id, depth) {
@@ -907,6 +913,7 @@ class node_class {
 		this.childs = [];
 		this.parent = null;	
 		this.move_data = {};
+		this.val=0;
 		
 	}
 	
@@ -933,12 +940,12 @@ class node_class {
 			{r:this.field.pos[player_to_move].r,c:this.field.pos[player_to_move].c},
 			{r:this.field.pos[3-player_to_move].r,c:this.field.pos[3-player_to_move].c}
 		]
-
 			
 		for (let r=1;r<9;r++){
-			for (let c=1;c<9;c++){					
-				
+			for (let c=1;c<9;c++){
 				for (let WALL_ORIENT=1;WALL_ORIENT<3;WALL_ORIENT++){
+					
+					if (Math.random()<skipWallProb) continue
 					
 					if (ffunc.check_new_wall(this.field, r, c, WALL_ORIENT) === 1 &&
 						ffunc.check_if_wall_block (this.field, r, c, WALL_ORIENT)===0) {	
@@ -964,38 +971,43 @@ function start_mm_search(node) {
 	node.add_childs(1);
 	let max_val = -999999;
 	let best_child = {};
-	for (let c0 of node.childs) {			
+	for (let c0 of node.childs) {
 				
 		//проверяем что этот ход ведет напрямую к выигрышу
-		if (ffunc.get_winner(c0.field) === OPP_ID)
+		if (ffunc.get_winner(c0.field) === OPP_ID){
+			c0.val=999
 			return c0;
+		}
+
 					
 		//ходит игрок
 		c0.add_childs(0);
 		let min_val1 = 99999;
-		for (let c1 of c0.childs) {
-					
+		for (let c1 of c0.childs){
 			const d_for_my = ffunc.get_shortest_distance_to_target(c1.field,MY_ID,ROW0);
 			const d_for_bot = ffunc.get_shortest_distance_to_target(c1.field,OPP_ID,ROW8);
-
-			//если невозможный путь то пропускаем
-			if (d_for_bot<0||d_for_my<0)
-				continue
-			
 			const how_bot_faster = d_for_my-d_for_bot;
 
 			if (min_val1 > how_bot_faster)
 				min_val1 = how_bot_faster
-		}	
-
-		if (min_val1 > max_val) {
-			max_val = min_val1			
-			best_child = c0			
 		}
+		
+		c0.val=min_val1
 	
 	}
 
-	return best_child;
+	node.childs.sort((a,b) => b.val - a.val);
+	for (const child of node.childs){
+		
+		if (child.move_data.type==='move'){
+			const tarCells=child.move_data.r1*9+child.move_data.c1
+			if (prvCells.includes(tarCells))
+				continue
+		}
+		
+		return child
+	}
+	return node.childs[0];
 	
 }
 	
@@ -1003,6 +1015,12 @@ self.addEventListener('message', event => {
 	if (event.data.type === 'mm') {
 		stop_flag=0
 		gid=event.data.gid
+		prvCells=event.data.prvCells
+		wallPlaced=event.data.wallPlaced
+		wallsPlacedNum=event.data.wallsPlacedNum
+		skipWallProb=0.05-0.05*wallsPlacedNum/20
+		
+		
 		const root_node = new node_class(event.data.f, 1, 0)
 		const best_child = start_mm_search(root_node)
 		event.source.postMessage({move_data:best_child.move_data,gid});

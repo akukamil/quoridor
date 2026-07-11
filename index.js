@@ -1089,6 +1089,7 @@ bot_player = {
 	sw:0,
 	sw_calc_on:0,
 	gid:0,
+	prvCells:[],
 		
 	async activate() {		
 				
@@ -1112,21 +1113,35 @@ bot_player = {
 		objects.timer_text.text  = ['мой ход','my turn'][LANG];
 	},
 			
-	send_move() {
+	send_move(data) {
 		
 		if (!this.sw){			
 			pmsg.add({t:['Не могу ходить!','Can not move!'][LANG],timeout:3000})
 			return
 		}
 		
+		//если был ход стеной то заново запоминаем ходы
+		if (data.type==='wall') this.prvCells=[]
+		const wallsPlacedNum=20-(game.field.pos[1].walls+game.field.pos[2].walls)
+		
+		
 		this.sw_calc_on=1
-		this.sw.postMessage({type:'mm',f:game.field,gid:this.gid})
+		this.sw.postMessage({type:'mm',f:game.field,wallsPlacedNum,prvCells:this.prvCells,gid:this.gid})
 	},
 	
 	inc_move(data){
+		
 		if (data.gid!==this.gid) return		
 		this.sw_calc_on=0
-		game.receive_move(data.move_data)		
+		game.receive_move(data.move_data)
+		
+		//запоминаем ходы которые прошли без изменения стен
+		if (data.move_data.type==='move'){
+			this.prvCells.push(data.move_data.r1*9+data.move_data.c1)
+		}else{
+			this.prvCells=[]
+		}
+		
 	},
 	
 	async register_sw(){
